@@ -183,7 +183,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   box-shadow: 0 0 0 3px var(--gold-soft), 4px 4px 0 rgba(59, 47, 69, .18);
 }
 .toast.in { animation: toastIn .45s ease-out; }
-.toast svg { width: 46px; height: 55px; flex: none; }
+.toast svg { width: 58px; height: 68px; flex: none; }
 .toast div { display: grid; line-height: 1.3; }
 .toast b { font-family: var(--font-title); font-weight: 700; color: var(--plum); font-size: 1.05rem; }
 .toast span { font-size: 0.85rem; color: var(--muted); }
@@ -194,9 +194,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .tab { border: 0; background: none; border-radius: 8px; padding: 5px 14px; font-weight: 800; color: var(--muted); }
 .tab[aria-selected="true"] { background: var(--card); color: var(--plum); box-shadow: 1px 1px 0 rgba(59, 47, 69, .15); }
 .panel { width: 100%; display: flex; flex-direction: column; gap: 12px; align-items: center; }
-.marks-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 14px 10px; }
-.mark { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.25; }
-.mark svg { width: 62px; height: 74px; margin-bottom: 4px; }
+.marks-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 16px 10px; }
+.mark { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.25; border: 0; background: none; padding: 4px 2px; border-radius: 10px; }
+.mark:hover svg { transform: rotate(-2deg); }
+.mark svg { width: 84px; height: 99px; margin-bottom: 4px; transform-origin: 10% 10%; transition: transform .2s; }
+.mark.open b { color: var(--muted); font-weight: 600; }
 .mark b { font-family: var(--font-title); font-weight: 700; color: var(--plum); font-size: 0.95rem; }
 .mark span { font-size: 0.82rem; }
 .mark small { font-size: 0.72rem; color: var(--muted); }
@@ -279,6 +281,36 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .version { font-size: 0.75rem; padding-top: 6px; }
 .small-btn.primary { background: var(--plum); border-color: var(--plum-dark); color: #fff; box-shadow: 0 2px 0 var(--plum-dark); }
 .steps-list { margin: 4px 0 8px; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.92rem; }
+/* Belohnung: Karte dreht sich auf, neue Wesen werden gefeiert */
+.reward .pic { animation: reveal .8s ease-out; }
+@keyframes reveal { 0% { transform: perspective(600px) rotateY(85deg) scale(.85); opacity: 0; } 60% { transform: perspective(600px) rotateY(-8deg) scale(1.03); opacity: 1; } 100% { transform: none; } }
+.pic-new {
+  font-weight: 800; color: #8a5f08; background: #fdf1d6; border: 1.5px solid var(--gold-dark); border-radius: 999px;
+  padding: 2px 14px; animation: pop .6s .5s both;
+}
+.pic-world { font-size: 0.88rem; color: var(--muted); }
+.worlds { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.wchip { font-size: 0.82rem; padding: 2px 10px; border-radius: 999px; background: #f1eadd; color: var(--ink); }
+.wchip b { font-family: var(--font-num); font-weight: 600; }
+.wchip.full { background: #fdf1d6; box-shadow: inset 0 0 0 1.5px var(--gold-dark); }
+/* Gesellen- und Meisterbrief */
+.sheet.cert {
+  background: #fbf3df linear-gradient(180deg, rgba(255, 255, 255, .5), rgba(201, 146, 30, .08));
+  border: 3px double #b48a3c; max-width: 380px; animation: pop .5s ease-out;
+}
+.cert-kicker { font-size: 0.8rem; letter-spacing: .12em; text-transform: uppercase; color: #8a5f08; font-weight: 800; }
+.sheet.cert h2 { font-size: 2rem; color: #6b3f12; }
+.cert-emblem svg { width: 150px; height: 176px; }
+.cert-text { font-family: var(--font-title); font-size: 1.08rem; line-height: 1.4; text-wrap: balance; }
+.cert-foot { display: flex; align-items: center; gap: 14px; justify-content: center; }
+.cert-sign { font-family: var(--font-title); font-style: italic; color: var(--muted); border-top: 1px solid #c9b48a; padding-top: 2px; }
+.seal { width: 42px; height: 42px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #d2554a, #8e1f1a 70%); box-shadow: 0 2px 0 rgba(0, 0, 0, .2); position: relative; }
+.seal::after { content: "★"; position: absolute; inset: 0; display: grid; place-items: center; color: #f6c9b9; font-size: 1.1rem; }
+/* Zunftzeichen im Detail */
+.mark-big svg { width: 170px; height: 200px; }
+.mv-fact { font-size: 0.98rem; text-wrap: balance; }
+.mv-next { font-weight: 700; color: var(--plum-dark); background: var(--plum-soft); border-radius: 10px; padding: 8px 12px; }
+#markView, #cert { z-index: 12; }
 
 /* Overlays */
 .overlay {
@@ -395,9 +427,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 <div class="overlay reward" id="reward" hidden role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
   <div class="sheet">
     <h2 id="rewardTitle">Geschafft! Ein neues Bild für deine Sammlung</h2>
+    <p class="pic-new" id="rewardNew" hidden></p>
     <div class="pic" id="rewardPic"></div>
     <p class="pic-name" id="rewardName"></p>
     <p class="pic-no" id="rewardNo"></p>
+    <p class="pic-world" id="rewardWorld"></p>
     <button class="big-btn" id="rewardClose" type="button">Weiter rechnen</button>
   </div>
 </div>
@@ -407,10 +441,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     <h2 id="albumTitle">Deine Sammlung</h2>
     <div class="tabs" role="tablist">
       <button class="tab" id="tabPics" type="button" role="tab" aria-selected="true" aria-controls="panelPics">Bilder</button>
-      <button class="tab" id="tabMarks" type="button" role="tab" aria-selected="false" aria-controls="panelMarks">Meistermarken</button>
+      <button class="tab" id="tabMarks" type="button" role="tab" aria-selected="false" aria-controls="panelMarks">Zunftzeichen</button>
     </div>
     <div class="panel" id="panelPics" role="tabpanel" aria-labelledby="tabPics">
       <p id="albumInfo"></p>
+      <div class="worlds" id="albumWorlds"></div>
       <div class="album-grid" id="albumGrid"></div>
     </div>
     <div class="panel" id="panelMarks" role="tabpanel" aria-labelledby="tabMarks" hidden>
@@ -440,6 +475,28 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   </div>
 </div>
 
+<div class="overlay" id="cert" hidden role="dialog" aria-modal="true" aria-labelledby="certTitle">
+  <div class="sheet cert">
+    <p class="cert-kicker" id="certZunft"></p>
+    <h2 id="certTitle">Gesellenbrief</h2>
+    <div class="cert-emblem" id="certEmblem"></div>
+    <p class="cert-text" id="certText"></p>
+    <div class="cert-foot"><span class="cert-sign">Der Zunftmeister</span><span class="seal" aria-hidden="true"></span></div>
+    <button class="big-btn" id="certClose" type="button">Weiter rechnen</button>
+  </div>
+</div>
+
+<div class="overlay" id="markView" hidden role="dialog" aria-modal="true" aria-labelledby="mvTitle">
+  <div class="sheet">
+    <div class="mark-big" id="mvEmblem"></div>
+    <h2 id="mvTitle"></h2>
+    <p class="note" id="mvSub"></p>
+    <p class="mv-fact" id="mvFact"></p>
+    <p class="mv-next" id="mvNext"></p>
+    <button class="big-btn" id="mvClose" type="button">Zurück zur Sammlung</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script>
@@ -448,18 +505,44 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // Eine Karte ist { s: Zufallssamen, n: Landschaft, c: Wesen, g: 1 = selten (golden) }.
   // Aus dem Samen entstehen Gebirge, Sterne, Mond, Pose, Blickrichtung und Farbton: jedes Bild ist ein Unikat.
   const SCENES = [
-    { id: "nordlicht", name: "Nordlicht", sky: [[228, 60, 9], [214, 55, 17], [192, 45, 30]], fg: [222, 45, 6], accent: [160, 85, 68], ground: 258 },
-    { id: "mondsee", name: "Mondsee", sky: [[248, 50, 10], [258, 42, 22], [282, 38, 40]], fg: [252, 42, 7], accent: [48, 90, 80], ground: 272 },
-    { id: "morgenrot", name: "Morgenrot", sky: [[228, 50, 24], [330, 50, 58], [32, 92, 68]], fg: [282, 35, 12], accent: [42, 100, 72], ground: 258 },
-    { id: "sternennebel", name: "Sternennebel", sky: [[262, 55, 5], [248, 45, 11], [222, 42, 20]], fg: [250, 40, 4], accent: [292, 90, 76], ground: 262 },
-    { id: "gluehwald", name: "Glühwald", sky: [[205, 45, 18], [186, 38, 34], [40, 70, 62]], fg: [165, 40, 6], accent: [55, 100, 68], ground: 264 },
-    { id: "wolkenmeer", name: "Wolkenmeer", sky: [[218, 55, 34], [292, 40, 62], [24, 92, 72]], fg: [252, 30, 14], accent: [36, 100, 74], ground: 236 },
+    { id: "nordlicht", world: "fabel", name: "Nordlicht", sky: [[228, 60, 9], [214, 55, 17], [192, 45, 30]], fg: [222, 45, 6], accent: [160, 85, 68], ground: 258 },
+    { id: "mondsee", world: "fabel", name: "Mondsee", sky: [[248, 50, 10], [258, 42, 22], [282, 38, 40]], fg: [252, 42, 7], accent: [48, 90, 80], ground: 272 },
+    { id: "morgenrot", world: "fabel", name: "Morgenrot", sky: [[228, 50, 24], [330, 50, 58], [32, 92, 68]], fg: [282, 35, 12], accent: [42, 100, 72], ground: 258 },
+    { id: "sternennebel", world: "fabel", name: "Sternennebel", sky: [[262, 55, 5], [248, 45, 11], [222, 42, 20]], fg: [250, 40, 4], accent: [292, 90, 76], ground: 262 },
+    { id: "gluehwald", world: "fabel", name: "Glühwald", sky: [[205, 45, 18], [186, 38, 34], [40, 70, 62]], fg: [165, 40, 6], accent: [55, 100, 68], ground: 264 },
+    { id: "wolkenmeer", world: "fabel", name: "Wolkenmeer", sky: [[218, 55, 34], [292, 40, 62], [24, 92, 72]], fg: [252, 30, 14], accent: [36, 100, 74], ground: 236 },
+    // Wald
+    { id: "herbstwald", world: "wald", name: "Herbstwald", at: "im Herbstwald", sky: [[30, 70, 64], [24, 80, 72], [44, 95, 80]], fg: [18, 45, 12], accent: [28, 100, 60], ground: 262, night: false },
+    { id: "mondlichtung", world: "wald", name: "Mondlichtung", at: "auf der Mondlichtung", sky: [[232, 55, 10], [222, 45, 20], [200, 40, 34]], fg: [215, 40, 6], accent: [70, 100, 70], ground: 262, night: true, stars: 60 },
+    { id: "nebelwald", world: "wald", name: "Nebelwald", at: "im Nebelwald", sky: [[200, 22, 50], [185, 22, 66], [165, 25, 80]], fg: [190, 25, 13], accent: [55, 90, 75], ground: 262, night: false },
+    { id: "birkenhain", world: "wald", name: "Birkenhain", at: "im Birkenhain", sky: [[205, 60, 72], [30, 80, 80], [45, 95, 84]], fg: [100, 25, 16], accent: [45, 100, 62], ground: 264, night: false },
+    // Meer
+    { id: "korallenriff", world: "meer", name: "Korallenriff", at: "am Korallenriff", sky: [[185, 75, 62], [192, 70, 42], [205, 70, 24]], fg: [210, 60, 12], accent: [170, 90, 70], ground: 250, night: false },
+    { id: "tiefsee", world: "meer", name: "Tiefsee", at: "in der Tiefsee", sky: [[215, 65, 26], [225, 65, 13], [235, 70, 6]], fg: [235, 60, 4], accent: [180, 100, 62], ground: 250, night: false },
+    { id: "seetangwald", world: "meer", name: "Seetangwald", at: "im Seetangwald", sky: [[165, 45, 52], [178, 50, 34], [195, 60, 17]], fg: [190, 55, 8], accent: [60, 95, 68], ground: 250, night: false },
+    // Burg
+    { id: "abendburg", world: "burg", name: "Abendrot", at: "bei der Burg im Abendrot", sky: [[255, 45, 30], [340, 55, 60], [28, 95, 66]], fg: [270, 35, 12], accent: [42, 100, 70], ground: 258, night: false },
+    { id: "vollmondburg", world: "burg", name: "Vollmondnacht", at: "in der Vollmondnacht", sky: [[230, 55, 8], [235, 45, 18], [250, 35, 34]], fg: [240, 40, 5], accent: [48, 95, 72], ground: 258, night: true, stars: 70, bigMoon: true },
+    { id: "winterburg", world: "burg", name: "Winterburg", at: "auf der Winterburg", sky: [[210, 40, 60], [215, 45, 74], [220, 50, 87]], fg: [220, 35, 18], accent: [195, 90, 70], ground: 258, night: false },
   ];
   const CREATURES = [
-    { id: "unicorn", noun: "Einhorn", golden: "Goldenes", weight: 0.45 },
-    { id: "pegasus", noun: "Pegasus", golden: "Goldener", weight: 0.2 },
-    { id: "fairy", noun: "Fee", golden: "Goldene", weight: 0.35 },
+    { id: "unicorn", world: "fabel", noun: "Einhorn", golden: "Goldenes", weight: 1 },
+    { id: "pegasus", world: "fabel", noun: "Pegasus", golden: "Goldener", weight: 0.8 },
+    { id: "fairy", world: "fabel", noun: "Fee", golden: "Goldene", weight: 1 },
+    { id: "phoenix", world: "fabel", noun: "Phönix", golden: "Goldener", weight: 0.8 },
+    { id: "fox", world: "wald", noun: "Fuchs", golden: "Goldener", weight: 1 },
+    { id: "deer", world: "wald", noun: "Hirsch", golden: "Goldener", weight: 1 },
+    { id: "owl", world: "wald", noun: "Eule", golden: "Goldene", weight: 1 },
+    { id: "hare", world: "wald", noun: "Hase", golden: "Goldener", weight: 1 },
+    { id: "whale", world: "meer", noun: "Wal", golden: "Goldener", weight: 1 },
+    { id: "turtle", world: "meer", noun: "Schildkröte", golden: "Goldene", weight: 1 },
+    { id: "seahorse", world: "meer", noun: "Seepferdchen", golden: "Goldenes", weight: 1 },
+    { id: "mermaid", world: "meer", noun: "Meerjungfrau", golden: "Goldene", weight: 1 },
+    { id: "princess", world: "burg", noun: "Prinzessin", golden: "Goldene", weight: 1 },
+    { id: "knight", world: "burg", noun: "Ritter", golden: "Goldener", weight: 1 },
+    { id: "dragon", world: "burg", noun: "Drache", golden: "Goldener", weight: 1 },
   ];
+  const WORLDS = [{ id: "fabel", name: "Fabelwelt", what: "Fabelwesen" }, { id: "wald", name: "Wald", what: "Waldtieren" }, { id: "meer", name: "Meer", what: "Meeresbewohnern" }, { id: "burg", name: "Burg", what: "Burgbewohnern" }];
   const GOLD = [44, 100, 64];
 
   const f1 = (n) => Math.round(n * 10) / 10;
@@ -481,19 +564,25 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     };
   }
 
-  // Gold gibt es planbar (Eltern-Menü), nicht mehr zufällig. Keine Landschaft wie in den letzten drei Bildern, kein Wesen wie im letzten.
-  function newCard(prev, gold, recent) {
-    const rec = recent || (prev ? [prev] : []);
-    const noScenes = rec.slice(-3).map((k) => k.n), lastC = rec.length ? rec[rec.length - 1].c : -1;
-    let n, guardN = 0;
-    do { n = Math.floor(Math.random() * SCENES.length); } while (noScenes.includes(n) && ++guardN < 60);
-    let c, r, guardC = 0;
-    do { r = Math.random(); c = 0; for (; c < CREATURES.length - 1; c++) if ((r -= CREATURES[c].weight) < 0) break; } while (c === lastC && ++guardC < 60);
-    return { s: Math.floor(Math.random() * 4294967296), n, c, g: gold ? 1 : 0 };
+  // Gold gibt es planbar (Eltern-Menü), nicht zufällig. Nie dieselbe Welt zweimal hintereinander, kein Wesen der letzten zwei
+  // und keine Landschaft der letzten drei Bilder. Noch nicht entdeckte Wesen kommen dreimal so oft dran.
+  function newCard(prev, gold, recent, album) {
+    const rec = recent || (prev ? [prev] : []), seen = new Set((album || rec).map((k) => k.c));
+    const last = rec[rec.length - 1], lastW = last ? (SCENES[last.n] || SCENES[0]).world : null;
+    const noC = rec.slice(-2).map((k) => k.c), noN = rec.slice(-3).map((k) => k.n), all = CREATURES.map((_, i) => i);
+    let cands = all.filter((i) => CREATURES[i].world !== lastW && !noC.includes(i));
+    if (!cands.length) cands = all.filter((i) => !noC.includes(i));
+    const wt = (i) => (seen.has(i) ? 1 : 3) * CREATURES[i].weight;
+    let r = Math.random() * cands.reduce((a, i) => a + wt(i), 0), c = cands[cands.length - 1];
+    for (const i of cands) { r -= wt(i); if (r < 0) { c = i; break; } }
+    const world = CREATURES[c].world, inWorld = SCENES.map((_, i) => i).filter((i) => SCENES[i].world === world);
+    const free = inWorld.filter((i) => !noN.includes(i)), pool = free.length ? free : inWorld;
+    return { s: Math.floor(Math.random() * 4294967296), n: pool[Math.floor(Math.random() * pool.length)], c, g: gold ? 1 : 0 };
   }
 
   function cardName(card) {
     const sc = SCENES[card.n] || SCENES[0], cr = CREATURES[card.c] || CREATURES[0];
+    if (sc.world !== "fabel") return `${card.g ? cr.golden + " " : ""}${cr.noun} ${sc.at}`;
     return `${card.g ? cr.golden + " " : ""}${sc.name}-${cr.noun}`;
   }
 
@@ -508,7 +597,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     // Luftperspektive: ferne Ebenen nehmen die Himmelsfarbe an, aber nie grell
     const haze = sc.id === "gluehwald" ? sky[1] : mixC(sky[1], sky[2], 0.5);
     const layer = (t) => { const c = mixC(haze, fg, t); c[1] = Math.min(c[1], 42); return col(c); };
-    const night = sc.id !== "morgenrot" && sc.id !== "wolkenmeer";
+    const night = sc.night !== undefined ? sc.night : sc.id !== "morgenrot" && sc.id !== "wolkenmeer";
     const onLeft = rng() < 0.5;
     const cx = onLeft ? R(88, 118) : R(182, 212);
     const ox = onLeft ? R(195, 250) : R(50, 105);
@@ -552,10 +641,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const yMax = { morgenrot: 80, wolkenmeer: 60, gluehwald: 150 }[sc.id] || 200;
     const dim = sc.id === "morgenrot" || sc.id === "wolkenmeer" ? 0.5 : 1;
     let st = "";
-    for (let i = 0; i < STARS[sc.id]; i++) {
+    for (let i = 0; i < (STARS[sc.id] ?? sc.stars ?? 0); i++) {
       st += `<circle cx="${f1(R(0, 300))}" cy="${f1(yMax * Math.pow(rng(), 1.4))}" r="${f1(R(0.3, 1.3))}" fill="#fff" opacity="${f1(R(0.3, 1) * dim)}"/>`;
     }
-    for (let i = 0; i < (night ? 4 : 1); i++) st += `<path d="${starPath(R(10, 290), R(10, yMax * 0.8), R(2.5, 4.5))}" fill="#fff" opacity="${f1(0.85 * dim)}"/>`;
+    if (sc.world !== "meer") for (let i = 0; i < (night ? 4 : 1); i++) st += `<path d="${starPath(R(10, 290), R(10, yMax * 0.8), R(2.5, 4.5))}" fill="#fff" opacity="${f1(0.85 * dim)}"/>`;
     o.push(st);
 
     // Sternschnuppe
@@ -586,8 +675,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
 
     // Mond oder Sonne
-    if (night && (sc.id === "mondsee" || rng() < 0.75)) {
-      const big = sc.id === "mondsee";
+    if (night && (sc.id === "mondsee" || sc.bigMoon || rng() < 0.75)) {
+      const big = sc.id === "mondsee" || !!sc.bigMoon;
       const my = big ? R(55, 95) : R(40, 85), mr = big ? R(24, 34) : R(10, 19);
       const mc = [48, 70, 90];
       o.push(`<circle cx="${f1(ox)}" cy="${f1(my)}" r="${f1(mr * 4)}" fill="url(#${id("halo")})"/>`);
@@ -602,7 +691,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       }
       moon = [ox, mr];
     }
-    if (!night) {
+    if (!night && sc.world !== "meer") {
       const sy = sc.id === "wolkenmeer" ? R(165, 185) : R(150, 172), sr = sc.id === "wolkenmeer" ? R(30, 40) : R(20, 30);
       o.push(`<circle cx="${f1(ox)}" cy="${f1(sy)}" r="${f1(sr * 5)}" fill="url(#${id("halo")})"/>`,
         `<circle cx="${f1(ox)}" cy="${f1(sy)}" r="${f1(sr)}" fill="${col([45, 100, 88])}"/>`);
@@ -640,6 +729,208 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       return `<g fill="${color}">${s}<rect x="-10" y="${f1(y)}" width="320" height="${f1(Math.max(0, 300 - y))}"/></g>`;
     };
 
+    const glowDot = (x, y, r, a = 1) =>
+      `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="url(#${id("glow")})" opacity="${f1(a)}"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(Math.max(0.6, r * 0.14))}" fill="#fff" opacity="${f1(a)}"/>`;
+
+    // ---------- Neue Welten: Wald, Meer, Burg ----------
+    if (sc.world !== "fabel") {
+      const light = mixC(acc, [0, 0, 100], 0.55), pk = (a) => a[Math.floor(rng() * a.length)];
+      const dir = rng() < 0.5 ? 1 : -1;
+      const place = (x, y, s, inner, flip = dir) => `<g transform="translate(${f1(x)} ${f1(y)}) scale(${f1(flip * s * 100) / 100} ${f1(s * 100) / 100})">${inner}</g>`;
+      const hill = (fill) => {
+        const l = gy + R(18, 44), r = gy + R(18, 44);
+        return `<path d="M-10 300L-10 ${f1(l)}Q${f1(cx - 70)} ${f1(gy - 3)} ${f1(cx)} ${f1(gy)}Q${f1(cx + 70)} ${f1(gy + 3)} 310 ${f1(r)}L310 300Z" fill="${fill}"/>`;
+      };
+      const tuft = (x, y, h, c) => `<path d="M${f1(x - 4)} ${f1(y)}L${f1(x - 6)} ${f1(y - h * 0.7)}L${f1(x - 1)} ${f1(y - 2)}L${f1(x)} ${f1(y - h)}L${f1(x + 1.5)} ${f1(y - 2)}L${f1(x + 6)} ${f1(y - h * 0.8)}L${f1(x + 4)} ${f1(y)}Z" fill="${c}"/>`;
+      // Laubbaum: Stamm und runde Krone aus Kreisen
+      const leafTree = (x, base, h, c) => {
+        const r = h * 0.3;
+        let s = `<path d="M${f1(x - h * 0.035)} ${f1(base)}L${f1(x - h * 0.02)} ${f1(base - h * 0.62)}L${f1(x + h * 0.02)} ${f1(base - h * 0.62)}L${f1(x + h * 0.035)} ${f1(base)}Z" fill="${c}"/>`;
+        for (let i = 0; i < 6; i++) s += `<circle cx="${f1(x + R(-0.9, 0.9) * r)}" cy="${f1(base - h * 0.68 + R(-0.6, 0.5) * r)}" r="${f1(r * R(0.55, 0.85))}" fill="${c}"/>`;
+        return s;
+      };
+
+      if (sc.world === "wald") {
+        if (sc.id === "birkenhain") {
+          o.push(ridge(200, 20, 0.5, layer(0.3)));
+          let birches = "";
+          for (let i = 0; i < 9; i++) {
+            const x = R(-10, 310), w = R(4, 9), far = rng() < 0.5;
+            if (Math.abs(x - cx) < 40) continue;
+            const c1 = far ? col(mixC(hz, [40, 30, 95], 0.6)) : col([40, 25, 93]), mark = far ? layer(0.45) : F;
+            let marks = "";
+            for (let y = R(20, 40); y < 280; y += R(14, 26)) marks += `<rect x="${f1(x - w / 2)}" y="${f1(y)}" width="${f1(w * R(0.4, 0.8))}" height="${f1(R(1.5, 3.2))}" fill="${mark}"/>`;
+            birches += `<rect x="${f1(x - w / 2)}" y="-5" width="${f1(w)}" height="310" fill="${c1}" opacity="${far ? 0.75 : 1}"/>${marks}`;
+          }
+          o.push(birches, mist(230));
+          let leaves = "";
+          for (let i = 0; i < 26; i++) leaves += `<circle cx="${f1(R(0, 300))}" cy="${f1(R(-5, 40))}" r="${f1(R(8, 18))}" fill="${layer(R(0.5, 0.85))}"/>`;
+          o.push(leaves);
+        } else if (sc.id === "mondlichtung") {
+          o.push(forest(212, 40, 70, layer(0.5)), mist(226), forest(234, 26, 46, layer(0.75)));
+        } else if (sc.id === "nebelwald") {
+          o.push(forest(176, 50, 80, layer(0.2)), mist(196), forest(200, 50, 86, layer(0.42)), mist(222), forest(228, 40, 70, layer(0.65)), mist(244));
+          // Lichtstrahlen durch den Nebel
+          let rays = "";
+          for (let i = 0; i < 5; i++) { const x = R(20, 280), w = R(10, 26); rays += `<path d="M${f1(x)} -10L${f1(x + w)} -10L${f1(x + w + 80)} 300L${f1(x + 50)} 300Z" fill="#fff" opacity="${f1(R(0.05, 0.11))}"/>`; }
+          o.push(`<g filter="url(#${id("soft")})">${rays}</g>`);
+        } else {
+          // Herbstwald: Laubbäume in Schichten, Sonnenstrahlen
+          let back = "", mid = "";
+          for (let x = R(-20, 0); x < 320; x += R(26, 44)) back += leafTree(x, 214 + R(-6, 6), R(70, 110), layer(0.35));
+          for (let x = R(-20, 0); x < 320; x += R(40, 70)) if (Math.abs(x - cx) > 50) mid += leafTree(x, 240 + R(-6, 6), R(90, 140), layer(0.62));
+          o.push(back, mist(222), mid);
+          let rays = "";
+          for (let i = 0; i < 4; i++) { const x = R(0, 240); rays += `<path d="M${f1(x)} -10L${f1(x + 20)} -10L${f1(x + 110)} 300L${f1(x + 70)} 300Z" fill="${col(acc)}" opacity="${f1(R(0.06, 0.12))}"/>`; }
+          o.push(`<g filter="url(#${id("soft")})">${rays}</g>`);
+        }
+        o.push(hill(F));
+        let near = "";
+        for (let i = 0; i < 4; i++) { const x = R(0, 300); if (Math.abs(x - cx) > 80) near += sc.id === "herbstwald" || sc.id === "birkenhain" ? leafTree(x, gy + 30, R(80, 120), F) : pine(x, gy + 24, R(40, 70), F); }
+        for (let i = 0; i < 14; i++) near += tuft(R(0, 300), gy + R(8, 40), R(5, 11), F);
+        // Pilze am Boden
+        for (let i = 0; i < 3; i++) { const x = cx + (rng() < 0.5 ? -1 : 1) * R(50, 110), y = gy + R(10, 24), h = R(6, 10); near += `<rect x="${f1(x - 1.5)}" y="${f1(y - h)}" width="3" height="${f1(h)}" fill="${F}"/><path d="M${f1(x - h * 0.8)} ${f1(y - h)}Q${f1(x)} ${f1(y - h * 2)} ${f1(x + h * 0.8)} ${f1(y - h)}Z" fill="${F}"/>`; }
+        o.push(near);
+
+        if (cr.id === "owl") {
+          const by = R(150, 172), side = onLeft ? -1 : 1;
+          o.push(place(cx, by, R(1.25, 1.45), owl(F, acc, id, light), side));
+        } else if (cr.id === "deer") {
+          o.push(place(cx, gy, R(0.82, 0.92), deer(R, F, acc, id)));
+        } else if (cr.id === "hare") {
+          o.push(place(cx, gy, R(1.25, 1.45), hare(R, F, light)));
+        } else {
+          o.push(place(cx, gy, R(1.15, 1.32), fox(R, F, light)));
+        }
+        // Glühwürmchen oder fallende Blätter
+        let fx = "";
+        if (night) for (let i = 0; i < 16; i++) fx += glowDot(R(5, 295), R(140, 285), R(2.5, 6), R(0.5, 1));
+        else if (sc.id === "herbstwald") {
+          const hues = [[20, 85, 55], [35, 95, 58], [8, 70, 48], [48, 90, 60]];
+          for (let i = 0; i < 18; i++) { const x = R(0, 300), y = R(0, 280); fx += `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="${f1(R(2.5, 4.5))}" ry="${f1(R(1.2, 2))}" transform="rotate(${f1(R(0, 180))} ${f1(x)} ${f1(y)})" fill="${col(pk(hues))}" opacity="${f1(R(0.7, 1))}"/>`; }
+        } else for (let i = 0; i < 8; i++) fx += glowDot(R(5, 295), R(60, 260), R(2, 4), R(0.3, 0.7));
+        o.push(fx);
+      }
+
+      if (sc.world === "meer") {
+        // Lichtfächer von der Wasseroberfläche, Wellenkante oben
+        let rays = "";
+        const sx = R(80, 220);
+        for (let i = 0; i < 7; i++) { const a = R(-0.7, 0.7), w = R(6, 16); rays += `<path d="M${f1(sx + i * 6 - 20)} -5L${f1(sx + i * 6 - 20 + w)} -5L${f1(sx + a * 300 + w * 4)} 300L${f1(sx + a * 300)} 300Z" fill="#fff" opacity="${f1(sc.id === "tiefsee" ? R(0.02, 0.05) : R(0.05, 0.12))}"/>`; }
+        o.push(`<g filter="url(#${id("soft")})">${rays}</g>`);
+        if (sc.id !== "tiefsee") {
+          let surf = "M-10 0";
+          for (let x = -10; x <= 310; x += 15) surf += `Q${f1(x + 7.5)} ${f1(R(8, 14))} ${f1(x + 15)} ${f1(R(3, 7))}`;
+          o.push(`<path d="${surf}L310 -5L-10 -5Z" fill="#fff" opacity=".22"/>`);
+        }
+        // ferner Fischschwarm
+        const fish = (x, y, s, c) => `<g transform="translate(${f1(x)} ${f1(y)}) scale(${f1(s * dir)} ${f1(s)})" fill="${c}"><ellipse cx="0" cy="0" rx="6" ry="2.6"/><path d="M-5 0L-10 -3.5L-10 3.5Z"/></g>`;
+        let school = "";
+        const scx = R(40, 260), scy = R(50, 120);
+        for (let i = 0; i < 22; i++) school += fish(scx + R(-45, 45), scy + R(-20, 20), R(0.6, 1), layer(0.35));
+        o.push(school);
+        // Meeresboden
+        o.push(ridge(236, 18, 0.55, layer(0.45)));
+        if (sc.id === "seetangwald") {
+          const kelp = (x, base, h, c, w) => {
+            let d = `M${f1(x)} ${f1(base)}`, ph = R(0, 6), lv = "";
+            for (let y = 0; y <= h; y += 10) {
+              const xx = x + Math.sin(ph + y * 0.04) * 10;
+              d += `L${f1(xx)} ${f1(base - y)}`;
+              if (y % 20 === 0 && y > 10) lv += `<ellipse cx="${f1(xx + 7)}" cy="${f1(base - y)}" rx="9" ry="3" transform="rotate(-30 ${f1(xx + 7)} ${f1(base - y)})" fill="${c}"/>`;
+            }
+            return `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>${lv}`;
+          };
+          let k1 = "", k2 = "";
+          for (let x = R(-10, 10); x < 310; x += R(18, 30)) k1 += kelp(x, 300, R(180, 290), layer(0.4), 4);
+          for (let x = R(-10, 10); x < 310; x += R(30, 50)) if (Math.abs(x - cx) > 45) k2 += kelp(x, 300, R(200, 300), layer(0.72), 6);
+          o.push(k1, k2);
+        }
+        // Korallen und Steine im Vordergrund
+        const coral = (x, base, h, c) => {
+          let s = "";
+          const br = (x0, y0, ang, len, w, depth) => {
+            const x1 = x0 + Math.cos(ang) * len, y1 = y0 + Math.sin(ang) * len;
+            s += `<path d="M${f1(x0)} ${f1(y0)}L${f1(x1)} ${f1(y1)}" stroke="${c}" stroke-width="${f1(w)}" stroke-linecap="round"/>`;
+            if (depth > 0) { br(x1, y1, ang - R(0.3, 0.6), len * 0.72, w * 0.72, depth - 1); br(x1, y1, ang + R(0.3, 0.6), len * 0.72, w * 0.72, depth - 1); }
+          };
+          br(x, base, -Math.PI / 2 + R(-0.2, 0.2), h * 0.4, 6, 3);
+          return s;
+        };
+        const fan = (x, base, r, c) => {
+          let s = `<path d="M${f1(x - r)} ${f1(base - r * 0.2)}A${f1(r)} ${f1(r)} 0 0 1 ${f1(x + r)} ${f1(base - r * 0.2)}L${f1(x)} ${f1(base)}Z" fill="${c}" opacity=".9"/>`;
+          for (let a = 0.15; a < 1; a += 0.14) s += `<path d="M${f1(x)} ${f1(base)}L${f1(x - Math.cos(a * Math.PI) * r)} ${f1(base - Math.sin(a * Math.PI) * r)}" stroke="${col(acc, 0.25)}" stroke-width=".8"/>`;
+          return s;
+        };
+        let reef = `<path d="M-10 300L-10 ${f1(262 + R(-6, 6))}Q75 ${f1(250 + R(-8, 8))} 150 ${f1(262 + R(-6, 6))}T310 ${f1(258 + R(-8, 8))}L310 300Z" fill="${F}"/>`;
+        if (sc.id === "korallenriff") {
+          const tints = [[340, 60, 55], [20, 80, 58], [280, 45, 55], [45, 85, 58]];
+          let back = "";
+          for (let i = 0; i < 7; i++) back += rng() < 0.5 ? coral(R(0, 300), 262, R(50, 90), col(mixC(pk(tints), hz, 0.55))) : fan(R(0, 300), 262, R(18, 30), col(mixC(pk(tints), hz, 0.55)));
+          o.push(back);
+          for (let i = 0; i < 5; i++) { const x = R(0, 300); if (Math.abs(x - cx) > 40) reef += rng() < 0.6 ? coral(x, 270, R(60, 100), F) : fan(x, 270, R(20, 34), F); }
+        } else if (sc.id === "tiefsee") {
+          for (let i = 0; i < 3; i++) { const x = R(0, 300); if (Math.abs(x - cx) > 40) reef += coral(x, 272, R(40, 70), F); }
+        }
+        for (let i = 0; i < 5; i++) reef += `<ellipse cx="${f1(R(0, 300))}" cy="${f1(R(268, 290))}" rx="${f1(R(10, 22))}" ry="${f1(R(6, 12))}" fill="${F}"/>`;
+        o.push(reef);
+        // Quallen in der Tiefsee
+        if (sc.id === "tiefsee") {
+          let jel = "";
+          for (let i = 0; i < 3; i++) {
+            const x = R(20, 280), y = R(40, 200), r = R(7, 13);
+            if (Math.abs(x - cx) < 60 && Math.abs(y - 150) < 60) continue;
+            jel += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r * 3)}" fill="url(#${id("glow")})" opacity=".45"/><path d="M${f1(x - r)} ${f1(y)}A${f1(r)} ${f1(r)} 0 0 1 ${f1(x + r)} ${f1(y)}Z" fill="${col(light, 0.75)}"/>`;
+            for (let k = -2; k <= 2; k++) jel += `<path d="M${f1(x + k * r * 0.35)} ${f1(y)}q${f1(R(-4, 4))} ${f1(r)} 0 ${f1(r * 2.2)}" fill="none" stroke="${col(light, 0.5)}" stroke-width=".9"/>`;
+          }
+          o.push(jel);
+          let pl = "";
+          for (let i = 0; i < 26; i++) pl += glowDot(R(0, 300), R(0, 290), R(1.5, 4), R(0.4, 0.9));
+          o.push(pl);
+        }
+        // Das Meerestier
+        const my = R(118, 168);
+        if (cr.id === "whale") o.push(place(R(140, 160), R(120, 150), R(0.78, 0.9), whale(F, acc, light)));
+        else if (cr.id === "turtle") o.push(place(cx, my, R(1.05, 1.2), turtle(F, acc, light)));
+        else if (cr.id === "seahorse") o.push(place(cx, R(140, 160), R(1.35, 1.55), seahorse(F, acc, light)));
+        else o.push(place(150 + dir * R(14, 30), my, R(1.05, 1.18), mermaid(R, F, acc, light, id)));
+        // Luftblasen
+        let bub = "";
+        for (let i = 0; i < 14; i++) bub += `<circle cx="${f1(R(5, 295))}" cy="${f1(R(10, 260))}" r="${f1(R(1.2, 4.5))}" fill="none" stroke="#fff" stroke-width=".8" opacity="${f1(R(0.3, 0.7))}"/>`;
+        const bx = cx + dir * R(20, 40);
+        for (let i = 0; i < 6; i++) bub += `<circle cx="${f1(bx + R(-4, 4))}" cy="${f1(my - 40 - i * 14)}" r="${f1(1.5 + i * 0.5)}" fill="none" stroke="#fff" stroke-width=".8" opacity=".6"/>`;
+        o.push(bub);
+      }
+
+      if (sc.world === "burg") {
+        const snow = sc.id === "winterburg";
+        o.push(ridge(176, 40, 0.55, layer(0.3)));
+        // Burg auf dem Hügel gegenüber vom Wesen (beim Drachen in der Mitte, beim Vollmond vor dem Mond)
+        const bxC = cr.id === "dragon" ? R(120, 180) : ox, bBase = R(200, 212);
+        o.push(`<path d="M${f1(bxC - 110)} 300L${f1(bxC - 80)} ${f1(bBase + 4)}Q${f1(bxC)} ${f1(bBase - 10)} ${f1(bxC + 80)} ${f1(bBase + 4)}L${f1(bxC + 110)} 300Z" fill="${layer(0.62)}"/>`);
+        o.push(castle(bxC, bBase, R(0.85, 1.05), layer(0.62), acc, light, rng, R, snow));
+        o.push(mist(226));
+        o.push(hill(snow ? col([215, 35, 90]) : F));
+        let near = "";
+        for (let i = 0; i < 4; i++) {
+          const x = R(0, 300);
+          if (Math.abs(x - cx) < 80) continue;
+          const h = R(40, 70);
+          near += pine(x, gy + 24, h, F);
+          if (snow) near += `<path d="M${f1(x - h * 0.13)} ${f1(gy + 24 - h * 0.62)}L${f1(x)} ${f1(gy + 24 - h)}L${f1(x + h * 0.13)} ${f1(gy + 24 - h * 0.62)}Z" fill="#fff" opacity=".85"/>`;
+        }
+        if (!snow) for (let i = 0; i < 12; i++) near += tuft(R(0, 300), gy + R(8, 40), R(5, 10), F);
+        o.push(near);
+        if (cr.id === "dragon") o.push(place(onLeft ? R(90, 120) : R(180, 210), R(90, 120), R(0.95, 1.1), dragon(R, F, acc, light, id, rng() < 0.6)));
+        else if (cr.id === "knight") o.push(place(cx, gy, R(0.8, 0.9), knight(R, rng, F, acc, light, id)));
+        else o.push(place(cx, gy, R(1.05, 1.2), princess(R, F, acc, light, id)));
+        if (snow) {
+          let sn = "";
+          for (let i = 0; i < 70; i++) sn += `<circle cx="${f1(R(0, 300))}" cy="${f1(R(0, 300))}" r="${f1(R(0.6, 2))}" fill="#fff" opacity="${f1(R(0.5, 0.95))}"/>`;
+          o.push(sn);
+        }
+      }
+    } else {
     if (sc.id === "nordlicht") {
       o.push(ridge(168, 42, 0.55, col(mixC(hz, [210, 25, 74], 0.55))), ridge(206, 24, 0.55, layer(0.6)));
       o.push(forest(236, 16, 34, layer(0.82)));
@@ -668,7 +959,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
 
     // Boden, auf dem das Wesen steht (bei der Fee nur Landschaft)
-    if (sc.id === "wolkenmeer" && cr.id === "fairy") {
+    if (sc.id === "wolkenmeer" && (cr.id === "fairy" || cr.id === "phoenix")) {
       o.push(clouds(R(246, 262), 14, 26, col(mixC(hz, [300, 40, 82], 0.55))));
     } else if (sc.id === "wolkenmeer") {
       const p = [[cx - 135, 300], [cx - 84, gy + 42], [cx - 64, gy + 30], [cx - 44, gy + 18], [cx - 26, gy + 9], [cx - 8, gy], [cx + 22, gy + 1], [cx + 40, gy + 11], [cx + 58, gy + 22], [cx + 80, gy + 32], [cx + 125, 300]].map(([x, y], i) => [x, i === 0 || i === 10 ? y : y + (i % 2 ? R(-3, 3) : 0)]);
@@ -689,11 +980,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
 
     // Das Wesen
-    const glowDot = (x, y, r, a = 1) =>
-      `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="url(#${id("glow")})" opacity="${f1(a)}"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(Math.max(0.6, r * 0.14))}" fill="#fff" opacity="${f1(a)}"/>`;
     const dir = rng() < 0.5 ? 1 : -1;
-    if (card.g) o.push(`<circle cx="${f1(cx)}" cy="${f1(cr.id === "fairy" ? 110 : gy - 85)}" r="105" fill="url(#${id("glow")})" opacity=".4"/>`);
-    if (cr.id === "fairy") {
+    if (card.g) o.push(`<circle cx="${f1(cx)}" cy="${f1(cr.id === "fairy" || cr.id === "phoenix" || sc.world !== "fabel" ? 120 : gy - 85)}" r="105" fill="url(#${id("glow")})" opacity=".4"/>`);
+    if (sc.world !== "fabel") { /* schon gezeichnet */ } else if (cr.id === "phoenix") {
+      const py = R(140, 165), s = R(1.05, 1.2);
+      o.push(`<circle cx="${f1(cx)}" cy="${f1(py)}" r="${f1(80 * s)}" fill="url(#${id("glow")})" opacity=".3"/>`);
+      o.push(`<g transform="translate(${f1(cx)} ${f1(py)}) scale(${f1(dir * s * 100) / 100} ${f1(s * 100) / 100})">${phoenix(R, F, acc, id)}</g>`);
+    } else if (cr.id === "fairy") {
       const fy = R(122, 160), s = R(1.15, 1.4);
       o.push(`<circle cx="${f1(cx)}" cy="${f1(fy - 40 * s)}" r="${f1(70 * s)}" fill="url(#${id("glow")})" opacity=".28"/>`);
       o.push(`<g transform="translate(${f1(cx)} ${f1(fy)}) scale(${f1(dir * s * 100) / 100} ${f1(s * 100) / 100})">${fairy(R, F, acc, id)}</g>`);
@@ -709,6 +1002,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       let dots = "";
       for (let i = 0; i < 7; i++) dots += glowDot(cx + R(-70, 70), gy - R(20, 170) * s, R(2, 5), R(0.5, 1));
       o.push(dots);
+    }
+
     }
 
     // Glühwürmchen im Wald, goldener Glanz bei seltenen Bildern
@@ -727,7 +1022,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
 
   // Einhorn oder Pegasus als Silhouette, Blick nach rechts, Hufe bei y = 0
-  function horse(R, rng, F, acc, id, wings) {
+  function horse(R, rng, F, acc, id, wings, noHorn) {
     const line = (pts, w) => `<polyline points="${pts.map((p) => p.map(f1).join(",")).join(" ")}" fill="none" stroke="${F}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
     const leg = (top, knee, fet, hoof) => line([top, knee], 9) + line([knee, fet, hoof], 4.6) + `<ellipse cx="${f1(hoof[0])}" cy="${f1(hoof[1] - 1)}" rx="3.6" ry="2.6" fill="${F}"/>`;
     const pose = rng();
@@ -762,7 +1057,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     });
     mane += `<path d="M42 -125C48 -123 52 -119 54 -112" fill="none" stroke="${F}" stroke-width="3" stroke-linecap="round"/>`;
     const horn = `<circle cx="56" cy="-150" r="18" fill="url(#${id("glow")})" opacity=".8"/><path d="M43 -127L51 -129L61 -166Z" fill="url(#${id("horn")})"/>`;
-    s += `<g transform="rotate(${f1(hr)} 26 -74)"><g fill="${F}">${head}</g>${mane}${horn}</g>`;
+    s += `<g transform="rotate(${f1(hr)} 26 -74)"><g fill="${F}">${head}</g>${mane}${noHorn ? "" : horn}</g>`;
     if (wings) {
       // Flügelbogen von der Schulter nach hinten oben; Federn hängen daran und zeigen nach hinten
       const lift = R(-10, 8);
@@ -812,6 +1107,219 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     s += `<line x1="28" y1="-64" x2="36" y2="-80" stroke="${col(light)}" stroke-width="2" stroke-linecap="round"/>`;
     s += `<circle cx="37" cy="-82" r="12" fill="url(#${id("glow")})"/><path d="${starPath(37, -82, 5)}" fill="#fff"/>`;
     return s;
+  }
+
+  // ---------- Tiere und Figuren der neuen Welten (Silhouetten, Blick nach rechts) ----------
+  const strokeL = (F, pts, w) => `<polyline points="${pts.map((p) => p.map(f1).join(",")).join(" ")}" fill="none" stroke="${F}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const eyeGlint = (x, y, c) => `<circle cx="${x}" cy="${y}" r="1.5" fill="${col(c)}"/>`;
+
+  // Fuchs im Trab, Pfoten bei y = 0
+  function fox(R, F, light) {
+    const tw = R(-6, 8);
+    let s = `<path d="M-24 -36C-44 -46 ${f1(-62 - tw)} -40 ${f1(-72 - tw)} -22C-75 -14 -70 -9 -63 -11C-55 -14 -47 -21 -39 -25C-33 -28 -29 -30 -22 -30Z" fill="${F}"/>`;
+    s += `<path d="M${f1(-72 - tw)} -22C-75 -14 -70 -9 -63 -11C-62 -12 -61 -13 -60 -14C-64 -16 -68 -19 ${f1(-71 - tw)} -24Z" fill="${col(light)}" opacity=".85"/>`;
+    const step = R(-4, 4);
+    s += strokeL(F, [[20, -28], [24 + step, -12], [26 + step, 0]], 4.2) + strokeL(F, [[14, -28], [10 - step, -12], [8 - step, 0]], 4.2);
+    s += strokeL(F, [[-18, -30], [-24, -16], [-19 - step, -2], [-16 - step, 0]], 4.6) + strokeL(F, [[-26, -30], [-34, -16], [-31 + step, -2], [-28 + step, 0]], 4.6);
+    s += `<g fill="${F}"><ellipse cx="-2" cy="-35" rx="29" ry="12"/><path d="M14 -44C21 -53 26 -60 29 -64L41 -57C37 -49 32 -39 24 -27Z"/><circle cx="33" cy="-61" r="9.5"/>`;
+    s += `<path d="M37 -65L57 -56C58.5 -55 57.5 -52.5 55.5 -52.5L37 -51Z"/><path d="M26 -66L27 -84L35 -68Z"/><path d="M32 -68L38 -85L41 -65Z"/></g>`;
+    s += `<path d="M24 -50C30 -46 34 -44 38 -46" fill="none" stroke="${col(light)}" stroke-width="2" opacity=".5"/>` + eyeGlint(38, -62, light);
+    return s;
+  }
+
+  // Hirsch mit Geweih
+  function deer(R, F, acc, id) {
+    let s = "";
+    const lift = R(-3, 3);
+    s += strokeL(F, [[-22, -62], [-30, -38], [-25, -8], [-25, 0]], 5) + strokeL(F, [[22, -60], [24, -32], [23, -4], [25, 0]], 4.6);
+    s += strokeL(F, [[-30, -62], [-40, -38], [-33, -8], [-34, 0]], 5) + strokeL(F, [[16, -60], [13, -32], [11, -4], [12, 0]], 4.6);
+    s += `<g fill="${F}"><ellipse cx="-2" cy="-68" rx="33" ry="14"/><circle cx="-26" cy="-70" r="14"/><ellipse cx="22" cy="-68" rx="13" ry="16"/><ellipse cx="-40" cy="-76" rx="4" ry="6"/>`;
+    s += `<path d="M14 -78C19 -94 26 -106 33 -113L45 -106C41 -96 37 -82 34 -62Z"/>`;
+    s += `<g transform="rotate(${f1(lift)} 38 -108)"><path d="M33 -116C42 -122 50 -118 57 -106L63 -98C65 -94 62 -90 57 -91C51 -92 45 -96 39 -102Z"/><circle cx="39" cy="-110" r="8"/><ellipse cx="30" cy="-117" rx="7.5" ry="3" transform="rotate(-30 30 -117)"/></g></g>`;
+    const antler = (ox, oy, w, op) => `<g transform="translate(${ox} ${oy}) rotate(${f1(lift)} 38 -108)" fill="none" stroke="${F}" stroke-width="${w}" stroke-linecap="round" opacity="${op}">
+      <path d="M37 -117C33 -131 26 -143 16 -158"/><path d="M36 -121C43 -123 48 -128 51 -134"/><path d="M33 -130C40 -136 44 -143 45 -151"/><path d="M28 -140C33 -148 34 -155 33 -163"/><path d="M22 -149C24 -156 23 -162 20 -168"/></g>`;
+    s += antler(-7, 2, 2.6, 0.85) + antler(0, 0, 3.2, 1);
+    let tips = "";
+    [[51, -134], [45, -151], [33, -163], [20, -168], [16, -158]].forEach(([x, y]) => { tips += `<circle cx="${x}" cy="${y}" r="7" fill="url(#${id("glow")})" opacity=".7"/>`; });
+    return s + `<g transform="rotate(${f1(lift)} 38 -108)">${tips}</g>`;
+  }
+
+  // Eule auf einem Ast, von vorn; Ast bei y = 0
+  function owl(F, acc, id, light) {
+    let s = `<path d="M-120 4C-60 -2 10 1 120 -4L120 3C10 9 -60 9 -120 13Z" fill="${F}"/><path d="M-60 2C-70 -10 -80 -16 -92 -18M40 0C50 -12 62 -18 74 -18M74 -18C80 -22 86 -22 90 -20" fill="none" stroke="${F}" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += `<g fill="${F}"><ellipse cx="-92" cy="-20" rx="6" ry="2.6" transform="rotate(-20 -92 -20)"/><ellipse cx="90" cy="-22" rx="6" ry="2.6" transform="rotate(20 90 -22)"/>`;
+    s += `<path d="M-21 1C-27 -18 -25 -44 -16 -57L-19 -74L-8 -62C-3 -64 3 -64 8 -62L19 -74L16 -57C25 -44 27 -18 21 1Z"/></g>`;
+    s += `<path d="M-19 -36C-14 -22 -14 -10 -16 0M19 -36C14 -22 14 -10 16 0" fill="none" stroke="${col(light)}" stroke-width="1.2" opacity=".35"/>`;
+    s += `<path d="M-6 -28L0 -24L6 -28M-6 -18L0 -14L6 -18" fill="none" stroke="${col(light)}" stroke-width="1" opacity=".3"/>`;
+    [-8, 8].forEach((x) => { s += `<circle cx="${x}" cy="-48" r="11" fill="url(#${id("glow")})"/><circle cx="${x}" cy="-48" r="4.4" fill="${col(light)}"/><circle cx="${x}" cy="-48" r="2.2" fill="${F}"/>`; });
+    s += `<path d="M-2 -43L2 -43L0 -37Z" fill="${col(light)}" opacity=".7"/>`;
+    s += `<g stroke="${F}" stroke-width="2" stroke-linecap="round"><path d="M-9 0L-11 5M-6 0L-6 5M6 0L6 5M9 0L11 5"/></g>`;
+    return s;
+  }
+
+  // Hase, sitzend und aufmerksam
+  function hare(R, F, light) {
+    const ear = R(-6, 6);
+    let s = `<g fill="${F}"><path d="M-27 0C-36 -10 -34 -35 -15 -43C-1 -49 12 -41 14 -29C16 -17 12 -6 8 0Z"/><ellipse cx="-6" cy="-2" rx="19" ry="3.6"/>`;
+    s += `<path d="M2 -40C8 -52 16 -58 22 -58L27 -46C20 -42 14 -36 10 -28Z"/><ellipse cx="25" cy="-54" rx="11.5" ry="8.5" transform="rotate(15 25 -54)"/>`;
+    s += `<g transform="rotate(${f1(ear)} 21 -60)"><path d="M17 -60C12 -78 12 -93 19 -100C24 -92 24 -77 22 -60Z"/><path d="M22 -61C22 -80 26 -93 33 -97C35 -87 31 -72 26 -59Z"/></g></g>`;
+    s += strokeL(F, [[8, -30], [12, -6], [15, 0]], 4) + strokeL(F, [[4, -30], [5, -6], [8, 0]], 4);
+    s += `<circle cx="-29" cy="-13" r="4" fill="${col(light)}" opacity=".55"/>` + eyeGlint(29, -56, light);
+    s += `<path d="M18 -63C16 -76 17 -88 20 -94" fill="none" stroke="${col(light)}" stroke-width="1.6" opacity=".35" transform="rotate(${f1(ear)} 21 -60)"/>`;
+    return s;
+  }
+
+  // Buckelwal, Mitte bei 0/0
+  function whale(F, acc, light) {
+    let s = `<g fill="${F}"><path d="M-100 0C-80 -22 -20 -34 40 -30C70 -28 92 -18 100 -6C102 0 98 6 90 8C60 16 10 22 -40 14C-70 10 -88 6 -100 0Z"/>`;
+    s += `<path d="M-96 -2C-110 -5 -118 -10 -124 -22C-127 -28 -121 -30 -117 -25C-111 -17 -105 -11 -99 -6Z"/><path d="M-96 2C-110 5 -120 12 -126 23C-128 29 -122 29 -118 23C-112 15 -106 9 -99 5Z"/>`;
+    s += `<path d="M30 8C20 28 0 46 -20 54C-25 55 -25 50 -20 47C-4 36 12 22 18 6Z"/><path d="M-40 -15L-30 -25L-26 -13Z"/></g>`;
+    let grooves = "";
+    for (let i = 0; i < 6; i++) grooves += `<path d="M${30 + i * 9} ${4 + i * 0.5}C${20 + i * 9} ${12 + i * 0.3} ${0 + i * 9} ${15} ${-20 + i * 9} ${14}" fill="none" stroke="${col(light)}" stroke-width=".9" opacity=".3"/>`;
+    s += grooves + eyeGlint(72, -6, light);
+    s += `<g fill="${col(light)}" opacity=".25"><circle cx="60" cy="-22" r="1.6"/><circle cx="52" cy="-25" r="1.3"/><circle cx="84" cy="-12" r="1.4"/></g>`;
+    return s;
+  }
+
+  // Meeresschildkröte im Schwimmen
+  function turtle(F, acc, light) {
+    let s = `<g fill="${F}"><path d="M18 -14C30 -40 50 -56 72 -60C62 -46 46 -28 28 -8Z"/><path d="M18 14C32 30 48 40 66 42C54 32 40 22 26 8Z"/>`;
+    s += `<path d="M-34 -12C-46 -22 -56 -25 -63 -23C-55 -17 -47 -11 -37 -5Z"/><path d="M-34 12C-44 22 -54 27 -61 27C-53 20 -46 14 -37 7Z"/><path d="M-38 0L-50 -3L-50 3Z"/>`;
+    s += `<path d="M34 -4C40 -10 50 -14 58 -11C64 -9 66 -3 62 2C56 6 46 6 36 4Z"/><ellipse cx="0" cy="0" rx="40" ry="24" transform="rotate(-6)"/></g>`;
+    s += `<g fill="none" stroke="${col(light)}" stroke-width="1.1" opacity=".38" transform="rotate(-6)"><path d="M-12 -10L0 -16L12 -10L12 4L0 10L-12 4Z"/><path d="M-12 -10L-26 -14M12 -10L26 -14M12 4L28 8M-12 4L-28 8M0 -16L0 -23M0 10L0 22M-26 -14L-34 0L-28 8M26 -14L34 0L28 8"/></g>`;
+    return s + eyeGlint(56, -9, light);
+  }
+
+  // Seepferdchen, Mitte bei 0/0
+  function seahorse(F, acc, light) {
+    let s = `<g fill="${F}"><path d="M4 -46C15 -45 21 -37 18 -28C15 -21 21 -14 21 -2C21 12 13 21 5 28C-3 35 -5 44 2 47C8 49 11 44 9 40C7 37 3 38 3 41C-1 38 -1 32 5 27C11 20 6 9 -1 3C-7 -3 -7 -13 -3 -21C1 -29 -1 -37 -6 -41Z"/>`;
+    s += `<path d="M-4 -44C-10 -52 -6 -62 5 -62C9 -62 12 -59 12 -57L30 -58C32 -58 32 -53 30 -53L12 -49C10 -46 6 -45 4 -46Z"/>`;
+    s += `<path d="M-2 -61L0 -68L3 -62ZM3 -62L6 -69L8 -61Z"/></g>`;
+    s += `<path d="M-6 -8C-16 -12 -20 -2 -16 6C-12 10 -6 6 -4 0Z" fill="${col(acc, 0.55)}" stroke="${col(light, 0.7)}" stroke-width=".7"/>`;
+    let ridges = "";
+    for (let i = 0; i < 9; i++) { const y = -36 + i * 7; ridges += `<path d="M${f1(-2 + i * 0.8)} ${y}L${f1(14 - i * 0.5)} ${y + 2}" stroke="${col(light)}" stroke-width=".9" opacity=".35"/>`; }
+    return s + ridges + eyeGlint(6, -55, light);
+  }
+
+  // Meerjungfrau, waagerecht schwimmend; Hüfte bei 0/0, Kopf rechts
+  function mermaid(R, F, acc, light, id) {
+    const wave = R(-5, 5), fl = R(-6, 6);
+    let s = `<g fill="none" stroke="${F}" stroke-linecap="round"><path d="M36 -24C26 -30 14 -28 6 -22C-2 -16 -10 ${f1(-20 + wave)} -20 -18" stroke-width="6"/><path d="M34 -20C24 -22 14 -18 8 -12C2 -6 -6 ${f1(-8 + wave)} -14 -6" stroke-width="4.5"/><path d="M38 -27C30 -36 18 -38 10 -34C2 -30 -6 ${f1(-34 + wave)} -12 -32" stroke-width="3.5"/></g>`;
+    s += `<g fill="${F}"><path d="M28 -15C20 -17 8 -13 0 -9L-1 6C10 4 20 0 29 -5Z"/><circle cx="35" cy="-17" r="8.2"/>`;
+    s += `<path d="M0 -9C-24 -11 -46 -5 -64 ${f1(7 + fl * 0.3)}L-66 ${f1(13 + fl * 0.3)}C-48 5 -24 8 -1 6Z"/>`;
+    s += `<g transform="translate(-65 ${f1(10 + fl * 0.3)}) rotate(${f1(fl)})"><path d="M1 -2C-10 -16 -24 -19 -33 -15C-23 -9 -15 -3 -8 1C-18 6 -26 16 -28 25C-18 20 -8 12 1 4Z"/></g></g>`;
+    s += strokeL(F, [[27, -11], [42, -6], [54, -11]], 3.4) + strokeL(F, [[20, -8], [12, 4], [2, 9]], 3);
+    s += `<circle cx="57" cy="-12" r="11" fill="url(#${id("glow")})"/><circle cx="57" cy="-12" r="2.8" fill="#fff" opacity=".95"/>`;
+    let sc8 = "";
+    for (let i = 0; i < 8; i++) { const t = i / 8, x = -6 - t * 54, y = -1 + t * 8; sc8 += `<path d="M${f1(x)} ${f1(y - 2.6)}a2.6 2.6 0 0 0 0 5.2" fill="none" stroke="${col(light)}" stroke-width=".9" opacity=".4"/>`; }
+    return s + sc8 + `<circle cx="34" cy="-23.5" r="2.5" fill="${col(acc)}" opacity=".9"/>`;
+  }
+
+  // Prinzessin mit Krone und Laterne; Füße bei y = 0
+  function princess(R, F, acc, light, id) {
+    const hair = R(-4, 4);
+    let s = `<path d="M-5 -101C-16 -98 -19 -82 ${f1(-23 + hair)} -64C-25 -55 -21 -50 -16 -55C-12 -66 -10 -80 -3 -92Z" fill="${F}"/>`;
+    s += `<g fill="${F}"><path d="M-31 0C-28 -4 -24 -2 -21 -4C-17 -2 -13 -4 -10 -2C-6 -4 -2 -2 2 -4C6 -2 10 -4 14 -2C18 -4 22 -2 26 -4C28 -2 30 -1 31 0C26 -22 15 -44 8 -60H-8C-15 -44 -26 -22 -31 0Z"/>`;
+    s += `<path d="M-8 -60L-9 -82H9L8 -60Z"/><rect x="-2.5" y="-88" width="5" height="7"/><circle cx="0" cy="-95" r="8.6"/><circle cx="-9" cy="-80" r="4.4"/><circle cx="9" cy="-80" r="4.4"/></g>`;
+    s += strokeL(F, [[-9, -78], [-15, -64], [-15, -54]], 3.2) + strokeL(F, [[9, -78], [19, -68], [25, -60]], 3.2);
+    s += `<path d="M-7 -102L-7 -110L-3.5 -106L0 -113L3.5 -106L7 -110L7 -102Z" fill="${col(light)}"/><circle cx="0" cy="-109" r="10" fill="url(#${id("glow")})" opacity=".6"/>`;
+    s += `<path d="M25 -60V-55" stroke="${F}" stroke-width="1.4"/><circle cx="26" cy="-46" r="20" fill="url(#${id("glow")})"/><path d="M21.5 -55H30.5L29.5 -40H22.5Z" fill="${F}"/><rect x="23.5" y="-52" width="5" height="9" fill="${col(light)}"/>`;
+    s += `<path d="M-6 -60C-12 -40 -16 -20 -18 -2M6 -60C10 -40 14 -20 16 -2" fill="none" stroke="${col(light)}" stroke-width="1" opacity=".25"/>`;
+    return s;
+  }
+
+  // Ritter zu Pferd mit Lanze und Wimpel
+  function knight(R, rng, F, acc, light, id) {
+    let s = horse(R, rng, F, acc, id, false, true);
+    s += `<path d="M-30 -86C-30 -70 -24 -60 -14 -56H20C30 -60 34 -70 34 -86Z" fill="${F}"/>`;
+    s += strokeL(F, [[2, -82], [10, -66], [8, -52]], 5);
+    s += `<g fill="${F}"><path d="M-6 -80L8 -80L10 -106L-4 -106Z"/><rect x="-2" y="-128" width="12" height="16" rx="4"/><path d="M-3 -112H11L9 -106H-1Z"/></g>`;
+    s += `<path d="M3 -127C-3 -138 -14 -140 -22 -134C-14 -134 -8 -130 -4 -124Z" fill="${col(acc)}"/>`;
+    s += `<rect x="2" y="-122" width="7" height="1.6" fill="${col(light)}" opacity=".6"/>`;
+    s += `<path d="M-14 -98H2V-84C2 -77 -3 -72 -6 -70C-9 -72 -14 -77 -14 -84Z" fill="${F}" stroke="${col(light)}" stroke-width="1" stroke-opacity=".45"/>`;
+    s += `<path d="M-40 -66L104 -142" stroke="${F}" stroke-width="3.4" stroke-linecap="round"/><path d="M86 -132L106 -143L100 -128Z" fill="${F}"/>`;
+    s += `<path d="M84 -128L64 -134L70 -122L62 -112L82 -120Z" fill="${col(acc)}"/>`;
+    s += `<circle cx="104" cy="-142" r="10" fill="url(#${id("glow")})" opacity=".8"/>`;
+    return s;
+  }
+
+  // Drache im Flug, auf Wunsch mit Feueratem; Mitte bei 0/0
+  function dragon(R, F, acc, light, id, fire) {
+    const flap = R(-8, 8);
+    const wing = (dx, dy, op) => `<g transform="translate(${dx} ${dy})" opacity="${op}"><path d="M10 -6L-10 ${f1(-70 + flap)}L-62 ${f1(-86 + flap)}C-53 -70 -49 -60 -51 -50C-41 -54 -32 -50 -28 -42C-20 -46 -10 -40 -6 -30C0 -30 6 -20 10 -6Z" fill="${F}"/>
+      <path d="M-10 ${f1(-70 + flap)}L-51 -50M-10 ${f1(-70 + flap)}L-28 -42M-10 ${f1(-70 + flap)}L-6 -30" stroke="${col(light)}" stroke-width="1" opacity=".3" fill="none"/></g>`;
+    let s = wing(-14, 6, 0.75);
+    s += `<path d="M-58 14C-90 20 -110 40 -100 60C-96 66 -88 63 -92 57" fill="none" stroke="${F}" stroke-width="5" stroke-linecap="round"/><path d="M-94 55L-106 50L-98 64Z" fill="${F}"/>`;
+    s += `<g fill="${F}"><path d="M-62 10C-40 0 -20 -6 0 -6C20 -6 34 -14 44 -26L52 -20C42 -6 26 6 4 8C-18 10 -40 18 -62 18Z"/>`;
+    s += `<path d="M40 -22C46 -34 52 -42 60 -48L68 -42C62 -36 56 -28 50 -18Z"/><path d="M58 -50C64 -56 74 -56 84 -50L93 -46C95 -44 93 -41 90 -42L78 -42C72 -38 64 -40 58 -44Z"/>`;
+    s += `<path d="M62 -54L55 -67L66 -56ZM68 -55L66 -69L72 -56Z"/>`;
+    for (let i = 0; i < 6; i++) s += `<path d="M${-40 + i * 14} ${f1(4 - i * 2.2)}l4 -7l4 6Z"/>`;
+    s += `</g>` + strokeL(F, [[-14, 14], [-18, 26], [-12, 30]], 4) + strokeL(F, [[16, 6], [16, 20], [22, 24]], 4);
+    s += wing(0, 0, 1) + eyeGlint(76, -50, light);
+    if (fire) {
+      s += `<path d="M93 -44C110 -50 128 -46 146 -54C138 -42 124 -36 112 -36C124 -30 134 -22 140 -12C122 -18 106 -30 93 -40Z" fill="${col(acc)}" opacity=".85"/>`;
+      s += `<circle cx="118" cy="-40" r="26" fill="url(#${id("glow")})"/>`;
+    }
+    return s;
+  }
+
+  // Phönix: Feuervogel mit Federschwingen und langem Glutschweif; Mitte bei 0/0
+  function phoenix(R, F, acc, id) {
+    const fire = mixC(acc, [26, 100, 58], 0.8), ember = mixC(acc, [46, 100, 70], 0.7), lift = R(-8, 6);
+    let s = "";
+    // Schweif: drei lange Federn mit Augenflecken
+    [[0, 96, 30], [1, 118, 16], [2, 104, 4]].forEach(([k, len, dy]) => {
+      const ex = -len, ey = dy + 24;
+      const d = `M-12 4C-36 ${dy + 4} ${-len + 34} ${dy + 34} ${ex} ${ey}`;
+      s += `<path d="${d}" fill="none" stroke="${col(fire)}" stroke-width="7" opacity=".55" filter="url(#${id("soft")})"/><path d="${d}" fill="none" stroke="${col(ember)}" stroke-width="1.6"/>`;
+      s += `<ellipse cx="${ex}" cy="${ey}" rx="9" ry="5" transform="rotate(${15 - k * 10} ${ex} ${ey})" fill="${col(fire)}" opacity=".9"/><circle cx="${ex}" cy="${ey}" r="2.4" fill="#fff" opacity=".9"/>`;
+    });
+    // Schwingen wie beim Pegasus: Federn hängen an einem Bogen und zeigen nach hinten; die Spitzen glühen
+    const wing = (tip, op) => {
+      const P = (t) => { const a = [2, -6], c = [tip[0] * 0.2, -46 + lift], b = [tip[0], tip[1] + lift]; return [(1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0], (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1]]; };
+      let f = "", g = "";
+      for (let i = 0; i <= 10; i++) {
+        const t = 0.1 + (i / 10) * 0.9, [bx, by] = P(t), len = 16 + 26 * t, ang = 150 + 40 * t, rad = (ang * Math.PI) / 180;
+        const ex = bx + (Math.cos(rad) * len) / 2, ey = by + (Math.sin(rad) * len) / 2;
+        f += `<ellipse cx="${f1(ex)}" cy="${f1(ey)}" rx="${f1(len / 2)}" ry="3.8" transform="rotate(${f1(ang)} ${f1(ex)} ${f1(ey)})"/>`;
+        if (i % 2 === 0) g += `<circle cx="${f1(bx + Math.cos(rad) * len)}" cy="${f1(by + Math.sin(rad) * len)}" r="${f1(2 + t * 2.5)}" fill="${col(ember)}"/>`;
+      }
+      const [tx, ty] = P(1);
+      f += `<path d="M2 -6Q${f1(tip[0] * 0.2)} ${f1(-46 + lift)} ${f1(tx)} ${f1(ty)}" fill="none" stroke="${F}" stroke-width="6" stroke-linecap="round"/>`;
+      return `<g opacity="${op}"><g fill="${F}">${f}</g><g filter="url(#${id("soft")})" opacity=".9">${g}</g></g>`;
+    };
+    s += wing([-66, -56], 0.75) + wing([-30, -74], 1);
+    s += `<g fill="${F}"><ellipse cx="0" cy="0" rx="17" ry="9" transform="rotate(-14)"/><path d="M10 -6C14 -12 18 -16 22 -16L26 -8C20 -6 16 -2 12 2Z"/><circle cx="23" cy="-13" r="6.4"/><path d="M28 -15L37 -11L28 -9Z"/></g>`;
+    s += `<g fill="none" stroke="${col(ember)}" stroke-width="2" stroke-linecap="round"><path d="M21 -18C17 -26 12 -29 7 -29M23 -19C22 -28 18 -33 13 -36M25 -18C26 -27 25 -33 21 -38"/></g>`;
+    s += `<circle cx="0" cy="-4" r="40" fill="url(#${id("glow")})" opacity=".35"/>`;
+    return s + `<circle cx="25" cy="-14" r="1.5" fill="${col(ember)}"/>`;
+  }
+
+  // Burg mit Türmen, Zinnen, Fahnen und erleuchteten Fenstern; Fuß bei y = base
+  function castle(x, base, k, c, acc, light, rng, R, snow) {
+    const w = 120 * k;
+    let s = "", win = "", flags = "", snowCaps = "";
+    const tower = (tx, tw, th, roof) => {
+      s += `<rect x="${f1(tx - tw / 2)}" y="${f1(base - th)}" width="${f1(tw)}" height="${f1(th)}" fill="${c}"/>`;
+      if (roof) {
+        s += `<path d="M${f1(tx - tw / 2 - 3 * k)} ${f1(base - th)}L${f1(tx)} ${f1(base - th - tw * 1.3)}L${f1(tx + tw / 2 + 3 * k)} ${f1(base - th)}Z" fill="${c}"/>`;
+        const fy = base - th - tw * 1.3;
+        flags += `<path d="M${f1(tx)} ${f1(fy)}V${f1(fy - 12 * k)}" stroke="${c}" stroke-width="1.2"/><path d="M${f1(tx)} ${f1(fy - 12 * k)}L${f1(tx + 10 * k)} ${f1(fy - 9 * k)}L${f1(tx)} ${f1(fy - 6 * k)}Z" fill="${col(acc)}"/>`;
+        if (snow) snowCaps += `<path d="M${f1(tx - tw * 0.3)} ${f1(base - th - tw * 0.55)}L${f1(tx)} ${f1(base - th - tw * 1.3)}L${f1(tx + tw * 0.3)} ${f1(base - th - tw * 0.55)}Z" fill="#fff" opacity=".85"/>`;
+      } else {
+        for (let i = 0; i < 3; i++) s += `<rect x="${f1(tx - tw / 2 + i * tw * 0.38)}" y="${f1(base - th - 5 * k)}" width="${f1(tw * 0.24)}" height="${f1(5 * k)}" fill="${c}"/>`;
+      }
+      for (let i = 0; i < 2; i++) if (rng() < 0.7) win += `<rect x="${f1(tx - 1.5 * k)}" y="${f1(base - th * R(0.4, 0.8))}" width="${f1(3 * k)}" height="${f1(5 * k)}" rx="${f1(1.5 * k)}" fill="${col(light)}"/>`;
+    };
+    // Mauer mit Zinnen und Tor
+    s += `<rect x="${f1(x - w / 2)}" y="${f1(base - 30 * k)}" width="${f1(w)}" height="${f1(30 * k)}" fill="${c}"/>`;
+    for (let i = 0; i < 12; i++) s += `<rect x="${f1(x - w / 2 + i * (w / 12) + 2 * k)}" y="${f1(base - 35 * k)}" width="${f1(w / 24)}" height="${f1(5 * k)}" fill="${c}"/>`;
+    tower(x - w / 2, 22 * k, R(58, 70) * k, true);
+    tower(x + w / 2, 22 * k, R(58, 70) * k, true);
+    tower(x - w * 0.12, 30 * k, R(82, 96) * k, rng() < 0.6);
+    tower(x + w * 0.2, 18 * k, R(64, 76) * k, true);
+    s += `<path d="M${f1(x - 8 * k)} ${f1(base)}V${f1(base - 16 * k)}A${f1(8 * k)} ${f1(8 * k)} 0 0 1 ${f1(x + 8 * k)} ${f1(base - 16 * k)}V${f1(base)}Z" fill="#000" opacity=".35"/>`;
+    return s + snowCaps + flags + win;
   }
 
   // ---------- Hintergrund: Märchenszene wie mit Buntstift ins Rechenheft gemalt ----------
@@ -1386,7 +1894,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.3.1";
+  const VERSION = "1.4";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -1665,15 +2173,192 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     fbEl.className = "feedback " + (kind || "");
   }
 
-  // Meistermarke: Wappen mit Zunftfarbe, Zeichen der Fähigkeit und bis zu drei Sternen
+  // ---------- Zunftzeichen ----------
+  // Jede Zunft hat ihr historisches Zeichen (Brezel mit Krone, Amboss, Mühlrad …). Es hängt wie ein altes Zunftschild
+  // an einem schmiedeeisernen Ausleger. Der Grad zeigt sich am Material: Lehrling Holz, Gesellin Silber, Meisterin Gold.
+  // Zeichen in einem 40×40-Feld: c = Farbe des Zeichens, d = Schnittfarbe für Linien im Zeichen (= Untergrund)
+  const ZSYM = {
+    // Kerzenzieher: drei Kerzen
+    p1: (c, d) => `<g fill="${c}"><rect x="5.5" y="19" width="7.5" height="16" rx="1"/><rect x="16.2" y="11" width="7.6" height="24" rx="1"/><rect x="27" y="22" width="7.5" height="13" rx="1"/>
+      <path d="M9.2 8.5C11.6 11.6 12 14 9.2 16.6 6.5 14 6.9 11.6 9.2 8.5Z"/><path d="M20 .5C22.5 3.8 23 6.4 20 9 17 6.4 17.5 3.8 20 .5Z"/><path d="M30.8 12C33 14.8 33.4 17 30.8 19.6 28.3 17 28.7 14.8 30.8 12Z"/>
+      <rect x="2.5" y="35" width="35" height="3.2" rx="1.2"/></g><g fill="${d}" opacity=".75"><rect x="7.2" y="21" width="1.4" height="12"/><rect x="18" y="13" width="1.4" height="20"/><rect x="28.7" y="24" width="1.4" height="9"/>
+      <path d="M9.2 12.5c1 1.4 1 2.6 0 3.4-1-.8-1-2 0-3.4ZM20 4.2c1 1.4 1 2.6 0 3.4-1-.8-1-2 0-3.4ZM30.8 15.8c1 1.2 1 2.2 0 3-1-.8-1-1.8 0-3Z"/></g>`,
+    // Seiler: aufgerolltes, gedrehtes Seil
+    m1: (c, d) => `<g fill="none" stroke-width="4.6" stroke-linecap="round"><circle cx="19" cy="18" r="13" stroke="${c}"/><circle cx="19" cy="18" r="6.5" stroke="${c}"/><path d="M32 18C34 26 33 32 27 37" stroke="${c}"/>
+      <g stroke="${d}" stroke-width="4.8" stroke-linecap="butt" stroke-dasharray="1 2.6" opacity=".8"><circle cx="19" cy="18" r="13"/><circle cx="19" cy="18" r="6.5"/><path d="M32 18C34 26 33 32 27 37"/></g></g><circle cx="19" cy="18" r="1.8" fill="${c}"/>`,
+    // Korbflechter: geflochtener Korb mit Henkel
+    p2: (c, d) => `<path d="M10 17C10 3 30 3 30 17" fill="none" stroke="${c}" stroke-width="3.2"/><path d="M5 18H35L31 37H9Z" fill="${c}"/><rect x="3.5" y="15" width="33" height="4.4" rx="2.2" fill="${c}"/>
+      <g stroke="${d}" stroke-width="1.1" opacity=".85"><path d="M6.5 24H33.5M7.6 29.5H32.4M8.6 34H31.4"/><path d="M12 19.5V24M18 19.5V24M24 19.5V24M30 19.5V24M15 24V29.5M21 24V29.5M27 24V29.5M12 29.5V34M18 29.5V34M24 29.5V34M30 29.5V34" stroke-width="1.3"/></g>`,
+    // Fassbinder: Fass mit Reifen
+    m2: (c, d) => `<path d="M11 3C5.5 12 5.5 28 11 37H29C34.5 28 34.5 12 29 3Z" fill="${c}"/><g fill="none" stroke="${d}" opacity=".85"><path d="M8 10.5H32M7 15H33M7 25H33M8 29.5H32" stroke-width="1.5"/>
+      <path d="M15.5 3C13.5 14 13.5 26 15.5 37M20 3V37M24.5 3C26.5 14 26.5 26 24.5 37" stroke-width=".8"/></g><circle cx="20" cy="20" r="1.7" fill="${d}"/>`,
+    // Zimmerleute: Breitbeil und Winkel gekreuzt
+    p3: (c, d) => `<g transform="rotate(-34 20 20)" fill="${c}"><path d="M15.5 1H23.5L25.5 25H12.5Z"/><g fill="${d}">${[3, 6.4, 9.8, 13.2, 16.6, 20].map((y) => `<path d="M${(15.3 - (y - 1) * 0.12).toFixed(1)} ${y}L${(17.8 - (y - 1) * 0.12).toFixed(1)} ${y + 1.7}L${(15 - (y - 1) * 0.12).toFixed(1)} ${y + 3.4}Z"/>`).join("")}</g>
+      <path d="M11 24.5H28V36C28 37.6 26.8 38.8 25.2 38.8H13.8C12.2 38.8 11 37.6 11 36Z"/><ellipse cx="19.5" cy="31.6" rx="4.6" ry="3.2" fill="${d}"/></g>
+      <g transform="rotate(32 20 20)" fill="${c}"><rect x="18.5" y="8" width="3" height="31" rx="1.5"/><path d="M21 6L31 2.5C34.5 6 34.5 14.5 31 18L21 13Z" stroke="${d}" stroke-width=".9"/><rect x="16" y="6.5" width="3" height="6" rx=".8"/></g>`,
+    // Dachdecker: Dach mit Schieferschuppen
+    m3: (c, d) => {
+      let sc = "";
+      for (let y = 11; y <= 25; y += 4.5) {
+        const half = (y - 4) * 0.95;
+        for (let x = 20 - half + 2.4; x < 20 + half - 1; x += 4.8) sc += `M${(x - 2.4).toFixed(1)} ${y}a2.4 2.4 0 0 0 4.8 0`;
+      }
+      return `<path d="M1 27L20 5L39 27Z" fill="${c}"/><rect x="27" y="7" width="5" height="10" fill="${c}"/><rect x="8" y="27" width="24" height="10" fill="${c}"/>
+        <path d="${sc}" fill="none" stroke="${d}" stroke-width="1" opacity=".85"/><rect x="17.5" y="30" width="5" height="7" rx="2.5" fill="${d}"/><rect x="10.5" y="29.5" width="4" height="3.5" fill="${d}" opacity=".85"/><rect x="25.5" y="29.5" width="4" height="3.5" fill="${d}" opacity=".85"/>`;
+    },
+    // Glaser: Bleiglasfenster mit Rauten
+    p4: (c, d, u) => `<clipPath id="${u}w"><path d="M8 37V16A12 12 0 0 1 32 16V37Z"/></clipPath><path d="M8 37V16A12 12 0 0 1 32 16V37Z" fill="${c}"/>
+      <g clip-path="url(#${u}w)" stroke="${d}" stroke-width="1" fill="none" opacity=".9">${[-24, -18, -12, -6, 0, 6, 12, 18, 24, 30].map((k) => `<path d="M${k} 0L${k + 40} 40M${k + 40} 0L${k} 40"/>`).join("")}</g>
+      <path d="M8 37V16A12 12 0 0 1 32 16V37Z" fill="none" stroke="${d}" stroke-width="1.2"/><rect x="5.5" y="36" width="29" height="3" rx="1" fill="${c}"/>`,
+    // Maurer: Kelle über einer Ziegelmauer
+    m4: (c, d) => `<rect x="2" y="23" width="36" height="15" fill="${c}"/><g stroke="${d}" stroke-width="1.1" opacity=".85"><path d="M2 28H38M2 33H38"/><path d="M9 23V28M21 23V28M33 23V28M3 28V33M15 28V33M27 28V33M9 33V38M21 33V38M33 33V38"/></g>
+      <g stroke="${d}" stroke-width="1.6" stroke-linejoin="round"><path d="M4 20L18 6L24 12Z" fill="${c}"/></g><path d="M21 9L26 4" stroke="${c}" stroke-width="2.2"/><path d="M25 5L32 -1" stroke="${c}" stroke-width="4.2" stroke-linecap="round"/>`,
+    // Goldschmiede: Pokal mit Edelstein
+    p5: (c, d) => `<path d="M9 4H31C31 14 27 20 20 21 13 20 9 14 9 4Z" fill="${c}"/><rect x="18.5" y="20" width="3" height="10" fill="${c}"/><ellipse cx="20" cy="25" rx="3.6" ry="2.1" fill="${c}"/>
+      <path d="M10.5 37C12.5 31.5 16.5 30 20 30S27.5 31.5 29.5 37Z" fill="${c}"/><path d="M10 8H30" stroke="${d}" stroke-width="1.1"/><path d="M20 10.5L23 13.5L20 16.5L17 13.5Z" fill="${d}"/><path d="M34.5 1V7M31.5 4H37.5" stroke="${c}" stroke-width="1.2"/>`,
+    // Uhrmacher: Taschenuhr
+    m5: (c, d) => `<circle cx="20" cy="3.6" r="2.8" fill="none" stroke="${c}" stroke-width="1.8"/><rect x="17.8" y="6" width="4.4" height="3.6" rx="1" fill="${c}"/><circle cx="20" cy="23" r="14.5" fill="${c}"/><circle cx="20" cy="23" r="11.2" fill="${d}"/>
+      <g stroke="${c}" stroke-width="1.3">${Array.from({ length: 12 }, (_, i) => { const a = (i * Math.PI) / 6, r1 = i % 3 ? 9.4 : 8.2; return `<path d="M${(20 + Math.sin(a) * r1).toFixed(1)} ${(23 - Math.cos(a) * r1).toFixed(1)}L${(20 + Math.sin(a) * 10.6).toFixed(1)} ${(23 - Math.cos(a) * 10.6).toFixed(1)}"/>`; }).join("")}</g>
+      <path d="M20 23V15.5M20 23L25.5 26" stroke="${c}" stroke-width="1.7" stroke-linecap="round"/><circle cx="20" cy="23" r="1.4" fill="${c}"/>`,
+    // Buchbinder: aufgeschlagenes Buch mit Lesebändchen
+    p6: (c, d) => `<path d="M20 10C14 6 8 5.5 2.5 7.5V33C8 31 14 31.5 20 35ZM20 10C26 6 32 5.5 37.5 7.5V33C32 31 26 31.5 20 35Z" fill="${c}"/>
+      <g fill="none" stroke="${d}" stroke-width="1" opacity=".85"><path d="M20 10V35"/><path d="M5.5 12C9 11 13 11.3 17 13M5.5 16.5C9 15.5 13 15.8 17 17.5M5.5 21C9 20 13 20.3 17 22M5.5 25.5C9 24.5 13 24.8 17 26.5M23 13C27 11.3 31 11 34.5 12M23 17.5C27 15.8 31 15.5 34.5 16.5M23 22C27 20.3 31 20 34.5 21"/></g>
+      <path d="M29 29V39L31 37L33 39V28.5Z" fill="${c}" stroke="${d}" stroke-width=".8"/>`,
+    // Sattler: Sattel mit Steigbügel
+    m6: (c, d) => `<path d="M3.5 12C5 7.5 9.5 7.5 10.5 11.5 13.5 18 25 18.5 30.5 12 32.5 8.5 34.5 5 37.5 6 39 7.5 38 11 36.5 14 33 21.5 27 25.5 20 25.5H12C6.5 25.5 3 20.5 3.5 12Z" fill="${c}"/>
+      <path d="M11.5 24.5H27C27 29 25.5 32 23.5 34H14C12.5 31 11.5 28 11.5 24.5Z" fill="${c}" stroke="${d}" stroke-width=".9"/>
+      <path d="M7 14.5C11 20 16 21.5 21 21.2 26 21 30 18 33 12.5" fill="none" stroke="${d}" stroke-width=".9" stroke-dasharray="1.6 1.4"/><path d="M19.5 25.5V32.5" stroke="${c}" stroke-width="1.8"/>
+      <path d="M15 32.5H24L23 38.8H16Z" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`,
+    // Münzmeister: Münze mit Krone und Münzstapel
+    p7: (c, d) => `<g fill="${c}" stroke="${d}" stroke-width=".9">${[0, 1, 2, 3].map((i) => `<rect x="2" y="${33.5 - i * 3.6}" width="15" height="4" rx="1.6"/>`).join("")}</g><circle cx="24" cy="15.5" r="13.5" fill="${c}"/>
+      <circle cx="24" cy="15.5" r="10.6" fill="none" stroke="${d}" stroke-width="1"/><path d="M17.5 19.5V11.5L20.8 14.6L24 9.5L27.2 14.6L30.5 11.5V19.5Z" fill="${d}"/><rect x="17.5" y="20.5" width="13" height="2" fill="${d}"/>`,
+    // Wappenmaler: Wappenschild und Pinsel
+    m7: (c, d) => `<path d="M3 5H25V17C25 26 19 31 14 33.5 9 31 3 26 3 17Z" fill="${c}"/><path d="M5 23L14 13.5L23 23" fill="none" stroke="${d}" stroke-width="3.2"/><circle cx="14" cy="9" r="1.8" fill="${d}"/>
+      <path d="M26 39L34.5 20.5" stroke="${c}" stroke-width="2.8" stroke-linecap="round"/><path d="M33 22L36 23.4" stroke="${d}" stroke-width="1"/><path d="M34.6 20.6C33.4 15 35.5 10 38.8 6.5 40 11 39.5 16.5 37 21.6Z" fill="${c}"/>`,
+    // Boten: Posthorn mit Kordel
+    x1: (c, d) => `<circle cx="17" cy="21" r="9" fill="none" stroke="${c}" stroke-width="3.6"/><path d="M17 30C25 30 29.5 25.5 32 19.5" fill="none" stroke="${c}" stroke-width="3.6"/>
+      <path d="M29.5 21C32.5 16 35.5 11 38.5 8 39.8 13 39.5 19 38.5 24.5 35.5 23 32.5 22 29.5 21Z" fill="${c}"/><path d="M8 21H2.5" stroke="${c}" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M13 13C9 4 4 4 3.5 9.5" fill="none" stroke="${c}" stroke-width="1.4"/><path d="M2 9.5H5L5.6 15H1.4Z" fill="${c}"/><path d="M17 12.6V14.2" stroke="${d}" stroke-width="1"/>`,
+    // Bäcker: Brezel mit Krone
+    x2: (c, d) => `<path d="M12.5 11V4.5L16.2 7.8L20 2.5L23.8 7.8L27.5 4.5V11Z" fill="${c}"/><rect x="12.5" y="11.4" width="15" height="2" fill="${c}"/>
+      <path d="M11.5 33.5C15 27 19 21 25 16.5C28.5 12.5 34.5 13 35 19.5 35.5 28 28.5 36.5 20 36.5S4.5 28 5 19.5C5.5 13 11.5 12.5 15 16.5 21 21 25 27 28.5 33.5" fill="none" stroke="${c}" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <g fill="${d}" opacity=".8"><circle cx="7.4" cy="22" r=".7"/><circle cx="32.6" cy="22" r=".7"/><circle cx="11" cy="31" r=".7"/><circle cx="29" cy="31" r=".7"/><circle cx="20" cy="34.4" r=".7"/><circle cx="31" cy="15.6" r=".7"/><circle cx="9" cy="15.6" r=".7"/></g>`,
+    // Weber: Weberschiffchen über gewebtem Tuch
+    x3: (c, d) => `<rect x="5" y="20" width="30" height="17" fill="${c}"/><g stroke="${d}" stroke-width=".9" opacity=".85">${[8.5, 12, 15.5, 19, 22.5, 26, 29.5].map((x, i) => `<path d="M${x} 20V37" stroke-dasharray="2.4 2.4" stroke-dashoffset="${i % 2 ? 2.4 : 0}"/>`).join("")}</g>
+      <path d="M1.5 12C10 5.5 30 5.5 38.5 12 30 18.5 10 18.5 1.5 12Z" fill="${c}" stroke="${d}" stroke-width="1.2"/><rect x="13.5" y="10.4" width="13" height="3.2" rx="1.6" fill="${d}"/><path d="M15 12H25" stroke="${c}" stroke-width="1.2"/>
+      <path d="M26 12.2C29 15 31 17.5 32 20" fill="none" stroke="${c}" stroke-width=".9"/>`,
+    // Tischler: Hobel mit Hobelspan
+    x4: (c, d) => `<path d="M2.5 30L6 20H34L37.5 30Z" fill="${c}"/><rect x="2.5" y="29" width="35" height="4.5" rx="1" fill="${c}"/><path d="M7 20C6 11 11 7 16.5 10L18 20Z" fill="${c}"/><ellipse cx="12.5" cy="15.5" rx="2" ry="2.6" fill="${d}"/>
+      <circle cx="29" cy="16.5" r="3.6" fill="${c}"/><path d="M21 9H24.5L23.5 24H20Z" fill="${c}" stroke="${d}" stroke-width="1"/><path d="M4 30H36" stroke="${d}" stroke-width=".9"/>
+      <path d="M25 22C28 12 37.5 8 38.5 13.5 39 17 34 16 34.5 13" fill="none" stroke="${c}" stroke-width="1.4"/>`,
+    // Töpfer: Krug mit Henkel und Muster
+    x5: (c, d) => `<path d="M14 5H26V8.5C26 11 31.5 14 31.5 22.5 31.5 31 26.5 37 20 37S8.5 31 8.5 22.5C8.5 14 14 11 14 8.5Z" fill="${c}"/><path d="M14 5L9 3L14 9Z" fill="${c}"/>
+      <path d="M28.5 12.5C38.5 12 38.5 27 29.5 28.5" fill="none" stroke="${c}" stroke-width="3"/><g fill="none" stroke="${d}" stroke-width="1" opacity=".85"><path d="M10.2 18H29.8M9.5 27H30.5"/><path d="M10 22.5L13 19.5L16 22.5L19 19.5L22 22.5L25 19.5L28 22.5"/></g>`,
+    // Schmiede: Amboss und Hammer, Funken
+    x6: (c, d) => `<path d="M2 22H30C34 22 37 20 38.5 17.5V22C37 25 33.5 26.5 30 26.5H26L24 31.5H28.5V36H9.5V31.5H14L12 26.5H7.5C4 26.5 2 24.5 2 22Z" fill="${c}"/>
+      <g transform="rotate(-28 16 10)" fill="${c}"><rect x="5" y="5.5" width="11" height="7" rx="1"/><rect x="15" y="7.6" width="18" height="2.8" rx="1.4"/></g>
+      <path d="M31 9L33.5 6.5M33 13L36.5 12M28 6.5L28.5 3" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/><path d="M8 24.5H24" stroke="${d}" stroke-width=".9" opacity=".7"/>`,
+    // Müller: Mühlrad mit Schaufeln
+    x7: (c, d) => `<path d="M13.5 38L16.5 17H23.5L26.5 38Z" fill="${c}"/><path d="M15 17.5L20 11.5L25 17.5Z" fill="${c}"/><path d="M18 38V32.5A2 2 0 0 1 22 32.5V38Z" fill="${d}"/><rect x="18.6" y="22" width="2.8" height="3.2" rx="1.2" fill="${d}"/>
+      <g transform="translate(20 13)">${[45, 135, 225, 315].map((a) => `<g transform="rotate(${a})"><path d="M0 0V-19" stroke="${c}" stroke-width="1.6"/><rect x="0.6" y="-19" width="5.2" height="14" fill="${c}"/><path d="M0.6 -15.5H5.8M0.6 -12H5.8M0.6 -8.5H5.8M3.2 -19V-5" stroke="${d}" stroke-width=".7"/></g>`).join("")}<circle r="2.2" fill="${c}" stroke="${d}" stroke-width=".8"/></g>`,
+    // Steinmetze: Klüpfel und Meißel gekreuzt
+    x8: (c, d) => `<g transform="rotate(-36 20 20)"><path d="M13 3C9 3 8.5 8 9 13L11 21H19L21 13C21.5 8 21 3 17 3Z" fill="${c}"/><rect x="13.4" y="21" width="3.2" height="16" rx="1.4" fill="${c}"/><path d="M10 9H20M10.5 14H19.5" stroke="${d}" stroke-width=".9" opacity=".7"/></g>
+      <g transform="rotate(36 20 20)"><path d="M18.4 2H21.6V28.5L20 34L18.4 28.5Z" fill="${c}" stroke="${d}" stroke-width=".9"/><rect x="17.6" y="2" width="4.8" height="5" rx="1" fill="${c}"/></g>`,
+    // Gärtner: Gießkanne mit Blume
+    x9: (c, d) => `<path d="M9 18H25V33C25 35 23.5 36.5 21.5 36.5H12.5C10.5 36.5 9 35 9 33Z" fill="${c}"/><path d="M24.5 31L34 19.5L36 21L26 34Z" fill="${c}"/><ellipse cx="35.3" cy="19.6" rx="2.2" ry="3.4" transform="rotate(40 35.3 19.6)" fill="${c}"/>
+      <path d="M10.5 18C10.5 8.5 23.5 8.5 23.5 18" fill="none" stroke="${c}" stroke-width="2.6"/><path d="M9 22.5H25" stroke="${d}" stroke-width="1"/>
+      <path d="M5 37V27" stroke="${c}" stroke-width="1.4"/><g fill="${c}"><circle cx="5" cy="24" r="2.2"/><circle cx="2.8" cy="26" r="1.8"/><circle cx="7.2" cy="26" r="1.8"/></g><circle cx="5" cy="25.4" r="1" fill="${d}"/>
+      <g fill="${c}"><circle cx="38" cy="25" r=".9"/><circle cx="36" cy="27.5" r=".9"/><circle cx="38.5" cy="29.5" r=".9"/></g>`,
+    // Baumeister: Zirkel und Winkel
+    x10: (c, d) => `<path d="M5 21L20 36L35 21" fill="none" stroke="${c}" stroke-width="3.6" stroke-linejoin="miter"/><path d="M20 6L10 34M20 6L30 34" stroke="${c}" stroke-width="2.8" stroke-linecap="round"/>
+      <circle cx="20" cy="5" r="3.2" fill="${c}"/><circle cx="20" cy="5" r="1.1" fill="${d}"/><path d="M13.5 24.5Q20 28 26.5 24.5" fill="none" stroke="${c}" stroke-width="1.5"/>`,
+  };
+  // Heraldische Farben für die Schilde: Rot, Blau, Grün, Purpur, Schwarz
+  const TINCT = ["#a5322c", "#2d5496", "#2e6c45", "#6c2f74", "#2a3138"];
+  const ZUNFT_FACT = {
+    p1: "Kerzenzieher tauchen einen Docht immer wieder in heißes Wachs, bis die Kerze dick genug ist.",
+    m1: "Seiler drehen viele dünne Fäden zu einem starken Seil, früher auf langen Seilerbahnen.",
+    p2: "Korbflechter flechten Körbe aus biegsamen Weidenruten.",
+    m2: "Fassbinder bauen Fässer aus gebogenen Holzlatten, die von Eisenreifen zusammengehalten werden.",
+    p3: "Zimmerleute bauen Dachstühle und Fachwerk aus Holz. Ihre Gesellen gehen bis heute auf Wanderschaft, die Walz.",
+    m3: "Dachdecker decken Dächer mit Ziegeln oder mit Schieferplatten, die wie Schuppen übereinanderliegen.",
+    p4: "Früher setzten Glaser kleine Glasstücke mit Bleistreifen zu bunten Fenstern zusammen.",
+    m4: "Mit der Kelle verteilt der Maurer den Mörtel zwischen den Steinen.",
+    p5: "Goldschmiede fertigen Ringe, Ketten und Pokale aus Gold und Silber.",
+    m5: "In einer Taschenuhr greifen winzige Zahnräder ineinander. Uhrmacher arbeiten mit Lupe und Pinzette.",
+    p6: "Buchbinder nähen die Seiten zusammen und geben dem Buch seinen festen Einband.",
+    m6: "Sattler nähen Sättel und Zaumzeug aus kräftigem Leder.",
+    p7: "Der Münzmeister ließ im Auftrag des Herrschers die Münzen prägen.",
+    m7: "Wappenmaler malen Wappen auf Schilde, Fahnen und Urkunden.",
+    x1: "Boten trugen Briefe zu Fuß oder zu Pferd. Mit dem Posthorn kündigte sich die Post an.",
+    x2: "Die Brezel mit der Krone hängt bis heute als Zeichen über vielen Bäckereien.",
+    x3: "Das Weberschiffchen saust mit dem Faden quer durch den Webstuhl, hin und her.",
+    x4: "Mit dem Hobel macht der Tischler das Holz ganz glatt. Dabei ringeln sich lange Späne.",
+    x5: "Töpfer formen Krüge aus Ton auf der Drehscheibe und brennen sie im heißen Ofen.",
+    x6: "Der Schmied macht Eisen im Feuer glühend und formt es mit dem Hammer auf dem Amboss.",
+    x7: "Der Wind dreht die Flügel der Mühle, und die Mühlsteine mahlen das Korn zu Mehl.",
+    x8: "Steinmetze behauen Steine mit Klüpfel und Meißel. Jeder hatte sein eigenes Steinmetzzeichen.",
+    x9: "Gärtner ziehen Blumen, Obst und Gemüse und wissen genau, was jede Pflanze braucht.",
+    x10: "Zirkel und Winkel sind seit Jahrhunderten das Zeichen der Baumeister.",
+  };
+  let emblemUid = 0;
+  // g: 0 = noch nicht erreicht (blasser Umriss), 1 Lehrling, 2 Gesellin, 3 Meisterin
   function emblemSVG(s, g) {
-    const i = SKILLS.indexOf(s), hue = (i * 47 + 20) % 360;
-    const dark = `hsl(${hue},42%,36%)`, light = `hsl(${hue},55%,88%)`;
-    const label = s.group === "mal" ? s.id.slice(1) : s.group === "plus" ? "+" : "−";
-    const stars = [0, 1, 2].map((k) => `<path transform="translate(${22 + k * 18} 74) scale(.42)" d="${STAR_PATH}" fill="${k < g ? "#f0b84a" : "none"}" stroke="${k < g ? "#c9921e" : dark}" stroke-width="2.4" stroke-linejoin="round" opacity="${k < g ? 1 : 0.35}"/>`).join("");
-    return `<svg viewBox="0 0 80 96" aria-hidden="true"><path d="M8 6h64v40c0 24-15 38-32 46C23 84 8 70 8 46Z" fill="${light}" stroke="${dark}" stroke-width="4" stroke-linejoin="round"/>` +
-      `<text x="40" y="${s.group === "mal" ? 52 : 56}" text-anchor="middle" font-family="Lexend, Nunito, sans-serif" font-weight="600" font-size="${label.length > 1 ? 26 : 32}" fill="${dark}">${label}</text>` +
-      (s.group === "mal" ? `<text x="40" y="66" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="10" fill="${dark}">REIHE</text>` : "") + stars + `</svg>`;
+    const u = "z" + (++emblemUid) + "_", tin = TINCT[SKILLS.indexOf(s) % TINCT.length], sym = ZSYM[s.id] || ZSYM.x2;
+    const IRON = "#2f2a2b";
+    const shield = "M16 27H84V62C84 88 65 103 50 110 35 103 16 88 16 62Z";
+    const place = (inner) => `<g transform="translate(25 ${g === 1 || g === 0 ? 37 : 39}) scale(1.25)">${inner}</g>`;
+    const defs = [];
+    let sign = "", top = "";
+    // Ausleger: Wandplatte, Arm mit Schnecke, zwei Ringe
+    const bracket = (col) => `<g fill="none" stroke="${col}" stroke-linecap="round"><path d="M6 9H88" stroke-width="3.2"/><path d="M6 23C24 23 26 11 42 10" stroke-width="2.2"/>
+      <path d="M42 10C47 10 48 15 44.5 15.5 42 15.8 41.5 13 43.5 12.8" stroke-width="1.6"/><path d="M88 9C92 9 92 14.5 88.5 14.5" stroke-width="1.8"/>
+      <path d="M30 10.5V20M70 10.5V20" stroke-width="1.4"/><circle cx="30" cy="22.5" r="2.6" stroke-width="1.4"/><circle cx="70" cy="22.5" r="2.6" stroke-width="1.4"/></g>
+      <rect x="2" y="3" width="6" height="24" rx="1.5" fill="${col}"/><circle cx="5" cy="7" r="1" fill="#777"/><circle cx="5" cy="23" r="1" fill="#777"/>`;
+    if (g <= 0) {
+      return `<svg viewBox="0 0 100 116" aria-hidden="true"><g opacity=".5">${bracket("#b8ad9e")}</g><path d="${shield}" fill="#f4ede0" stroke="#c9bca8" stroke-width="2" stroke-dasharray="4 3"/>${place(`<g opacity=".28">${sym("#9a8c78", "#f4ede0", u)}</g>`)}</svg>`;
+    }
+    if (g === 1) {
+      // Holzbrett mit eingebranntem Zeichen
+      defs.push(`<linearGradient id="${u}wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d29a5f"/><stop offset="1" stop-color="#a4693a"/></linearGradient>`);
+      sign = `<rect x="16" y="26" width="68" height="74" rx="7" fill="url(#${u}wood)" stroke="#6e4423" stroke-width="2"/>
+        <g fill="none" stroke="#8a5530" stroke-width=".9" opacity=".55"><path d="M20 38C35 35 50 41 80 36M20 60C38 57 55 64 80 58M20 84C40 81 56 88 80 83"/><ellipse cx="68" cy="72" rx="4" ry="2"/></g>
+        <g fill="#5a3a20"><circle cx="22" cy="32" r="1.6"/><circle cx="78" cy="32" r="1.6"/><circle cx="22" cy="94" r="1.6"/><circle cx="78" cy="94" r="1.6"/></g>
+        ${place(sym("#4a2a14", "#c08550", u))}`;
+      return `<svg viewBox="0 0 100 116" aria-hidden="true"><defs>${defs.join("")}</defs>${bracket(IRON)}<path d="M30 25V27M70 25V27" stroke="${IRON}" stroke-width="1.4"/>${sign}</svg>`;
+    }
+    const gold = g === 3;
+    defs.push(`<linearGradient id="${u}met" x1="0" y1="0" x2="1" y2="1">${gold
+      ? `<stop offset="0" stop-color="#fff0b0"/><stop offset=".45" stop-color="#e9b440"/><stop offset="1" stop-color="#a8761a"/>`
+      : `<stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c9d2dc"/><stop offset="1" stop-color="#8d99a6"/>`}</linearGradient>`,
+      `<linearGradient id="${u}fld" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tin}"/><stop offset="1" stop-color="${tin}" stop-opacity=".82"/></linearGradient>`);
+    const M = `url(#${u}met)`;
+    sign = `<path d="${shield}" fill="url(#${u}fld)"/><path d="${shield}" fill="none" stroke="${M}" stroke-width="${gold ? 5 : 4}"/>`;
+    if (gold) sign += `<path d="M21.5 32H78.5V62C78.5 84 62 97.5 50 103.5 38 97.5 21.5 84 21.5 62Z" fill="none" stroke="${M}" stroke-width="1" opacity=".8"/>`;
+    sign += place(`<g fill="none">${sym(M, tin, u)}</g>`);
+    if (gold) {
+      // Krone auf dem Ausleger und Lorbeer am Schild
+      top = `<path d="M40 8.5V0.8L45 4.5L50 -1L55 4.5L60 0.8V8.5Z" fill="${M}" stroke="#8a5f12" stroke-width=".8" transform="translate(0 0)"/>`;
+      // Lorbeerzweige entlang einer Kurve, Blätter schräg zur Zweigrichtung
+      const branch = (mir) => {
+        const P0 = [17, 56], P1 = [13, 98], P2 = [45, 110], X = (x) => (mir ? 100 - x : x);
+        let out = `<path d="M${X(P0[0])} ${P0[1]}Q${X(P1[0])} ${P1[1]} ${X(P2[0])} ${P2[1]}" fill="none" stroke="#a8761a" stroke-width="1.5"/>`;
+        [0.08, 0.2, 0.32, 0.44, 0.56, 0.68, 0.8].forEach((t, k) => {
+          const x = (1 - t) * (1 - t) * P0[0] + 2 * (1 - t) * t * P1[0] + t * t * P2[0], y = (1 - t) * (1 - t) * P0[1] + 2 * (1 - t) * t * P1[1] + t * t * P2[1];
+          const tx = 2 * (1 - t) * (P1[0] - P0[0]) + 2 * t * (P2[0] - P1[0]), ty = 2 * (1 - t) * (P1[1] - P0[1]) + 2 * t * (P2[1] - P1[1]);
+          [-1, 1].forEach((side) => {
+            const a = Math.atan2(ty, tx) + side * 0.75 + Math.PI, lx = x + Math.cos(a) * 3.6, ly = y + Math.sin(a) * 3.6;
+            const deg = (a * 180) / Math.PI;
+            out += `<ellipse cx="${X(lx).toFixed(1)}" cy="${ly.toFixed(1)}" rx="4" ry="1.7" transform="rotate(${(mir ? 180 - deg : deg).toFixed(0)} ${X(lx).toFixed(1)} ${ly.toFixed(1)})" fill="${M}" stroke="#8a5f12" stroke-width=".45"/>`;
+          });
+        });
+        return out;
+      };
+      const laurel = branch(false) + branch(true);
+      sign = laurel + sign;
+      sign += `<g fill="#fff" opacity=".9"><path d="M80 30L81 33L84 34L81 35L80 38L79 35L76 34L79 33Z"/><path d="M21 44L21.7 46L23.7 46.7L21.7 47.4L21 49.4L20.3 47.4L18.3 46.7L20.3 46Z"/></g>`;
+    }
+    return `<svg viewBox="0 -2 100 118" aria-hidden="true"><defs>${defs.join("")}</defs>${bracket(IRON)}${top}<path d="M30 25V28M70 25V28" stroke="${IRON}" stroke-width="1.4"/>${sign}</svg>`;
   }
   let toastTimer = 0;
   function showToast(html) {
@@ -1685,11 +2370,31 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function announceGrade(skillId, g) {
     const s = SKILL_BY_ID[skillId];
-    showToast(`${emblemSVG(s, g)}<div><b>Neue Marke: ${gradeName(g)}</b><span>${s.label} · Zunft der ${s.zunft}</span></div>`);
-    if (g >= 2) {
-      setTimeout(() => SFX.mark(), 250);
-      speak(`Du bist jetzt ${gradeName(g)} in der Zunft der ${s.zunft}!`);
-    }
+    showToast(`${emblemSVG(s, g)}<div><b>Lehrling bei den ${/n$/.test(s.zunft) ? s.zunft : s.zunft + "n"}!</b><span>Neues Zunftzeichen für ${s.group === "mal" ? "die " + s.label : "„" + s.label + "“"}</span></div>`);
+  }
+  // Gesellenbrief und Meisterbrief: eine kleine Urkunde, wenn ein höherer Grad erreicht ist
+  let certQueue = null;
+  function showCert() {
+    const { s, g } = certQueue;
+    certQueue = null;
+    const name = state.cfg.name, f = state.cfg.titel !== "m", what = s.group === "mal" ? "die " + s.label : "„" + s.label + "“";
+    $("certTitle").textContent = g >= 3 ? "Meisterbrief" : "Gesellenbrief";
+    $("certZunft").textContent = "Zunft der " + s.zunft;
+    $("certEmblem").innerHTML = emblemSVG(s, g);
+    $("certText").textContent = g >= 3
+      ? `Hiermit ${name ? "wird " + name : "wirst du"} ${f ? "zur" : "zum"} ${gradeName(3)} der Zunft der ${s.zunft} ernannt. ${what[0].toUpperCase() + what.slice(1)} sitzt, sogar an zwei verschiedenen Tagen!`
+      : `Hiermit ${name ? "wird " + name : "wirst du"} als ${gradeName(2)} in die Zunft der ${s.zunft} aufgenommen. Du kannst ${what} jetzt sicher.`;
+    $("toast").hidden = true;
+    $("cert").hidden = false;
+    $("cert").scrollTop = 0;
+    try { $("certClose").focus({ preventScroll: true }); } catch (e) { $("certClose").focus(); }
+    setTimeout(() => SFX.mark(), 250);
+    speak(`${g >= 3 ? "Meisterbrief" : "Gesellenbrief"}! Du bist jetzt ${gradeName(g)} in der Zunft der ${s.zunft}!`);
+  }
+  function closeCert() {
+    $("cert").hidden = true;
+    setFeedback("", "");
+    afterTask();
   }
 
   // ---------- Aufgaben stellen ----------
@@ -1732,7 +2437,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Eingabe ----------
   const coarse = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
   const padVisible = () => state.pad === "show" || (state.pad === "auto" && coarse);
-  const overlayOpen = () => ["reward", "album", "viewer", "parents"].some((id) => !$(id).hidden);
+  const overlayOpen = () => ["reward", "album", "viewer", "parents", "cert", "markView"].some((id) => !$(id).hidden);
 
   function applyPad() {
     const show = padVisible();
@@ -1795,8 +2500,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       code === 3 ? SFX.ok(mem.streak) : code === 2 ? SFX.again() : code === 1 ? SFX.stay() : SFX.soft();
       if (code >= 1) speak(text);
     }
-    if (grade) setTimeout(() => announceGrade(task.skill, grade), 500);
-    setTimeout(reward ? showReward : afterTask, reward ? 900 : code === 0 ? 1300 : 1000);
+    if (grade === 1) setTimeout(() => announceGrade(task.skill, 1), 500);
+    else if (grade >= 2) certQueue = { s: SKILL_BY_ID[task.skill], g: grade };
+    setTimeout(reward ? showReward : () => (certQueue ? showCert() : afterTask()), reward ? 900 : code === 0 ? 1300 : 1000);
   }
 
   function wrong(val) {
@@ -1869,7 +2575,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   function showReward() {
     const gold = goldAt(state.correct, state.cfg.rewardEvery, state.cfg.goldEvery);
-    const card = newCard(state.album[state.album.length - 1], gold, state.album.slice(-3));
+    const card = newCard(state.album[state.album.length - 1], gold, state.album.slice(-3), state.album);
+    const isNew = !state.album.some((k) => k.c === card.c);
     state.album.push(card);
     save();
     const mark = gold ? Math.floor(state.correct / state.cfg.goldEvery) * state.cfg.goldEvery : 0;
@@ -1878,9 +2585,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("rewardPic").classList.toggle("rare", !!card.g);
     $("rewardName").textContent = cardName(card);
     $("rewardNo").textContent = `Bild Nr. ${state.album.length}${card.g ? " · golden" : ""}`;
+    const cr = CREATURES[card.c], w = worldOf(card), wp = worldProgress(w.id);
+    $("rewardNew").hidden = !isNew;
+    $("rewardNew").textContent = `Neu entdeckt: ${cr.noun}!`;
+    $("rewardWorld").textContent = `${w.name} · ${wp.found} von ${wp.total} ${w.what} entdeckt`;
     $("reward").hidden = false;
     $("rewardClose").focus();
+    const art = /^Goldene /.test(cr.golden + " ") ? "eine" : "ein";
     if (card.g) { setTimeout(() => SFX.gold(), 350); speak(`Ein goldenes Bild! Das hast du dir verdient${state.cfg.name ? ", " + state.cfg.name : ""}!`); }
+    else if (isNew) speak(`Neu entdeckt: ${art} ${cr.noun}!`);
     else speak("Hier ist dein neues Bild!");
     renderProgress();
   }
@@ -1899,22 +2612,48 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("panelMarks").hidden = pics;
     if (!pics) renderMarks();
   }
+  const worldOf = (card) => WORLDS.find((w) => w.id === (SCENES[card.n] || SCENES[0]).world) || WORLDS[0];
+  function worldProgress(wid) {
+    const all = CREATURES.map((c, i) => i).filter((i) => CREATURES[i].world === wid), seen = new Set(state.album.map((k) => k.c));
+    return { found: all.filter((i) => seen.has(i)).length, total: all.length };
+  }
   function renderMarks() {
-    const got = SKILLS.filter((s) => (state.stats[s.id] || {}).g > 0)
-      .sort((a, b) => state.stats[b.id].g - state.stats[a.id].g || SKILLS.indexOf(a) - SKILLS.indexOf(b));
+    const gOf = (s) => (state.stats[s.id] || {}).g || 0, on = new Set(enabledSkills().map((s) => s.id));
+    const got = SKILLS.filter((s) => gOf(s) > 0).sort((a, b) => gOf(b) - gOf(a) || SKILLS.indexOf(a) - SKILLS.indexOf(b));
+    const open = SKILLS.filter((s) => gOf(s) === 0 && on.has(s.id));
+    const masters = got.filter((s) => gOf(s) >= 3).length;
     $("marksInfo").textContent = got.length
-      ? `${got.length} ${got.length === 1 ? "Marke" : "Marken"} in deiner Werkstatt. Jede wächst mit: Lehrling, ${gradeName(2)}, ${gradeName(3)}.`
-      : "Hier sammelst du Zunftmarken: Wer eine Aufgabenart gut kann, wird Lehrling, dann Geselle und schließlich Meister. Rechne einfach weiter!";
-    $("marksGrid").innerHTML = got.map((s) => {
-      const g = state.stats[s.id].g;
-      return `<div class="mark">${emblemSVG(s, g)}<b>${gradeName(g)}</b><span>${s.label}</span><small>Zunft der ${s.zunft}</small></div>`;
+      ? `${got.length} von ${got.length + open.length} Zunftzeichen${masters ? `, davon ${masters} aus Gold` : ""}. Tippe ein Zeichen an, um mehr über die Zunft zu erfahren.`
+      : "Hier hängen bald deine Zunftzeichen: Wer eine Aufgabenart gut kann, wird Lehrling, dann " + gradeName(2) + " und schließlich " + gradeName(3) + ". Rechne einfach weiter!";
+    $("marksGrid").innerHTML = got.concat(open).map((s) => {
+      const g = gOf(s);
+      return `<button class="mark${g ? "" : " open"}" type="button" data-mk="${s.id}">${emblemSVG(s, g)}<b>${g ? gradeName(g) : "Noch offen"}</b><span>${s.zunft}</span><small>${s.label}</small></button>`;
     }).join("");
   }
+  function showMark(id) {
+    const s = SKILL_BY_ID[id], g = (state.stats[id] || {}).g || 0;
+    $("mvEmblem").innerHTML = emblemSVG(s, g);
+    $("mvTitle").textContent = g ? `${gradeName(g)} der ${s.zunft}` : `Zunft der ${s.zunft}`;
+    $("mvSub").textContent = `${s.label}, zum Beispiel ${s.ex}`;
+    $("mvFact").textContent = ZUNFT_FACT[id] || "";
+    $("mvNext").textContent = g === 0 ? "Löse ein paar dieser Aufgaben ohne Hilfe, dann wirst du Lehrling."
+      : g === 1 ? `Nächster Schritt: ${gradeName(2)}. Dafür diese Aufgaben ein paarmal hintereinander ohne Hilfe lösen.`
+      : g === 2 ? `Nächster Schritt: ${gradeName(3)}. Dafür an einem anderen Tag noch einmal so sicher sein.`
+      : "Höchster Grad erreicht. Meisterlich!";
+    $("markView").hidden = false;
+    $("markView").scrollTop = 0;
+    try { $("mvClose").focus({ preventScroll: true }); } catch (e) { $("mvClose").focus(); }
+  }
+  $("marksGrid").addEventListener("click", (e) => { const b = e.target.closest("button[data-mk]"); if (b) showMark(b.dataset.mk); });
+  $("mvClose").addEventListener("click", () => { $("markView").hidden = true; });
+  $("markView").addEventListener("click", (e) => { if (e.target.id === "markView") $("markView").hidden = true; });
+  $("certClose").addEventListener("click", closeCert);
   function showAlbum() {
     const n = state.album.length, gold = state.album.filter((k) => k.g).length;
     $("albumInfo").textContent = n === 0
       ? `Noch leer. Rechne ${state.cfg.rewardEvery} Aufgaben richtig, dann kommt dein erstes Bild.`
       : `${n} ${n === 1 ? "Bild" : "Bilder"} gesammelt${gold ? `, davon ${gold} golden` : ""}. Jedes ist ein Unikat.`;
+    $("albumWorlds").innerHTML = WORLDS.map((w) => { const p = worldProgress(w.id); return `<span class="wchip${p.found === p.total ? " full" : ""}">${w.name} <b>${p.found}/${p.total}</b></span>`; }).join("");
     $("albumGrid").innerHTML = state.album.map((k, i) => i).reverse().map((i) => {
       const k = state.album[i];
       return `<button class="album-item" type="button" data-i="${i}"><span class="pic${k.g ? " rare" : ""}" data-i="${i}"></span>` +
@@ -1962,13 +2701,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   $("viewer").addEventListener("click", (e) => { if (e.target.id === "viewer") closeViewer(); });
 
   function closeOverlays() {
+    if (!$("markView").hidden) { $("markView").hidden = true; return; }
+    if (!$("cert").hidden) { closeCert(); return; }
     if (!$("viewer").hidden) { closeViewer(); return; }
     if (!$("parents").hidden) { closeParents(); return; }
     const wasReward = !$("reward").hidden;
     $("reward").hidden = true;
     $("album").hidden = true;
     if (albumObserver) albumObserver.disconnect();
-    if (wasReward) { setFeedback("", ""); afterTask(); } else focusAnswer();
+    if (wasReward) { setFeedback("", ""); if (certQueue) showCert(); else afterTask(); } else focusAnswer();
   }
   $("rewardClose").addEventListener("click", closeOverlays);
   $("albumClose").addEventListener("click", closeOverlays);
@@ -2020,8 +2761,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
           <label class="opt"><input type="checkbox" data-p="ops.plus" id="opPlus"><span>Plus</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.minus" id="opMinus"><span>Minus</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.mal" id="opMal"><span>Einmaleins</span></label>
-        </div>${note("Teilen kommt mit Version 1.6 dazu.")}</fieldset>
-        ${seg("max", "Zahlenraum für Plus und Minus", [[10, "bis 10"], [20, "bis 20"], [100, "bis 100"]], "Bis 1000 kommt mit Version 1.5.", { 10: "max10", 20: "max20", 100: "max100" })}
+        </div>${note("Teilen kommt mit Version 1.7 dazu.")}</fieldset>
+        ${seg("max", "Zahlenraum für Plus und Minus", [[10, "bis 10"], [20, "bis 20"], [100, "bis 100"]], "Bis 1000 kommt mit Version 1.6.", { 10: "max10", 20: "max20", 100: "max100" })}
         <fieldset class="p-field"><legend>Einmaleins-Reihen</legend>
           <div class="chips" id="rowChips">${rows.map((s) => `<button type="button" class="rchip" data-chip="${s.id}"></button>`).join("")}</div>
           ${note("Tippen wechselt: <b>normal</b> → <b>★ öfter üben</b> → <b>aus</b>. Öfter geübte Reihen zählen im Auto-Modus von Anfang an als Schwerpunkt.")}
@@ -2084,7 +2825,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       <details class="pg" id="pgLern"><summary>Lernstand</summary>
         <p class="note" id="lernSum"></p>
         <div class="ls-list" id="lernList"></div>
-        <p class="note">Punkte: <i class="ld ok"></i> ohne Hilfe richtig · <i class="ld help"></i> mit Hilfe · <i class="ld no"></i> Lösung gezeigt. Die Auswertung mit Verlauf kommt mit Version 1.7.</p>
+        <p class="note">Punkte: <i class="ld ok"></i> ohne Hilfe richtig · <i class="ld help"></i> mit Hilfe · <i class="ld no"></i> Lösung gezeigt. Die Auswertung mit Verlauf kommt mit Version 1.8.</p>
         <div class="reset-row" id="lernReset"><button class="link-btn" type="button" data-lr="ask">Lernstand zurücksetzen</button></div>
       </details>
 
