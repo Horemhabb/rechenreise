@@ -277,6 +277,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .link-btn.danger { color: var(--rose); font-weight: 800; }
 .note { color: var(--muted); font-size: 0.85rem; margin: 0; }
 .version { font-size: 0.75rem; padding-top: 6px; }
+.small-btn.primary { background: var(--plum); border-color: var(--plum-dark); color: #fff; box-shadow: 0 2px 0 var(--plum-dark); }
+.steps-list { margin: 4px 0 8px; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.92rem; }
 
 /* Overlays */
 .overlay {
@@ -1384,7 +1386,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.3";
+  const VERSION = "1.3.1";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -1989,6 +1991,21 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const tog = (path, label, help, id) =>
     `<div class="p-field"><label class="tog"><input type="checkbox" data-p="${path}"${id ? ` id="${id}"` : ""}><span>${label}</span></label>${note(help)}</div>`;
 
+  // Auf dem Home-Bildschirm: Hinweis nur zeigen, wenn die Seite im Browser läuft (nicht als App, nicht im Claude-Viewer)
+  const isStandalone = () => navigator.standalone === true || !!(window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  const showHomeHint = () => !isStandalone() && !window.claude && /^https?:$/.test(location.protocol);
+  const homeGroup = () => !showHomeHint() ? "" : `
+      <details class="pg" open id="pgHome"><summary>Auf den Home-Bildschirm legen</summary>
+        <ol class="steps-list">
+          <li>Diese Seite in <b>Safari</b> öffnen (auf dem iPhone geht es nur dort).</li>
+          <li>Unten auf das <b>Teilen-Symbol</b> tippen (Quadrat mit Pfeil nach oben). Manchmal steckt es hinter den drei Punkten.</li>
+          <li>Nach unten wischen und <b>„Zum Home-Bildschirm“</b> wählen. Erscheint ein Schalter „Als Web-App öffnen“, einschalten.</li>
+          <li><b>Hinzufügen</b> tippen.</li>
+          <li>Ab jetzt immer über das neue Symbol starten. Es speichert getrennt von Safari. Den bisherigen Stand also einmal mit „Sicherung speichern“ und „Code eingeben“ übertragen.</li>
+        </ol>
+        ${note("Android mit Chrome: Menü (drei Punkte) → „App installieren“ oder „Zum Startbildschirm hinzufügen“. Am Computer: in der Adressleiste auf das Installieren-Symbol.")}
+      </details>`;
+
   function buildParents() {
     const rows = SKILLS.filter((s) => s.group === "mal");
     const pm = SKILLS.filter((s) => s.group !== "mal");
@@ -2071,12 +2088,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         <div class="reset-row" id="lernReset"><button class="link-btn" type="button" data-lr="ask">Lernstand zurücksetzen</button></div>
       </details>
 
+      ${homeGroup()}
+
       <details class="pg"><summary>Spielstand</summary>
         <p class="note" id="saveStatus"></p>
         <div class="save-actions">
+          <button class="small-btn primary" id="backupBtn" type="button">Sicherung speichern</button>
           <button class="small-btn" id="codeShowBtn" type="button">Spielstand-Code anzeigen</button>
           <button class="small-btn" id="codeEnterBtn" type="button">Code eingeben</button>
         </div>
+        <p class="note" id="backupMsg" role="status"></p>
         <div class="code-box" id="codeBox" hidden>
           <label class="note" for="codeOut">Diesen Code kopieren und aufheben, zum Beispiel in einer Notiz. Auf einem anderen Gerät unter „Code eingeben“ einfügen.</label>
           <textarea id="codeOut" rows="3" readonly></textarea>
@@ -2226,6 +2247,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   });
 
   // ---------- Spielstand ----------
+  const BACKUP_KEY = "zr-backup-at";
+  const backupAt = () => { try { return Number(localStorage.getItem(BACKUP_KEY)) || 0; } catch (e) { return 0; } };
+  function markBackup() { try { localStorage.setItem(BACKUP_KEY, String(Date.now())); } catch (e) { /* egal */ } renderSaveStatus(); }
   const clockTime = (t) => new Date(t).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
   function renderSaveStatus() {
     const el = $("saveStatus");
@@ -2236,11 +2260,31 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     else if (!localOk) text = "Dieser Browser speichert gerade nichts (zum Beispiel im privaten Fenster). Sichere den Fortschritt mit dem Spielstand-Code.";
     else text = "Wird automatisch in diesem Browser auf diesem Gerät gespeichert." + when +
       (cloud.status === "error" ? " Das Speichern im Claude-Konto klappt gerade nicht." : "") +
-      " Für ein anderes Gerät oder als Sicherung: Spielstand-Code.";
+      " Für ein anderes Gerät oder als Sicherung: „Sicherung speichern“.";
+    if (cloud.status !== "on") {
+      const b = backupAt(), days = b ? Math.floor((Date.now() - b) / 864e5) : 0;
+      text += b ? ` Letzte Sicherung: ${days === 0 ? "heute" : days === 1 ? "gestern" : "vor " + days + " Tagen"}.` : " Noch nie gesichert.";
+      if (state.correct >= 30 && (!b || days >= 14)) text += " Es ist Zeit für eine Sicherung.";
+    }
     el.textContent = text;
   }
   function wireSaveUI() {
     let pendingImport = null;
+    // Sicherung: über das Teilen-Menü des Geräts (zum Beispiel in eine Notiz oder Nachricht an sich selbst), sonst in die Zwischenablage
+    $("backupBtn").addEventListener("click", async () => {
+      const code = exportCode(), msg = $("backupMsg");
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: "Rechenreise Spielstand", text: code });
+          markBackup(); msg.textContent = "Gesichert. Bewahre die Notiz oder Nachricht gut auf.";
+          return;
+        }
+      } catch (e) {
+        if (e && e.name === "AbortError") { msg.textContent = "Abgebrochen. Es wurde nichts gesichert."; return; }
+      }
+      try { await navigator.clipboard.writeText(code); markBackup(); msg.textContent = "Code kopiert. Jetzt in einer Notiz einfügen und aufbewahren."; }
+      catch (e) { $("codeShowBtn").click(); msg.textContent = "Kopiere den Code unten und bewahre ihn auf."; }
+    });
     $("codeShowBtn").addEventListener("click", () => {
       $("codeInBox").hidden = true;
       $("codeOut").value = exportCode();
@@ -2249,7 +2293,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       $("codeOut").select();
     });
     $("codeCopyBtn").addEventListener("click", () => {
-      const done = () => { $("codeCopyMsg").textContent = "Kopiert."; };
+      const done = () => { $("codeCopyMsg").textContent = "Kopiert."; markBackup(); };
       const fallback = () => { $("codeOut").select(); $("codeCopyMsg").textContent = "Markiert. Jetzt mit Strg+C oder „Kopieren“ übernehmen."; };
       try { navigator.clipboard.writeText($("codeOut").value).then(done, fallback); } catch (e) { fallback(); }
     });
@@ -2298,6 +2342,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
 
   // ---------- Start ----------
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* kein Problem */ }
   buildParents();
   wireParents();
   wireSaveUI();
