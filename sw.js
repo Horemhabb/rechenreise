@@ -1,6 +1,6 @@
 // Rechenreise: Offline-Betrieb. Die Seite selbst kommt immer zuerst aus dem Netz (damit neue Versionen sofort da sind)
 // und fällt ohne Netz auf die gespeicherte Fassung zurück. Schriften werden nach dem ersten Laden gemerkt.
-const CACHE = "rechenreise-1.4";
+const CACHE = "rechenreise-1.6";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 const FONT_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com"];
 

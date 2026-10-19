@@ -48,7 +48,7 @@ body {
   line-height: 1.45;
 }
 button { font: inherit; color: inherit; cursor: pointer; }
-button:focus-visible, summary:focus-visible, input:focus-visible + span {
+button:focus-visible, summary:focus-visible, .opt input:focus-visible + span, .tog input:focus-visible + span {
   outline: 3px solid var(--plum); outline-offset: 3px;
 }
 
@@ -205,9 +205,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
 /* Eltern-Menü */
 .parents-btn {
-  align-self: flex-start; color: var(--muted); padding: 3px 10px; border-radius: 8px; border: 0;
+  position: relative; overflow: hidden; align-self: flex-start; color: var(--muted); padding: 3px 10px; border-radius: 8px; border: 0;
   background: rgba(255, 250, 240, .85); font-weight: 700; font-size: 0.95rem;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none;
 }
+/* Füllbalken beim Gedrückthalten (2 Sekunden) */
+.parents-btn::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--plum); }
+.parents-btn.holding::after { width: 100%; transition: width 2s linear; }
+.parents-btn.holding { color: var(--plum-dark); }
 .sheet.wide { max-width: 560px; align-items: stretch; text-align: left; gap: 8px; font-size: 0.95rem; }
 .p-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 4px; }
 .p-head .big-btn { padding: 7px 18px; font-size: 1rem; }
@@ -311,6 +316,35 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .mv-fact { font-size: 0.98rem; text-wrap: balance; }
 .mv-next { font-weight: 700; color: var(--plum-dark); background: var(--plum-soft); border-radius: 10px; padding: 8px 12px; }
 #markView, #cert { z-index: 12; }
+/* Lückenaufgaben: Zahl hinter dem Gleichheitszeichen */
+.equation.gap #numC { color: var(--ink); }
+/* Zahlenstrahl */
+.numline { width: 100%; max-width: 340px; height: auto; overflow: visible; }
+.nl-axis, .nl-tick { stroke: var(--ink); stroke-width: 1.6; }
+.nl-tick { stroke-width: 1.2; }
+.nl-head { fill: var(--ink); }
+.nl-arc { fill: none; stroke: var(--plum); stroke-width: 2.2; }
+.nl-tip { fill: var(--plum); }
+.nl-stop { fill: var(--plum); }
+.nl-num { font: 600 12px var(--font-num); fill: var(--ink); text-anchor: middle; }
+.nl-num.soft { fill: var(--muted); font-weight: 500; font-size: 10.5px; }
+.nl-jump { font: 700 12px var(--font-ui); fill: var(--plum-dark); text-anchor: middle; }
+.nl-q { fill: var(--plum-soft); stroke: var(--plum); stroke-width: 1.4; }
+.nl-qt { font: 800 13px var(--font-ui); fill: var(--plum-dark); text-anchor: middle; }
+/* Werkstatt in der Detailansicht */
+.mv-head { display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; }
+.mv-head .mark-big svg { width: 74px; height: 87px; }
+.mv-head h2 { font-size: 1.3rem; }
+.ws-pic { width: 100%; border-radius: 10px; overflow: hidden; border: 1.5px solid var(--line); }
+.ws-pic svg { display: block; width: 100%; height: auto; }
+.ws-story { text-align: left; width: 100%; display: grid; gap: 6px; }
+.ws-story p { margin: 0; }
+.ws-title { font-family: var(--font-title); font-weight: 700; color: var(--plum-dark); font-size: 1.05rem; }
+.ws-more summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+.ws-more p { margin: 6px 0 0; font-size: 0.92rem; }
+.ws-next { font-size: 0.9rem; color: var(--muted); font-style: italic; }
+.cert-ws { font-size: 0.92rem; color: #8a5f08; font-weight: 700; text-wrap: balance; }
+.cert-ws:empty { display: none; }
 
 /* Overlays */
 .overlay {
@@ -402,9 +436,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   <main class="task" aria-live="polite">
     <div class="tags"><span class="tag" id="tagKnobel" hidden>Knobelaufgabe</span><span class="tag ueb" id="tagUeb" hidden>Übung</span></div>
     <div class="equation" id="equation">
-      <span id="numA"></span><span id="opSign"></span><span id="numB"></span><span>=</span>
+      <span id="numA"></span><span id="opSign"></span><span id="numB"></span><span id="eqSign">=</span>
       <input class="answer" id="answer" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3"
-        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="?">
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="?"><span id="numC" hidden></span>
     </div>
     <div class="feedback" id="feedback"></div>
     <div class="offer" id="offer" hidden>
@@ -421,7 +455,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   <div class="pad" id="pad" aria-label="Zahlen eingeben"></div>
 
-  <button class="parents-btn" id="parentsBtn" type="button">Für Eltern</button>
+  <button class="parents-btn" id="parentsBtn" type="button" aria-label="Für Eltern: zum Öffnen zwei Sekunden gedrückt halten"><span class="pb-label">Für Eltern</span></button>
 </div>
 
 <div class="overlay reward" id="reward" hidden role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
@@ -481,6 +515,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     <h2 id="certTitle">Gesellenbrief</h2>
     <div class="cert-emblem" id="certEmblem"></div>
     <p class="cert-text" id="certText"></p>
+    <p class="cert-ws" id="certWs"></p>
     <div class="cert-foot"><span class="cert-sign">Der Zunftmeister</span><span class="seal" aria-hidden="true"></span></div>
     <button class="big-btn" id="certClose" type="button">Weiter rechnen</button>
   </div>
@@ -488,9 +523,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
 <div class="overlay" id="markView" hidden role="dialog" aria-modal="true" aria-labelledby="mvTitle">
   <div class="sheet">
-    <div class="mark-big" id="mvEmblem"></div>
-    <h2 id="mvTitle"></h2>
-    <p class="note" id="mvSub"></p>
+    <div class="mv-head"><div class="mark-big" id="mvEmblem"></div><div><h2 id="mvTitle"></h2><p class="note" id="mvSub"></p></div></div>
+    <div class="ws-pic" id="mvWorkshop"></div>
+    <div class="ws-story" id="mvStory"></div>
     <p class="mv-fact" id="mvFact"></p>
     <p class="mv-next" id="mvNext"></p>
     <button class="big-btn" id="mvClose" type="button">Zurück zur Sammlung</button>
@@ -1554,28 +1589,47 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const easy = [1, 2, 5, 10].includes(r);
     SKILLS.push(mk("x" + r, "mal", `${r}er-Reihe`, `${r} · ${r === 7 ? 8 : 7}`, 0, !easy, ROW_ZUNFT[r], () => anyOrder(r, easy ? rand(1, 10) : rand(3, 10))));
   }
+  // Lückenaufgaben: Die gesuchte Zahl steht vorn oder in der Mitte. result ist die fehlende Zahl, c die Zahl hinter dem Gleichheitszeichen.
+  const gapT = (a, op, b, gap) => ({ a, b, op, gap, c: op === "+" ? a + b : op === "−" ? a - b : a * b, result: gap === "a" ? a : b });
+  SKILLS.push(
+    mk("l1", "luecke", "Plus mit Lücke bis 20", "8 + □ = 15", 20, false, "Schneider", () => { const a = rand(2, 11), b = rand(2, Math.min(9, 20 - a)); return gapT(a, "+", b, Math.random() < 0.7 ? "b" : "a"); }),
+    mk("l2", "luecke", "Plus mit Lücke bis 100", "34 + □ = 50", 100, true, "Schuster", () => {
+      const a = 10 * rand(1, 8) + rand(1, 9);
+      const b = Math.random() < 0.45 ? 10 * rand(1, Math.floor((99 - a) / 10) + 1) - (a % 10) : rand(3, 99 - a);   // oft bis zum vollen Zehner
+      return gapT(a, "+", Math.max(1, Math.min(b, 99 - a)), Math.random() < 0.8 ? "b" : "a");
+    }),
+    mk("l3", "luecke", "Minus mit Lücke", "15 − □ = 8", 20, true, "Imker", (N) => {
+      const a = N >= 100 && Math.random() < 0.6 ? rand(21, 99) : rand(8, 20), b = rand(2, a - (a > 20 ? 6 : 1));
+      return gapT(a, "−", b, Math.random() < 0.6 ? "b" : "a");
+    }),
+    mk("l4", "luecke", "Mal mit Lücke", "□ · 4 = 28", 0, true, "Fischer", () => {
+      const rows = [2, 3, 4, 5, 6, 7, 8, 9, 10].filter((r) => skLevel("x" + r) !== 0), r = rows.length ? pick(rows) : rand(2, 10), k = rand(2, 10);
+      return Math.random() < 0.5 ? gapT(k, "·", r, "a") : gapT(r, "·", k, "b");
+    }),
+  );
   const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s) => [s.id, s]));
   // ungefähre Zahl verschiedener Aufgaben je Fähigkeit: bestimmt, wie lange dieselbe Aufgabe pausieren muss
   const SPACE = { p1: 45, m1: 54, p2: 45, m2: 45, p3: 36, m3: 45, p4: 150, m4: 150, p5: 36, m5: 36, p6: 300, m6: 300, p7: 2000, m7: 2000 };
   SKILLS.filter((s) => s.group === "mal").forEach((s) => { SPACE[s.id] = s.hard ? 8 : 10; });
+  Object.assign(SPACE, { l1: 100, l2: 600, l3: 400, l4: 160 });
 
   // ---------- Einstellungen (Eltern-Menü) ----------
   const DEFAULT_SK = { x6: 2, x8: 2 };   // Schwerpunkt-Reihen, 0 = aus, 1 = normal, 2 = öfter
   const CFG_DEF = {
     mode: "auto", anteil: 40, sicher: "4in5", steigern: "mittel", erfolg: true, retry: true, uebTag: true,
-    helpAfter: 2, detektiv: true, frustN: 3,
+    helpAfter: 2, detektiv: true, frustN: 3, hilfe: "auto",
     fx: true, vol: "mittel", speech: true, speechMode: "lob", readTask: false, name: "", titel: "f",
     rewardEvery: 5, goldEvery: 100,
   };
   const CFG_RULE = {
     mode: ["auto", "manual"], sicher: ["3in3", "4in5", "9in10"], steigern: ["langsam", "mittel", "schnell"],
     helpAfter: [1, 2, 3], frustN: [0, 2, 3, 4, 5], vol: ["leise", "mittel", "laut"], speechMode: ["lob", "mut"],
-    titel: ["f", "m"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200],
+    titel: ["f", "m"], hilfe: ["auto", "strahl", "punkte"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200],
   };
   const DATA_GEN = 2;   // Spielstände ab Version 1.1; ältere beginnen einmalig bei null
 
   const freshState = () => ({
-    max: 100, ops: { plus: true, minus: true, mal: true }, level: "mix", pad: "auto", sound: true,
+    max: 100, ops: { plus: true, minus: true, mal: true, luecke: true }, level: "mix", pad: "auto", sound: true,
     correct: 0, sincePic: 0, album: [], savedAt: 0, seq: 0,
     cfg: { ...CFG_DEF, sk: {} }, stats: {}, days: {}, err: {},
   });
@@ -1639,8 +1693,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const out = freshState();
     if ([10, 20, 100].includes(raw.max)) out.max = raw.max;
     if (raw.ops && typeof raw.ops === "object") {
-      const ops = { plus: !!raw.ops.plus, minus: !!raw.ops.minus, mal: !!raw.ops.mal };
-      if (ops.plus || ops.minus || ops.mal) out.ops = ops;
+      const ops = { plus: !!raw.ops.plus, minus: !!raw.ops.minus, mal: !!raw.ops.mal, luecke: raw.ops.luecke === undefined ? true : !!raw.ops.luecke };
+      if (ops.plus || ops.minus || ops.mal || ops.luecke) out.ops = ops;
     }
     if (["easy", "mix", "hard"].includes(raw.level)) out.level = raw.level;
     if (["auto", "show", "hide"].includes(raw.pad)) out.pad = raw.pad;
@@ -1693,7 +1747,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   // ---------- Auswahl: kurzes Gedächtnis dieser Sitzung ----------
   const mem = { recent: [], skills: [], ops: [], hard: [], codes: [], miss: 0, streak: 0, retry: [], cool: 0, easy: 0, last: "" };
-  const taskKey = (t) => (t.op === "−" ? `${t.a}−${t.b}` : `${t.op}${Math.min(t.a, t.b)}_${Math.max(t.a, t.b)}`);
+  const taskKey = (t) => (t.gap ? `${t.gap}:${t.a}${t.op}${t.b}` : t.op === "−" ? `${t.a}−${t.b}` : `${t.op}${Math.min(t.a, t.b)}_${Math.max(t.a, t.b)}`);
 
   function enabledSkills() {
     const ok = (s) => state.ops[s.group] && s.min <= state.max;
@@ -1743,7 +1797,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         ...(n >= 2 && L[n - 1] === L[n - 2] ? [L[n - 1]] : []),                    // dieselbe Fähigkeit höchstens zweimal in Folge
         ...(n >= 1 && SKILL_BY_ID[L[n - 1]] && SKILL_BY_ID[L[n - 1]].group === "mal" ? [L[n - 1]] : []),   // dieselbe Reihe nie direkt nacheinander
       ]),
-      group: O.length >= 3 && O.slice(-3).every((o) => o === O[O.length - 1]) && groups.size > 1 ? { "+": "plus", "−": "minus", "·": "mal" }[O[O.length - 1]] : null,
+      group: O.length >= 3 && O.slice(-3).every((o) => o === O[O.length - 1]) && groups.size > 1 ? O[O.length - 1] : null,
       hard: H.length >= 3 && H.slice(-3).every(Boolean) && skills.some((s) => !s.hard),   // nach drei schweren eine Verschnaufpause
       hard2: H.length >= 2 && H.slice(-2).every(Boolean),
     };
@@ -1779,7 +1833,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   const makeFor = (s) => { const t = s.make(state.max); t.skill = s.id; t.group = s.group; t.hard = s.hard; return t; };
   function commit(t) {
-    mem.recent.push(taskKey(t)); mem.skills.push(t.skill); mem.ops.push(t.op); mem.hard.push(t.hard);
+    mem.recent.push(taskKey(t)); mem.skills.push(t.skill); mem.ops.push(t.group); mem.hard.push(t.hard);
     for (const k of ["recent", "skills", "ops", "hard"]) if (mem[k].length > 80) mem[k].shift();
   }
 
@@ -1800,7 +1854,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       if (plan === "retry") {
         const s = SKILL_BY_ID[retry.skill];
         if (attempt === 0 && retry.exact) {
-          t = { a: retry.a, b: retry.b, op: retry.op, result: retry.op === "+" ? retry.a + retry.b : retry.op === "−" ? retry.a - retry.b : retry.a * retry.b, skill: s.id, group: s.group, hard: s.hard };
+          t = retry.gap ? gapT(retry.a, retry.op, retry.b, retry.gap) : { a: retry.a, b: retry.b, op: retry.op, result: retry.op === "+" ? retry.a + retry.b : retry.op === "−" ? retry.a - retry.b : retry.a * retry.b };
+          Object.assign(t, { skill: s.id, group: s.group, hard: s.hard });
           identOk = true;
         } else t = makeFor(s);
         t.pool = "retry"; t.retried = true;
@@ -1831,7 +1886,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mem.codes.push(code); if (mem.codes.length > 30) mem.codes.shift();
     mem.miss = code <= 1 ? mem.miss + 1 : 0;
     mem.streak = code >= 2 ? mem.streak + 1 : 0;
-    if (code <= 1 && state.cfg.retry && !t.retried) mem.retry.push({ skill: id, a: t.a, b: t.b, op: t.op, due: state.seq + rand(5, 8), exact: Math.random() < 0.3 });
+    if (code <= 1 && state.cfg.retry && !t.retried) mem.retry.push({ skill: id, a: t.a, b: t.b, op: t.op, gap: t.gap, due: state.seq + rand(5, 8), exact: Math.random() < 0.3 });
     // Zunftgrad: 1 Lehrling (3 Aufgaben ohne Hilfe), 2 Geselle (sicher), 3 Meister (an zwei Tagen sicher). Er sinkt nie.
     let g = st.c >= 3 ? 1 : 0;
     if (st.w) g = 2;
@@ -1849,6 +1904,18 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const OPNAME = { "+": "Plus", "−": "Minus", "·": "Mal" };
   function diagnose(t, val) {
     if (!Number.isFinite(val) || val === t.result) return null;
+    if (t.gap) {
+      // Lücke: typisch ist, die sichtbaren Zahlen einfach zu verrechnen, statt rückwärts zu denken
+      const known = t.gap === "a" ? t.b : t.a, r = t.result, d = val - r;
+      const forward = t.op === "+" ? t.c + known : t.op === "·" ? t.c * known : t.gap === "a" ? t.c - t.b : t.a + t.c;
+      if (val === t.c || val === known) return { kind: "copy", text: "Diese Zahl steht schon da. Gesucht ist die Zahl, die in der Lücke fehlt." };
+      if (val === forward) return { kind: "op", text: "Andersherum! Denk rückwärts: Welche Zahl passt in die Lücke, damit es stimmt?" };
+      const sv = String(val), sr = String(r);
+      if (sv.length === sr.length && sv.length >= 2 && [...sv].reverse().join("") === sr) return { kind: "dig", text: "Fast: Die Ziffern stehen vertauscht. Erst die Zehner, dann die Einer." };
+      if (Math.abs(d) === 10 && t.op !== "·") return { kind: "ten", text: "Fast! Die Zehnerstelle stimmt noch nicht. Schau auf den Zehner." };
+      if (Math.abs(d) === 1) return { kind: "one", text: "Ganz knapp! Zähl die Schritte noch einmal genau." };
+      return null;
+    }
     const a = t.a, b = t.b, r = t.result, d = val - r;
     const alt = t.op === "+" ? [a - b, a * b] : [a + b];
     if (alt.includes(val)) return { kind: "op", text: `Schau noch einmal aufs Rechenzeichen: Hier steht ein ${OPNAME[t.op]}.` };
@@ -1894,7 +1961,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.4";
+  const VERSION = "1.6";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -2060,13 +2127,27 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const OP_WORD = { "+": "plus", "−": "minus", "·": "mal" };
 
   // Das Antwortfeld bleibt dasselbe Element, damit der Tastatur-Fokus nie verloren geht
+  // Bei Lückenaufgaben wandert das Antwortfeld an die Stelle der fehlenden Zahl (nur beim Wechsel, damit der Fokus bleibt)
+  const taskWords = (t) => (t.gap ? `${t.gap === "a" ? "wie viel" : t.a} ${OP_WORD[t.op]} ${t.gap === "b" ? "wie viel" : t.b} gleich ${t.c}` : `${t.a} ${OP_WORD[t.op]} ${t.b}`);
   function renderTask(cls) {
+    const g = task.gap || null, eq = $("equation");
+    const order = g === "a" ? [answerEl, $("opSign"), $("numB"), $("eqSign"), $("numC")]
+      : g === "b" ? [$("numA"), $("opSign"), answerEl, $("eqSign"), $("numC")]
+      : [$("numA"), $("opSign"), $("numB"), $("eqSign"), answerEl];
+    const current = [...eq.children].filter((el) => !el.hidden);
+    if (current.length !== order.length || current.some((el, i) => el !== order[i])) {
+      ["numA", "numB", "numC"].forEach((id) => { $(id).hidden = !order.includes($(id)); });
+      order.forEach((el) => eq.appendChild(el));
+      ["numA", "numB", "numC"].forEach((id) => { if ($(id).hidden) eq.appendChild($(id)); });
+    }
+    eq.classList.toggle("gap", !!g);
     $("numA").textContent = task.a;
     $("opSign").textContent = task.op;
     $("numB").textContent = task.b;
+    $("numC").textContent = g ? task.c : "";
     answerEl.value = input;
     answerEl.readOnly = locked;
-    answerEl.setAttribute("aria-label", `Ergebnis von ${task.a} ${OP_WORD[task.op]} ${task.b}`);
+    answerEl.setAttribute("aria-label", g ? `Welche Zahl fehlt? ${taskWords(task)}` : `Ergebnis von ${task.a} ${OP_WORD[task.op]} ${task.b}`);
     answerEl.className = "answer";
     if (cls) { void answerEl.offsetWidth; answerEl.classList.add(cls); } // Wackel-Animation neu starten
   }
@@ -2098,8 +2179,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("albumBtn").textContent = `Album ${state.album.length}`;
   }
 
-  // Welche Hilfe passt? Punktefeld fürs Einmaleins, Zwanzigerfeld bis 20, sonst ein Rechenweg
-  const hintType = (t) => (t.op === "·" ? "field" : Math.max(t.a, t.result) <= 20 ? "dots" : "steps");
+  // Welche Hilfe passt? Zahlenstrahl, Zwanzigerfeld, Punktefeld oder Rechenweg, je nach Aufgabe und Einstellung im Eltern-Menü
+  function hintType(t) {
+    const mode = state.cfg.hilfe;
+    if (t.gap) return "line";
+    if (t.op === "·") return mode === "strahl" && t.a * t.b <= 100 ? "line" : "field";
+    if (Math.max(t.a, t.result) <= 20 && mode !== "strahl") return "dots";
+    return mode === "punkte" ? "steps" : "line";
+  }
 
   // Punkte in Zehnerreihen, jede Reihe in zwei Fünferbündeln
   function dotRows(classes, perRow) {
@@ -2137,10 +2224,77 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return `Erst die Zehner: ${a} ${s} ${tens} = ${mid}. Dann die Einer: ${mid} ${s} ${b % 10} = ?`;
   }
 
+  // Zahlenstrahl: Haltepunkte und Sprünge. Die gesuchte Zahl wird nie beschriftet, dort steht ein „?“.
+  function lineSpec(t) {
+    const tenUp = (x) => Math.ceil((x + 1) / 10) * 10, tenDown = (x) => Math.floor((x - 1) / 10) * 10;
+    if (t.op === "·") {
+      const step = t.gap ? (t.gap === "a" ? t.b : t.a) : t.b, n = t.gap ? t.result : t.a;
+      const stops = Array.from({ length: n + 1 }, (_, k) => k * step);
+      const unknown = t.gap ? null : n * step;
+      return { stops, unknown, labels: t.gap ? [0, t.c] : stops.slice(0, -1), jump: (k) => (k === 0 ? `+${step}` : ""), hops: true,
+        text: t.gap ? `Spring in ${step}er-Sprüngen von 0 bis ${t.c}. Wie viele Sprünge sind es?` : `${n} ${n === 1 ? "Sprung" : "Sprünge"} mit je ${step}: Wo landest du?` };
+    }
+    const up = t.op === "+";
+    if (!t.gap) {
+      const { a, b } = t, r = t.result, stops = [a];
+      if (b >= 10 && b % 10) stops.push(up ? a + (b - (b % 10)) : a - (b - (b % 10)));
+      else if (b < 10 && up && (a % 10) + b > 10) stops.push(tenUp(a));
+      else if (b < 10 && !up && b > a % 10 && a % 10) stops.push(a - (a % 10));
+      stops.push(r);
+      return { stops, unknown: r, labels: stops.slice(0, -1), jump: (k) => `${up ? "+" : "−"}${Math.abs(stops[k + 1] - stops[k])}`, text: stepHint(t) };
+    }
+    // Lücke in der Mitte: vom Start zum Ziel, wie weit ist der Sprung?
+    if (t.gap === "b") {
+      const from = t.a, to = t.c, stops = [from];
+      const mid = up ? tenUp(from) : (from % 10 ? from - (from % 10) : tenDown(from));
+      if (from % 10 && (up ? mid < to : mid > to)) stops.push(mid);
+      stops.push(to);
+      return { stops, unknown: null, labels: stops, jump: () => "?",
+        text: up ? `Von ${from} bis ${to}: Wie weit ist es? Tipp: Erst bis zum nächsten Zehner springen.` : `Von ${from} zurück bis ${to}: Wie weit ist der Sprung?` };
+    }
+    // Lücke vorn: rückwärts denken mit der Umkehraufgabe
+    const start = t.result;
+    return { stops: [start, t.c], unknown: start, labels: [t.c], jump: () => `${up ? "+" : "−"}${t.b}`,
+      text: up ? `Rechne rückwärts: ${t.c} − ${t.b} = ?` : `Rechne rückwärts: ${t.c} + ${t.b} = ?` };
+  }
+
+  function numberLineSVG(t) {
+    const sp = lineSpec(t), W = 300, H = sp.hops ? 84 : 96, base = H - 30, L = 14, R = W - 14;
+    let lo = Math.min(...sp.stops), hi = Math.max(...sp.stops);
+    lo = sp.hops ? 0 : Math.floor(lo / 10) * 10; hi = Math.ceil(hi / 10) * 10;
+    if (hi - lo < 10) hi = lo + 10;
+    const X = (v) => L + ((v - lo) / (hi - lo)) * (R - L), span = hi - lo, unit = span <= 40 ? 1 : 5;
+    let s = `<line x1="${L - 6}" y1="${base}" x2="${R + 8}" y2="${base}" class="nl-axis"/><path d="M${R + 8} ${base - 4}L${R + 14} ${base}L${R + 8} ${base + 4}Z" class="nl-head"/>`;
+    for (let v = lo; v <= hi; v += unit) {
+      const big = v % 10 === 0, mid = v % 5 === 0;
+      s += `<line x1="${X(v).toFixed(1)}" y1="${base - (big ? 7 : mid ? 5 : 3)}" x2="${X(v).toFixed(1)}" y2="${base + (big ? 7 : mid ? 5 : 3)}" class="nl-tick"/>`;
+      const crowded = [...sp.labels, ...(sp.unknown !== null ? [sp.unknown] : [])].some((l) => l !== v && Math.abs(X(l) - X(v)) < 17);
+      if (big && v !== sp.unknown && !sp.labels.includes(v) && !crowded) s += `<text x="${X(v).toFixed(1)}" y="${base + 21}" class="nl-num soft">${v}</text>`;
+    }
+    // Sprünge als Bögen mit Pfeilspitze
+    for (let k = 0; k < sp.stops.length - 1; k++) {
+      const x1 = X(sp.stops[k]), x2 = X(sp.stops[k + 1]), dx = x2 - x1, h = Math.max(10, Math.min(34, Math.abs(dx) * 0.42)), mx = (x1 + x2) / 2;
+      s += `<path d="M${x1.toFixed(1)} ${base - 3}Q${mx.toFixed(1)} ${(base - 3 - h * 2).toFixed(1)} ${x2.toFixed(1)} ${base - 3}" class="nl-arc"/>`;
+      const dir = Math.sign(dx) || 1;
+      s += `<path d="M${x2.toFixed(1)} ${base - 3}l${(-dir * 6).toFixed(1)} -5l${(dir * 1).toFixed(1)} 6Z" class="nl-tip"/>`;
+      const lab = sp.jump(k);
+      if (lab) s += `<text x="${mx.toFixed(1)}" y="${(base - 8 - h).toFixed(1)}" class="nl-jump">${lab}</text>`;
+    }
+    sp.stops.forEach((v) => { s += `<circle cx="${X(v).toFixed(1)}" cy="${base}" r="${sp.hops ? 2.6 : 3.6}" class="nl-stop"/>`; });
+    sp.labels.forEach((v) => { if (v !== sp.unknown) s += `<text x="${X(v).toFixed(1)}" y="${base + 21}" class="nl-num">${v}</text>`; });
+    if (sp.unknown !== null) s += `<rect x="${(X(sp.unknown) - 10).toFixed(1)}" y="${base + 8}" width="20" height="18" rx="5" class="nl-q"/><text x="${X(sp.unknown).toFixed(1)}" y="${base + 21.5}" class="nl-qt">?</text>`;
+    return { svg: `<svg class="numline" viewBox="0 0 ${W} ${H}" aria-hidden="true">${s}</svg>`, text: sp.text };
+  }
+
   function renderHint() {
     const t = task, type = hintType(t);
     hintEl.className = "hint";
-    if (type === "field") {
+    if (type === "line") {
+      const { svg, text } = numberLineSVG(t);
+      const html = text.replace(/\d+ [+−] \d+ = (\d+|\?)/g, (m) => `<span class="nb">${m}</span>`).replace(/\. /g, ".<br>");
+      hintEl.innerHTML = svg + `<p class="steps caption">${html}</p>`;
+      hintEl.setAttribute("aria-label", "Zahlenstrahl. " + text);
+    } else if (type === "field") {
       const dots = Array(t.a * t.b).fill("a");
       hintEl.classList.add("small");
       hintEl.innerHTML = dotRows(dots, t.b) + `<p class="steps caption">${t.a} Reihen mit je ${t.b} Punkten</p>`;
@@ -2272,6 +2426,23 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     // Baumeister: Zirkel und Winkel
     x10: (c, d) => `<path d="M5 21L20 36L35 21" fill="none" stroke="${c}" stroke-width="3.6" stroke-linejoin="miter"/><path d="M20 6L10 34M20 6L30 34" stroke="${c}" stroke-width="2.8" stroke-linecap="round"/>
       <circle cx="20" cy="5" r="3.2" fill="${c}"/><circle cx="20" cy="5" r="1.1" fill="${d}"/><path d="M13.5 24.5Q20 28 26.5 24.5" fill="none" stroke="${c}" stroke-width="1.5"/>`,
+    // Schneider: Schere und Nadel mit Faden
+    l1: (c, d) => `<g fill="none" stroke="${c}" stroke-linecap="round"><circle cx="11" cy="31" r="5" stroke-width="2.8"/><circle cx="23" cy="31" r="5" stroke-width="2.8"/></g>
+      <path d="M13.5 26.5L27 2.5L24.8 13Z" fill="${c}"/><path d="M20.5 26.5L7 2.5L9.2 13Z" fill="${c}"/><circle cx="17" cy="18.6" r="1.5" fill="${d}"/>
+      <path d="M38 6L29 32" stroke="${c}" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="37.3" cy="8" rx=".7" ry="1.6" transform="rotate(19 37.3 8)" fill="${d}"/>
+      <path d="M37.5 7.5C42 14 30 20 33 28S40 34 36 39" fill="none" stroke="${c}" stroke-width="1"/>`,
+    // Schuster: Stiefel mit Schnürung
+    l2: (c, d) => `<path d="M12 3H25V23C31 24 36.5 27.5 37.5 32.5V36H9.5C8.5 28 10.5 18 12 3Z" fill="${c}"/><rect x="8" y="35" width="31" height="3.6" rx="1" fill="${c}"/>
+      <path d="M9.5 35.2H37.5" stroke="${d}" stroke-width="1"/><path d="M11.8 8H25" stroke="${d}" stroke-width="1"/>
+      <g stroke="${d}" stroke-width="1.1"><path d="M19 11L24 13M19 15L24 17M19 19L24 21M24 11L19 13M24 15L19 17M24 19L19 21"/></g><rect x="9" y="33" width="7" height="2.4" fill="${d}" opacity=".6"/>`,
+    // Imker: Bienenkorb mit Bienen
+    l3: (c, d) => `<path d="M6 35C6 15 12 5 20 5S34 15 34 35Z" fill="${c}"/><rect x="4" y="34" width="32" height="3.4" rx="1" fill="${c}"/>
+      <g fill="none" stroke="${d}" stroke-width="1.1"><path d="M13.3 10.5H26.7M9.5 16.5H30.5M7.6 22.5H32.4M6.5 28.5H33.5"/></g><path d="M17 35V31.5A3 3 0 0 1 23 31.5V35Z" fill="${d}"/>
+      <g fill="${c}"><ellipse cx="35" cy="9" rx="2.6" ry="1.7"/><ellipse cx="4.5" cy="13" rx="2.4" ry="1.6"/></g><g fill="none" stroke="${c}" stroke-width=".9"><ellipse cx="34.6" cy="6.4" rx="1.4" ry="2" transform="rotate(-20 34.6 6.4)"/><ellipse cx="4.2" cy="10.5" rx="1.3" ry="1.9" transform="rotate(20 4.2 10.5)"/></g>`,
+    // Fischer: Fisch vor dem Netz
+    l4: (c, d, u) => `<clipPath id="${u}n"><circle cx="20" cy="22" r="17"/></clipPath><g clip-path="url(#${u}n)" stroke="${c}" stroke-width="1" fill="none" opacity=".75">${[-20, -13, -6, 1, 8, 15, 22, 29, 36].map((k) => `<path d="M${k} 0L${k + 40} 44M${k + 40} 0L${k} 44"/>`).join("")}</g>
+      <circle cx="20" cy="22" r="17" fill="none" stroke="${c}" stroke-width="1.6"/>
+      <path d="M8 21C13 13 25 12 31 20 25 28 13 28 8 21ZM30 20L38 14L37 26Z" fill="${c}" stroke="${d}" stroke-width="1.2"/><circle cx="12.5" cy="19.4" r="1.4" fill="${d}"/><path d="M17 15C19 19 19 23 17 27" fill="none" stroke="${d}" stroke-width="1"/>`,
   };
   // Heraldische Farben für die Schilde: Rot, Blau, Grün, Purpur, Schwarz
   const TINCT = ["#a5322c", "#2d5496", "#2e6c45", "#6c2f74", "#2a3138"];
@@ -2300,6 +2471,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     x8: "Steinmetze behauen Steine mit Klüpfel und Meißel. Jeder hatte sein eigenes Steinmetzzeichen.",
     x9: "Gärtner ziehen Blumen, Obst und Gemüse und wissen genau, was jede Pflanze braucht.",
     x10: "Zirkel und Winkel sind seit Jahrhunderten das Zeichen der Baumeister.",
+    l1: "Schneider nähen Kleider nach Maß und flicken Löcher so, dass man sie kaum noch sieht.",
+    l2: "Schuster nähen Stiefel und Schuhe aus Leder und setzen neue Sohlen auf alte Schuhe.",
+    l3: "Früher hießen die Waldimker Zeidler. Sie holten den Honig aus hohlen Bäumen und hatten sogar ein eigenes Gericht.",
+    l4: "Fischer flicken ihre Netze immer wieder, denn durch ein Loch im Netz schwimmt der Fang davon.",
   };
   let emblemUid = 0;
   // g: 0 = noch nicht erreicht (blasser Umriss), 1 Lehrling, 2 Gesellin, 3 Meisterin
@@ -2360,6 +2535,147 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
     return `<svg viewBox="0 -2 100 118" aria-hidden="true"><defs>${defs.join("")}</defs>${bracket(IRON)}${top}<path d="M30 25V28M70 25V28" stroke="${IRON}" stroke-width="1.4"/>${sign}</svg>`;
   }
+
+  // ---------- Werkstätten mit Geschichten ----------
+  // Jede Zunft hat eine eigene Werkstatt. Sie wächst in 8 Kapiteln, je mehr Aufgaben dieser Art ohne Hilfe gelöst sind.
+  // Als Lehrling gibt es Kapitel 1 bis 3, als Gesellin bis 6, als Meisterin alle 8.
+  // o: Werkstatt, m: Meisterin/Meister, w: Waren (Mehrzahl), wz: erstes Werkzeug (Akkusativ), h: Feuerstelle (oder leer),
+  // k: Kundschaft, kw: was sie braucht, ms: Meisterstück, pc: Farbe der Waren
+  const GUILD = {
+    p1: { o: "Kerzenzieherei", m: "Meisterin Agnes", w: "Kerzen", wz: "einen Dochtrahmen", h: "der Wachskessel über dem Feuer", k: "Der Pfarrer", kw: "zwanzig Kerzen für die Kirche", ms: "eine Kerze mit eingeflochtenem Muster", pc: "#f2dc9b" },
+    m1: { o: "Seilerei", m: "Meister Jakob", w: "Seile", wz: "einen Seilhaken", k: "Ein Schiffer", kw: "ein langes Tau für sein Boot", ms: "ein Seil, das zehn Pferde halten könnte", pc: "#c9a46a" },
+    p2: { o: "Flechtstube", m: "Meisterin Grete", w: "Körbe", wz: "ein Messer für die Weidenruten", k: "Eine Bäuerin", kw: "einen Korb für dreißig Eier", ms: "einen Korb mit Deckel und Henkel aus einem Stück", pc: "#c99a55" },
+    m2: { o: "Böttcherei", m: "Meister Konrad", w: "Fässer", wz: "einen Reifentreiber", h: "das Feuer, über dem die Dauben gebogen werden", k: "Der Wirt", kw: "ein Fass für hundert Liter Apfelsaft", ms: "ein Fass, das ganz ohne Leim dicht ist", pc: "#a8743f" },
+    p3: { o: "Zimmerei", m: "Meister Ulrich", w: "Balken", wz: "ein Breitbeil", k: "Eine Familie", kw: "das Dach für ihr neues Haus", ms: "einen Dachstuhl, der ohne einen einzigen Nagel hält", pc: "#b98a52" },
+    m3: { o: "Dachdeckerwerkstatt", m: "Meisterin Liese", w: "Schieferplatten", wz: "einen Schieferhammer", k: "Der Bürgermeister", kw: "ein neues Dach für das Rathaus", ms: "ein Turmdach mit Schuppen wie bei einem Drachen", pc: "#5d6a7a" },
+    p4: { o: "Glaserei", m: "Meister Matthias", w: "Fenster", wz: "einen Glasschneider", h: "der Ofen, in dem das Blei schmilzt", k: "Die Äbtissin", kw: "ein buntes Fenster für das Kloster", ms: "ein Fenster mit einem leuchtenden Regenbogen", pc: "#8cc6dc" },
+    m4: { o: "Maurerhütte", m: "Meister Heinrich", w: "Ziegelmauern", wz: "eine Kelle", k: "Ein Bauer", kw: "eine Mauer um seinen Garten", ms: "einen Torbogen, der sich selbst trägt", pc: "#b0563c" },
+    p5: { o: "Goldschmiede", m: "Meisterin Elisabeth", w: "Pokale", wz: "eine feine Zange", h: "die kleine Esse, in der das Gold schmilzt", k: "Eine Braut", kw: "zwei Ringe für ihre Hochzeit", ms: "einen Pokal mit einem funkelnden Stein", pc: "#e9b440" },
+    m5: { o: "Uhrmacherstube", m: "Meister Peter", w: "Uhren", wz: "eine Lupe und eine Pinzette", k: "Der Kaufmann", kw: "eine Taschenuhr, die nie nachgeht", ms: "eine Turmuhr mit Glockenspiel", pc: "#c7a35a" },
+    p6: { o: "Buchbinderei", m: "Meisterin Katharina", w: "Bücher", wz: "ein Falzbein", k: "Ein Gelehrter", kw: "einen Einband für sein dickes Buch", ms: "ein Buch mit goldenen Buchstaben auf dem Rücken", pc: "#8a3f30" },
+    m6: { o: "Sattlerei", m: "Meister Wilhelm", w: "Sättel", wz: "eine Ahle zum Lederstechen", k: "Ein Ritter", kw: "einen Sattel für sein Turnierpferd", ms: "einen Sattel mit verzierten Nähten", pc: "#8a5a2b" },
+    p7: { o: "Münzstätte", m: "Meisterin Barbara", w: "Münzen", wz: "einen Prägestempel", h: "der Schmelzofen für das Silber", k: "Der König", kw: "tausend neue Silbermünzen", ms: "eine Goldmünze mit dem Wappen der Stadt", pc: "#cfd3d6" },
+    m7: { o: "Malstube", m: "Meister Albrecht", w: "Wappen", wz: "einen feinen Pinsel", k: "Eine Ritterin", kw: "ein Wappen für ihren Schild", ms: "ein Wappen mit einem goldenen Löwen", pc: "#b5402f" },
+    x1: { o: "Botenstube", m: "Meisterin Hanna", w: "Briefe", wz: "ein Posthorn", k: "Die Fürstin", kw: "eine eilige Nachricht an ihren Bruder", ms: "den schnellsten Botenlauf des Jahres", pc: "#d9b44a" },
+    x2: { o: "Backstube", m: "Meisterin Hilde", w: "Brezeln", wz: "einen Teigschaber", h: "der große Backofen", k: "Der Bürgermeister", kw: "zwölf Brezeln für das Stadtfest", ms: "eine Festtagsbrezel so groß wie ein Wagenrad", pc: "#b8742e" },
+    x3: { o: "Weberei", m: "Meister Hans", w: "Tücher", wz: "ein Weberschiffchen", k: "Eine Schneiderin", kw: "einen Ballen blaues Tuch", ms: "einen Wandteppich mit einer Burg darauf", pc: "#5a7ab0" },
+    x4: { o: "Tischlerei", m: "Meisterin Margarete", w: "Stühle", wz: "einen Hobel", k: "Ein Lehrer", kw: "einen Tisch für die Schulstube", ms: "einen Schrank mit geheimen Fächern", pc: "#a8743f" },
+    x5: { o: "Töpferei", m: "Meister Georg", w: "Krüge", wz: "eine Töpferscheibe", h: "der Brennofen", k: "Die Wirtin", kw: "zehn Krüge für ihr Gasthaus", ms: "eine Vase, so dünn wie ein Blatt", pc: "#b5653a" },
+    x6: { o: "Schmiede", m: "Meisterin Gertrud", w: "Hufeisen", wz: "einen Schmiedehammer", h: "die Esse mit dem glühenden Feuer", k: "Ein Reiter", kw: "vier Hufeisen für sein Pferd", ms: "ein schmiedeeisernes Tor mit Ranken", pc: "#6a6a6a" },
+    x7: { o: "Mühle", m: "Meister Friedrich", w: "Mehlsäcke", wz: "eine Mehlschaufel", k: "Die Bäckerin", kw: "zehn Säcke feines Mehl", ms: "einen neuen Mühlstein, der wie von selbst läuft", pc: "#e9dcc0" },
+    x8: { o: "Steinmetzhütte", m: "Meisterin Ursula", w: "Steinfiguren", wz: "Klüpfel und Meißel", k: "Der Dombaumeister", kw: "einen steinernen Drachenkopf für den Dom", ms: "eine Rosette für das Kirchenfenster", pc: "#a9a39a" },
+    x9: { o: "Gärtnerei", m: "Meister Lorenz", w: "Blumentöpfe", wz: "eine Gießkanne", k: "Die Gräfin", kw: "Rosen für ihren Schlossgarten", ms: "einen Garten, der das ganze Jahr blüht", pc: "#d14f7a" },
+    x10: { o: "Bauhütte", m: "Meisterin Mechthild", w: "Baupläne", wz: "Zirkel und Winkel", k: "Die Stadt", kw: "einen Plan für die neue Brücke", ms: "den Plan für einen Turm bis zu den Wolken", pc: "#3a5a8a" },
+    l1: { o: "Schneiderstube", m: "Meisterin Dora", w: "Hemden", wz: "Nadel und Schere", k: "Ein Spielmann", kw: "einen Flicken für seinen Mantel", ms: "ein Festgewand ohne sichtbare Naht", pc: "#7c3f86" },
+    l2: { o: "Schusterwerkstatt", m: "Meister Valentin", w: "Stiefel", wz: "einen Schusterhammer", k: "Ein Wanderer", kw: "neue Sohlen für seine Stiefel", ms: "ein Paar Stiefel für Siebenmeilenschritte", pc: "#6b4226" },
+    l3: { o: "Imkerei", m: "Meisterin Rosa", w: "Honigtöpfe", wz: "einen Rauchtopf", k: "Die Lebküchnerin", kw: "zwei Töpfe Honig für ihre Lebkuchen", ms: "eine Wabe, so groß wie ein Fenster", pc: "#e3a72f" },
+    l4: { o: "Fischerhütte", m: "Meister Jonas", w: "Netze", wz: "eine Netznadel", k: "Die Köchin der Burg", kw: "zwanzig Fische für das Festmahl", ms: "ein Netz ohne ein einziges Loch", pc: "#3a7a8a" },
+  };
+  const WS_STEPS = [3, 6, 9, 13, 18, 24, 30, 38];   // ohne Hilfe gelöste Aufgaben dieser Art bis Kapitel 1 … 8
+  const WS_CAP = [0, 3, 6, 8];                       // höchstes Kapitel je Grad
+  function wsStage(id) {
+    const st = state.stats[id];
+    if (!st || !st.g) return 0;
+    let k = 0;
+    while (k < 8 && st.c >= WS_STEPS[k]) k++;
+    return Math.min(k, WS_CAP[st.g]);
+  }
+  // Was fehlt bis zum nächsten Kapitel? null = alles erreicht
+  function wsNext(id) {
+    const st = state.stats[id] || { c: 0, g: 0 }, k = wsStage(id);
+    if (k >= 8) return null;
+    if (k >= WS_CAP[st.g || 0] && st.g) return { grade: st.g + 1 };
+    return { tasks: Math.max(1, WS_STEPS[k] - st.c) };
+  }
+  function wsChapters(s) {
+    const G = GUILD[s.id] || GUILD.x2, mk = G.m.split(" ")[1], er = /^Meisterin/.test(G.m) ? "sie" : "er";
+    return [
+      ["Der erste Tag", `Du klopfst an die Tür der ${G.o}. ${G.m} öffnet und lacht: „Ein neuer Lehrling! Komm herein.“ Noch ist der Raum fast leer: ein Hocker, eine Laterne, ein Fenster.`],
+      ["Die Werkbank", `Zusammen mit ${mk} baust du eine Werkbank. „Jedes Handwerk braucht einen festen Platz“, sagt ${er}. Du stellst dich gleich dahinter und probierst alles aus.`],
+      ["Das erste Werkzeug", `${mk} schenkt dir ${G.wz}. Du hängst dein Werkzeug an die Wand über der Werkbank, damit du es immer gleich findest.`],
+      ["Der Gesellenbrief", `Dein Gesellenbrief hängt jetzt gerahmt an der Wand! Als ${gradeName(2)} darfst du eigene ${G.w} machen. Die ersten stehen schon im Regal.`],
+      [G.h ? "Das Feuer brennt" : "Ein großer Schrank", G.h ? `Heute wird ${G.h} angeheizt. Es wird warm in der ${G.o}, und im Regal stehen immer mehr ${G.w}.` : `Ein großer Schrank kommt dazu, und im Regal stehen immer mehr ${G.w}. ${mk} nickt zufrieden.`],
+      ["Die erste Kundschaft", `Es klopft! ${G.k} braucht ${G.kw}. ${mk} schaut dir über die Schulter, aber du schaffst es ganz allein.`],
+      ["Der Meisterbrief", `Du bist ${gradeName(3)}! ${mk} gibt dir den großen Schlüssel: Ab heute ist es deine ${G.o}. Über der Tür hängt dein eigenes Zunftschild.`],
+      ["Das Meisterstück", `Dein Meisterstück ist fertig: ${G.ms}. Die halbe Stadt kommt, um es zu bestaunen, und sogar die Werkstattkatze schnurrt stolz.`],
+    ];
+  }
+
+  // Das Bild der Werkstatt: ein Fachwerkraum, der mit jedem Kapitel voller wird
+  function workshopSVG(s, stage, u) {
+    const G = GUILD[s.id] || GUILD.x2, sym = ZSYM[s.id] || ZSYM.x2, tin = TINCT[SKILLS.indexOf(s) % TINCT.length];
+    const beam = "#6b4426", dark = "#3b2a1e", pc = G.pc, gold = "#e2a93a";
+    const item = (x, y, sc, c = pc, d = dark, k = "") => `<g transform="translate(${x} ${y}) scale(${sc})">${sym(c, d, u + k + x + "_" + y)}</g>`;
+    const o = [];
+    o.push(`<defs><linearGradient id="${u}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd0f0"/><stop offset="1" stop-color="#e8f4ff"/></linearGradient>
+      <radialGradient id="${u}glow"><stop offset="0" stop-color="#ffd27a" stop-opacity=".9"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>`);
+    o.push(`<rect width="360" height="220" fill="#f1e4c9"/><rect width="360" height="176" fill="${tin}" opacity=".07"/>`);
+    // Fenster mit Hügeln draußen
+    o.push(`<rect x="24" y="34" width="60" height="64" fill="url(#${u}sky)"/><path d="M24 84Q44 72 62 80T84 76V98H24Z" fill="#9cc58a"/><circle cx="72" cy="48" r="6" fill="#fff3b0"/>
+      <g fill="none" stroke="${beam}" stroke-width="4"><rect x="24" y="34" width="60" height="64"/><path d="M54 34V98M24 66H84"/></g>`);
+    // Tür: zu, ab Kapitel 6 offen mit Kundschaft
+    if (stage >= 6) {
+      o.push(`<path d="M280 176V96A28 26 0 0 1 336 96V176Z" fill="url(#${u}sky)"/><path d="M280 160Q308 150 336 158V176H280Z" fill="#9cc58a"/>`);
+      o.push(`<g fill="${dark}"><circle cx="309" cy="118" r="8"/><path d="M296 176L299 132C302 127 316 127 319 132L322 176Z"/><path d="M300 112Q309 100 318 112Z"/></g><path d="M299 140L290 156" stroke="${dark}" stroke-width="4" stroke-linecap="round"/><rect x="284" y="152" width="12" height="9" rx="2" fill="${pc}"/>`);
+      o.push(`<path d="M280 96A28 26 0 0 1 336 96V176H332V98A24 22 0 0 0 284 98V176H280Z" fill="${beam}"/><path d="M336 100L350 108V176L336 176Z" fill="#8a5a33"/>`);
+    } else {
+      o.push(`<path d="M280 176V96A28 26 0 0 1 336 96V176Z" fill="#8a5a33" stroke="${beam}" stroke-width="3"/><path d="M299 80V176M317 80V176" stroke="#6e4426" stroke-width="1.4"/><circle cx="326" cy="138" r="2.6" fill="${dark}"/>`);
+    }
+    // Fachwerk und Boden
+    o.push(`<g fill="${beam}"><rect width="360" height="12"/><rect width="10" height="176"/><rect x="350" width="10" height="176"/><rect x="262" y="12" width="8" height="164"/></g>`);
+    o.push(`<rect y="176" width="360" height="44" fill="#b8875a"/><g stroke="#9c6f45" stroke-width="1.2">${[192, 206].map((y) => `<path d="M0 ${y}H360"/>`).join("")}${[40, 110, 190, 260, 330].map((x, i) => `<path d="M${x + (i % 2) * 20} 176V192M${x + 35} 192V206M${x + 10} 206V220"/>`).join("")}</g><rect y="174" width="360" height="4" fill="${beam}"/>`);
+    // 1: Laterne und Hocker
+    o.push(`<path d="M128 12V26" stroke="${dark}" stroke-width="1.5"/><circle cx="128" cy="36" r="22" fill="url(#${u}glow)"/><path d="M121 26H135L133 44H123Z" fill="${dark}"/><rect x="124.5" y="29" width="7" height="12" fill="#ffd27a"/>`);
+    o.push(`<g fill="#7a4a28"><rect x="104" y="150" width="28" height="6" rx="2"/><path d="M107 156L104 176H108L111 156ZM129 156L132 176H128L125 156Z"/></g>`);
+    // 5: Feuerstelle oder Schrank (hinten, unter dem Fenster)
+    if (stage >= 5) {
+      if (G.h) {
+        o.push(`<path d="M20 176V136C20 118 34 108 55 108S90 118 90 136V176Z" fill="#a4573c"/><g stroke="#7d3f2a" stroke-width="1">${[120, 132, 144, 156, 168].map((y) => `<path d="M22 ${y}H88"/>`).join("")}</g>
+          <path d="M38 176V150A17 17 0 0 1 72 150V176Z" fill="#2a1a12"/><circle cx="55" cy="164" r="22" fill="url(#${u}glow)"/><path d="M46 176C44 166 50 162 52 154C55 162 58 158 60 152C64 160 66 168 63 176Z" fill="#ff9a3c"/><path d="M51 176C50 170 54 167 55 162C57 168 60 170 59 176Z" fill="#ffe08a"/>`);
+      } else {
+        o.push(`<rect x="24" y="112" width="62" height="64" rx="2" fill="#8a5a33" stroke="${beam}" stroke-width="2"/><path d="M55 114V174" stroke="${beam}" stroke-width="1.6"/><circle cx="51" cy="144" r="1.8" fill="${dark}"/><circle cx="59" cy="144" r="1.8" fill="${dark}"/>
+          <path d="M32 112L36 100H48L52 112Z" fill="#b5653a"/><g fill="#4f8a4a"><ellipse cx="38" cy="96" rx="5" ry="3" transform="rotate(-30 38 96)"/><ellipse cx="46" cy="94" rx="5" ry="3" transform="rotate(30 46 94)"/><circle cx="42" cy="90" r="3.4" fill="#d14f7a"/></g>`);
+      }
+    }
+    // 4–6: Regal mit Waren
+    if (stage >= 4) {
+      o.push(`<g fill="#7a4a28"><rect x="98" y="56" width="54" height="4"/><rect x="98" y="88" width="54" height="4"/><rect x="98" y="120" width="54" height="4"/><rect x="98" y="50" width="3" height="76"/><rect x="149" y="50" width="3" height="76"/></g>`);
+      const slots = [[104, 37], [126, 37], [104, 69], [126, 69], [104, 101], [126, 101]], n = stage >= 6 ? 6 : stage >= 5 ? 4 : 2;
+      slots.slice(0, n).forEach(([x, y], i) => o.push(item(x, y, 0.47, pc, dark, "s" + i)));
+    }
+    // 2: Werkbank, Lehrling dahinter
+    if (stage >= 2) {
+      o.push(`<g fill="${dark}"><circle cx="207" cy="94" r="8.5"/><path d="M198 92C199 82 215 82 216 92C212 88 202 88 198 92Z"/><path d="M193 132V112C193 105 199 103 207 103S221 105 221 112V132Z"/></g>`);
+      o.push(`<path d="M199 108H215V132H199Z" fill="${tin}" opacity=".85"/><path d="M194 116L186 128M220 116L228 128" stroke="${dark}" stroke-width="4" stroke-linecap="round"/>`);
+      o.push(`<g fill="#8a5a33"><rect x="156" y="128" width="102" height="7" rx="1.5"/><rect x="162" y="135" width="6" height="41"/><rect x="246" y="135" width="6" height="41"/><rect x="162" y="158" width="90" height="4"/></g>`);
+      if (stage >= 6) o.push(item(166, 109, 0.48, pc, dark, "b"));
+    }
+    // 3: Werkzeugbrett mit dem Zunftzeichen in Eisen
+    if (stage >= 3) {
+      o.push(`<rect x="164" y="24" width="86" height="48" rx="3" fill="#a87447" stroke="${beam}" stroke-width="2"/><g fill="${dark}"><circle cx="170" cy="30" r="1.4"/><circle cx="244" cy="30" r="1.4"/><circle cx="170" cy="66" r="1.4"/><circle cx="244" cy="66" r="1.4"/></g>`);
+      o.push(item(190, 27, 0.85, "#3a3436", "#a87447", "t"));
+    }
+    // 4: Gesellenbrief, 7: Meisterbrief
+    const letter = (x, sealCol) => `<rect x="${x}" y="78" width="26" height="30" fill="#6b4426"/><rect x="${x + 3}" y="81" width="20" height="24" fill="#fbf3df"/><path d="M${x + 6} 87H${x + 20}M${x + 6} 91H${x + 20}M${x + 6} 95H${x + 16}" stroke="#b9a27a" stroke-width="1"/><circle cx="${x + 17}" cy="100" r="3" fill="${sealCol}"/>`;
+    if (stage >= 4) o.push(letter(166, "#a5322c"));
+    if (stage >= 7) {
+      o.push(letter(226, gold));
+      // Zunftschild in Gold über der Tür, Blumenkasten am Fenster
+      o.push(`<path d="M346 18H300M300 18V26M322 18V26" stroke="${dark}" stroke-width="2"/><path d="M290 28H332V46C332 56 322 62 311 66 300 62 290 56 290 46Z" fill="${tin}" stroke="${gold}" stroke-width="2.5"/>`);
+      o.push(`<g transform="translate(298 30) scale(.65)">${sym(gold, tin, u + "sg")}</g>`);
+      o.push(`<rect x="22" y="98" width="64" height="8" rx="2" fill="#8a5a33"/><g>${[30, 40, 50, 60, 70, 78].map((x, i) => `<path d="M${x} 98V90" stroke="#4f8a4a" stroke-width="1.5"/><circle cx="${x}" cy="88" r="3.2" fill="${["#d14f7a", "#f0b84a", "#e8e4f0"][i % 3]}"/>`).join("")}</g>`);
+    }
+    // 8: Meisterstück im Vordergrund, Girlande, Katze
+    if (stage >= 8) {
+      o.push(`<g>${Array.from({ length: 13 }, (_, i) => { const x = 14 + i * 26; return `<path d="M${x} 13L${x + 13} 13L${x + 6.5} 25Z" fill="${["#d24a4a", "#f0b84a", "#3f9150", "#3a78c0", "#7a4bb0"][i % 5]}"/>`; }).join("")}<path d="M10 13Q180 20 350 13" stroke="${dark}" stroke-width="1" fill="none"/></g>`);
+      o.push(`<circle cx="180" cy="186" r="40" fill="url(#${u}glow)"/><path d="M152 214L158 196H202L208 214Z" fill="#a5322c"/><rect x="156" y="192" width="48" height="6" rx="2" fill="#c0463a"/>`);
+      o.push(item(162, 150, 0.95, gold, "#8a5f12", "m"));
+      o.push(`<g fill="#fff">${[[150, 160], [212, 156], [182, 140]].map(([x, y]) => `<path d="M${x} ${y - 5}L${x + 1.3} ${y - 1.3}L${x + 5} ${y}L${x + 1.3} ${y + 1.3}L${x} ${y + 5}L${x - 1.3} ${y + 1.3}L${x - 5} ${y}L${x - 1.3} ${y - 1.3}Z"/>`).join("")}</g>`);
+      o.push(`<g fill="${dark}"><ellipse cx="80" cy="206" rx="20" ry="9"/><circle cx="96" cy="198" r="7"/><path d="M91 193L92 186L96 192ZM99 192L102 186L102 194Z"/><path d="M61 208C52 206 50 198 56 196" fill="none" stroke="${dark}" stroke-width="4" stroke-linecap="round"/></g>`);
+    }
+    if (stage === 0) o.push(`<rect width="360" height="220" fill="#fffaf0" opacity=".55"/>`);
+    return `<svg viewBox="0 0 360 220" aria-hidden="true">${o.join("")}</svg>`;
+  }
   let toastTimer = 0;
   function showToast(html) {
     const t = $("toast");
@@ -2370,12 +2686,17 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function announceGrade(skillId, g) {
     const s = SKILL_BY_ID[skillId];
-    showToast(`${emblemSVG(s, g)}<div><b>Lehrling bei den ${/n$/.test(s.zunft) ? s.zunft : s.zunft + "n"}!</b><span>Neues Zunftzeichen für ${s.group === "mal" ? "die " + s.label : "„" + s.label + "“"}</span></div>`);
+    showToast(`${emblemSVG(s, g)}<div><b>Lehrling bei den ${/n$/.test(s.zunft) ? s.zunft : s.zunft + "n"}!</b><span>Neues Zunftzeichen für ${s.group === "mal" ? "die " + s.label : "„" + s.label + "“"}. Deine ${(GUILD[s.id] || GUILD.x2).o} ist eröffnet!</span></div>`);
+  }
+  function announceChapter(id, k) {
+    const s = SKILL_BY_ID[id], G = GUILD[id] || GUILD.x2, g = (state.stats[id] || {}).g || 1;
+    showToast(`${emblemSVG(s, g)}<div><b>Neues Kapitel in deiner ${G.o}!</b><span>Kapitel ${k}: ${wsChapters(s)[k - 1][0]}. Zu lesen im Album unter Zunftzeichen.</span></div>`);
+    speak(`Neues Kapitel in deiner ${G.o}!`);
   }
   // Gesellenbrief und Meisterbrief: eine kleine Urkunde, wenn ein höherer Grad erreicht ist
   let certQueue = null;
   function showCert() {
-    const { s, g } = certQueue;
+    const { s, g, ws: certWs } = certQueue;
     certQueue = null;
     const name = state.cfg.name, f = state.cfg.titel !== "m", what = s.group === "mal" ? "die " + s.label : "„" + s.label + "“";
     $("certTitle").textContent = g >= 3 ? "Meisterbrief" : "Gesellenbrief";
@@ -2384,6 +2705,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("certText").textContent = g >= 3
       ? `Hiermit ${name ? "wird " + name : "wirst du"} ${f ? "zur" : "zum"} ${gradeName(3)} der Zunft der ${s.zunft} ernannt. ${what[0].toUpperCase() + what.slice(1)} sitzt, sogar an zwei verschiedenen Tagen!`
       : `Hiermit ${name ? "wird " + name : "wirst du"} als ${gradeName(2)} in die Zunft der ${s.zunft} aufgenommen. Du kannst ${what} jetzt sicher.`;
+    $("certWs").textContent = certWs ? `Und in deiner ${(GUILD[s.id] || GUILD.x2).o} beginnt Kapitel ${certWs}: ${wsChapters(s)[certWs - 1][0]}.` : "";
     $("toast").hidden = true;
     $("cert").hidden = false;
     $("cert").scrollTop = 0;
@@ -2406,7 +2728,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     renderTask(""); renderTags();
     hintEl.hidden = true;
     focusAnswer();
-    if (state.cfg.readTask) speak(`${task.a} ${OP_WORD[task.op]} ${task.b}`);
+    if (state.cfg.readTask) speak(taskWords(task));
   }
   // Nach einer gelösten Aufgabe: entweder Angebot für etwas Leichteres oder gleich die nächste
   function afterTask() {
@@ -2480,7 +2802,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     renderTask("right");
     const h = state.cfg.helpAfter;
     const code = revealed ? 0 : tries === 0 ? 3 : tries < h ? 2 : 1;
+    const ws0 = wsStage(task.skill);
     const { grade } = recordResult(task, code, away ? NaN : firstMs);
+    const ws1 = wsStage(task.skill);
     let reward = false, popAt = -1;
     if (!revealed) {
       state.correct += 1; state.sincePic += 1;
@@ -2501,7 +2825,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       if (code >= 1) speak(text);
     }
     if (grade === 1) setTimeout(() => announceGrade(task.skill, 1), 500);
-    else if (grade >= 2) certQueue = { s: SKILL_BY_ID[task.skill], g: grade };
+    else if (grade >= 2) certQueue = { s: SKILL_BY_ID[task.skill], g: grade, ws: ws1 > ws0 ? ws1 : 0 };
+    else if (ws1 > ws0) setTimeout(() => announceChapter(task.skill, ws1), 500);
     setTimeout(reward ? showReward : () => (certQueue ? showCert() : afterTask()), reward ? 900 : code === 0 ? 1300 : 1000);
   }
 
@@ -2522,7 +2847,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       if (state.cfg.speechMode === "mut") speak(phrase(PHRASES.mut1));
     } else if (tries === h) {
       const type = hintType(task);
-      setFeedback(detective ? detective.text : type === "field" ? "Zähl die Punkte. In Fünferschritten geht's schneller!"
+      setFeedback(detective ? detective.text : type === "line" ? (task.gap ? "Schau auf den Zahlenstrahl:" : "Spring auf dem Zahlenstrahl mit:") : type === "field" ? "Zähl die Punkte. In Fünferschritten geht's schneller!"
         : type === "steps" ? "Hier ist ein Rechenweg für dich:"
         : task.op === "+" ? "Zähl alle Punkte zusammen." : "Zähl die Punkte, die übrig bleiben.", "try");
       renderHint();
@@ -2636,6 +2961,17 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("mvTitle").textContent = g ? `${gradeName(g)} der ${s.zunft}` : `Zunft der ${s.zunft}`;
     $("mvSub").textContent = `${s.label}, zum Beispiel ${s.ex}`;
     $("mvFact").textContent = ZUNFT_FACT[id] || "";
+    const k = wsStage(id), G = GUILD[id] || GUILD.x2, ch = wsChapters(s);
+    $("mvWorkshop").innerHTML = workshopSVG(s, k, "mv" + (++emblemUid) + "_");
+    let story;
+    if (!k) story = `<p class="ws-title">Deine ${G.o}</p><p>Wenn du Lehrling wirst, öffnet dir ${G.m} die Tür. Dann beginnt hier deine Geschichte.</p>`;
+    else {
+      story = `<p class="ws-title">Kapitel ${k} von 8 · ${ch[k - 1][0]}</p><p>${ch[k - 1][1]}</p>`;
+      if (k > 1) story += `<details class="ws-more"><summary>Frühere Kapitel lesen</summary>${ch.slice(0, k - 1).map(([t, x], i) => `<p><b>${i + 1}. ${t}</b><br>${x}</p>`).join("")}</details>`;
+      const nx = wsNext(id);
+      story += `<p class="ws-next">${!nx ? "Alle acht Kapitel erlebt. Deine Werkstatt ist vollständig!" : nx.grade ? `Das nächste Kapitel beginnt, wenn du ${gradeName(nx.grade)} wirst.` : `Noch ${nx.tasks} ${nx.tasks === 1 ? "Aufgabe" : "Aufgaben"} dieser Art ohne Hilfe bis zum nächsten Kapitel.`}</p>`;
+    }
+    $("mvStory").innerHTML = story;
     $("mvNext").textContent = g === 0 ? "Löse ein paar dieser Aufgaben ohne Hilfe, dann wirst du Lehrling."
       : g === 1 ? `Nächster Schritt: ${gradeName(2)}. Dafür diese Aufgaben ein paarmal hintereinander ohne Hilfe lösen.`
       : g === 2 ? `Nächster Schritt: ${gradeName(3)}. Dafür an einem anderen Tag noch einmal so sicher sein.`
@@ -2719,7 +3055,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Eltern-Menü ----------
   // Jede Einstellung hat einen Pfad im Zustand ("max", "ops.plus", "cfg.anteil" …). Bauen, Anzeigen und Speichern laufen darüber.
   const NUM_PATHS = new Set(["max", "cfg.anteil", "cfg.helpAfter", "cfg.frustN", "cfg.rewardEvery", "cfg.goldEvery"]);
-  const QUIET_PATHS = /^(pad|sound|cfg\.(fx|vol|speech|speechMode|readTask|name|titel|uebTag|rewardEvery|goldEvery|detektiv|helpAfter))$/;
+  const QUIET_PATHS = /^(pad|sound|cfg\.(fx|vol|speech|speechMode|readTask|name|titel|uebTag|rewardEvery|goldEvery|detektiv|helpAfter|hilfe))$/;
   const getP = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), state);
   function setP(path, v) {
     const ks = path.split("."), last = ks.pop();
@@ -2761,13 +3097,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
           <label class="opt"><input type="checkbox" data-p="ops.plus" id="opPlus"><span>Plus</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.minus" id="opMinus"><span>Minus</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.mal" id="opMal"><span>Einmaleins</span></label>
-        </div>${note("Teilen kommt mit Version 1.7 dazu.")}</fieldset>
-        ${seg("max", "Zahlenraum für Plus und Minus", [[10, "bis 10"], [20, "bis 20"], [100, "bis 100"]], "Bis 1000 kommt mit Version 1.6.", { 10: "max10", 20: "max20", 100: "max100" })}
+          <label class="opt"><input type="checkbox" data-p="ops.luecke" id="opLuecke"><span>Lücken</span></label>
+        </div>${note("Lücken: 8 + □ = 15, 15 − □ = 8, □ · 4 = 28. Das übt das Rückwärtsdenken (Umkehraufgabe). Teilen kommt später dazu.")}</fieldset>
+        ${seg("max", "Zahlenraum für Plus und Minus", [[10, "bis 10"], [20, "bis 20"], [100, "bis 100"]], "Bis 1000 kommt in einer späteren Version.", { 10: "max10", 20: "max20", 100: "max100" })}
         <fieldset class="p-field"><legend>Einmaleins-Reihen</legend>
           <div class="chips" id="rowChips">${rows.map((s) => `<button type="button" class="rchip" data-chip="${s.id}"></button>`).join("")}</div>
           ${note("Tippen wechselt: <b>normal</b> → <b>★ öfter üben</b> → <b>aus</b>. Öfter geübte Reihen zählen im Auto-Modus von Anfang an als Schwerpunkt.")}
         </fieldset>
-        <details class="pg-in"><summary>Plus- und Minus-Aufgaben im Detail</summary>
+        <details class="pg-in"><summary>Plus-, Minus- und Lückenaufgaben im Detail</summary>
           <div class="sk-list">${pm.map((s) => `<div class="sk-row"><div class="sk-name">${s.label}<small>${s.ex}${s.hard ? " · Knobelaufgabe" : ""}</small></div>
             <div class="seg seg-sm">${[[0, "Aus"], [1, "Normal"], [2, "Öfter"]].map(([v, l]) =>
               `<label class="opt"><input type="radio" name="sk-${s.id}" data-sk="${s.id}" data-v="${v}"><span>${l}</span></label>`).join("")}</div></div>`).join("")}</div>
@@ -2794,6 +3131,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       <details class="pg"><summary>Hilfe und Fehler</summary>
         ${seg("cfg.helpAfter", "Hilfe zeigen nach", [[1, "1 Fehlversuch"], [2, "2 Fehlversuchen"], [3, "3 Fehlversuchen"]],
           "Einen Versuch später wird die Lösung gezeigt. Diese Aufgabe zählt dann nicht als Stern.")}
+        ${seg("cfg.hilfe", "Art der Hilfe", [["auto", "automatisch"], ["strahl", "immer Zahlenstrahl"], ["punkte", "Punkte und Rechenweg"]],
+          "Automatisch: Zwanzigerfeld bis 20, Punktefeld beim Einmaleins, darüber der Zahlenstrahl mit Sprüngen über den Zehner. Lückenaufgaben zeigen immer den Zahlenstrahl.")}
         ${tog("cfg.detektiv", "Fehler-Detektiv", "Erkennt typische Flüchtigkeitsfehler (Rechenzeichen oder Ziffern vertauscht, Zehnerstelle, eine Reihe zu viel) und gibt einen gezielten Hinweis, ohne die Lösung zu verraten.")}
         ${seg("cfg.frustN", "Leichtere Aufgabe anbieten nach", [[0, "nie"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]],
           "…nicht gelösten Aufgaben hintereinander. Sie entscheidet selbst, ob sie das Angebot annimmt.")}
@@ -2825,7 +3164,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       <details class="pg" id="pgLern"><summary>Lernstand</summary>
         <p class="note" id="lernSum"></p>
         <div class="ls-list" id="lernList"></div>
-        <p class="note">Punkte: <i class="ld ok"></i> ohne Hilfe richtig · <i class="ld help"></i> mit Hilfe · <i class="ld no"></i> Lösung gezeigt. Die Auswertung mit Verlauf kommt mit Version 1.8.</p>
+        <p class="note">Punkte: <i class="ld ok"></i> ohne Hilfe richtig · <i class="ld help"></i> mit Hilfe · <i class="ld no"></i> Lösung gezeigt. Eine Auswertung mit Verlauf kommt später.</p>
         <div class="reset-row" id="lernReset"><button class="link-btn" type="button" data-lr="ask">Lernstand zurücksetzen</button></div>
       </details>
 
@@ -2920,7 +3259,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       const v = t.type === "checkbox" ? t.checked : NUM_PATHS.has(p) ? Number(t.dataset.v) : t.dataset.v;
       if (p.startsWith("ops.")) {
         const next = { ...state.ops, [p.slice(4)]: v };
-        if (!next.plus && !next.minus && !next.mal) { parentsSync(); return; }   // mindestens eine Rechenart
+        if (!next.plus && !next.minus && !next.mal && !next.luecke) { parentsSync(); return; }   // mindestens eine Rechenart
       }
       setP(p, v); afterChange(p);
     });
@@ -2971,7 +3310,28 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("parents").hidden = true;
     if (dirtyTask && !offerOpen) { dirtyTask = false; setFeedback("", ""); newTask(); } else focusAnswer();
   }
-  $("parentsBtn").addEventListener("click", openParents);
+  // Das Eltern-Menü öffnet sich erst nach zwei Sekunden Gedrückthalten, damit Kinder nichts aus Versehen verstellen
+  const HOLD_MS = 2000, pb = $("parentsBtn");
+  let holdTimer = 0, holdAt = 0, tipTimer = 0;
+  function holdBegin() {
+    if (holdTimer) return;
+    holdAt = Date.now();
+    pb.classList.add("holding");
+    holdTimer = setTimeout(() => { holdTimer = 0; pb.classList.remove("holding"); openParents(); }, HOLD_MS);
+  }
+  function holdCancel() {
+    if (!holdTimer) return;
+    clearTimeout(holdTimer); holdTimer = 0;
+    pb.classList.remove("holding");
+    pb.querySelector(".pb-label").textContent = "Gedrückt halten …";
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(() => { pb.querySelector(".pb-label").textContent = "Für Eltern"; }, 2200);
+  }
+  pb.addEventListener("pointerdown", (e) => { e.preventDefault(); holdBegin(); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => pb.addEventListener(ev, holdCancel));
+  pb.addEventListener("contextmenu", (e) => e.preventDefault());
+  pb.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); if (!e.repeat) holdBegin(); } });
+  pb.addEventListener("keyup", (e) => { if (e.key === "Enter" || e.key === " ") holdCancel(); });
   $("parentsClose").addEventListener("click", closeParents);
   $("parents").addEventListener("click", (e) => { if (e.target.id === "parents") closeParents(); });
 
