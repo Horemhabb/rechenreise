@@ -1961,7 +1961,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.6";
+  const VERSION = "1.6.1";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -3312,7 +3312,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   // Das Eltern-Menü öffnet sich erst nach zwei Sekunden Gedrückthalten, damit Kinder nichts aus Versehen verstellen
   const HOLD_MS = 2000, pb = $("parentsBtn");
-  let holdTimer = 0, holdAt = 0, tipTimer = 0;
+  let holdTimer = 0, holdAt = 0;
   function holdBegin() {
     if (holdTimer) return;
     holdAt = Date.now();
@@ -3323,9 +3323,6 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (!holdTimer) return;
     clearTimeout(holdTimer); holdTimer = 0;
     pb.classList.remove("holding");
-    pb.querySelector(".pb-label").textContent = "Gedrückt halten …";
-    clearTimeout(tipTimer);
-    tipTimer = setTimeout(() => { pb.querySelector(".pb-label").textContent = "Für Eltern"; }, 2200);
   }
   pb.addEventListener("pointerdown", (e) => { e.preventDefault(); holdBegin(); });
   ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => pb.addEventListener(ev, holdCancel));
