@@ -404,6 +404,20 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+/* Teilen mit Bildern */
+.pictask { width: 100%; display: grid; gap: 6px; justify-items: center; }
+.pt-q { margin: 0; font-weight: 700; text-align: center; text-wrap: balance; max-width: 36ch; }
+.pt-art { width: 100%; }
+.pt-svg { display: block; width: 100%; max-width: 380px; height: auto; margin: 0 auto; overflow: visible; }
+.pt-it { transform-box: fill-box; transform-origin: center; transition: transform .45s cubic-bezier(.3, .8, .4, 1); }
+.pt-plate { fill: #fff; stroke: #b9a98e; stroke-width: 1.5; }
+.pt-plate-in { fill: none; stroke: #e2d8c6; stroke-width: 1; }
+.pt-box { opacity: 0; transition: opacity .35s; }
+.pt-box.on { opacity: 1; }
+.pt-basket { fill: #c99a55; stroke: #7a5426; stroke-width: 1.5; }
+.pt-weave { stroke: #8a6230; stroke-width: 1; fill: none; }
+.pt-count { font: 700 13px var(--font-num); fill: var(--plum-dark); text-anchor: middle; }
+.div-note { margin: -2px 0 0; font-size: 0.85rem; color: var(--muted); }
 </style>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#7a4bb0">
@@ -435,11 +449,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   <main class="task" aria-live="polite">
     <div class="tags"><span class="tag" id="tagKnobel" hidden>Knobelaufgabe</span><span class="tag ueb" id="tagUeb" hidden>Übung</span></div>
+    <div class="pictask" id="picTask" hidden>
+      <p class="pt-q" id="picQ"></p>
+      <div class="pt-art" id="picArt"></div>
+    </div>
     <div class="equation" id="equation">
       <span id="numA"></span><span id="opSign"></span><span id="numB"></span><span id="eqSign">=</span>
       <input class="answer" id="answer" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3"
         autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="?"><span id="numC" hidden></span>
     </div>
+    <p class="div-note" id="divNote" hidden>„:“ heißt „geteilt durch“</p>
     <div class="feedback" id="feedback"></div>
     <div class="offer" id="offer" hidden>
       <p id="offerText"></p>
@@ -1607,29 +1626,41 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       return Math.random() < 0.5 ? gapT(k, "·", r, "a") : gapT(r, "·", k, "b");
     }),
   );
+  // Teilen, langsam eingeführt: erst Bildaufgaben (gerecht verteilen, in Gruppen aufteilen), dann die Zahlenaufgaben in drei Stufen.
+  // pic: "verteilen" (Teilen als Verteilen auf b Teller) oder "aufteilen" (immer b in eine Gruppe); item: welche Dinge im Bild
+  const divT = (b, q, extra) => ({ a: b * q, b, op: ":", result: q, ...extra });
+  SKILLS.push(
+    mk("d1", "teilen", "Verteilen mit Bildern", "12 Törtchen auf 3 Teller", 0, false, "Zuckerbäcker", () => divT(rand(2, 5), rand(2, 5), { pic: "verteilen", item: rand(0, 2) })),
+    mk("d2", "teilen", "Aufteilen mit Bildern", "15 Äpfel, je 5 in einen Korb", 0, false, "Kaufleute", () => divT(rand(2, 5), rand(2, 6), { pic: "aufteilen", item: rand(0, 2) })),
+    mk("d3", "teilen", "Teilen durch 2, 5 und 10", "20 : 5", 0, false, "Wagner", () => divT(pick([2, 5, 10]), rand(1, 10))),
+    mk("d4", "teilen", "Teilen durch 3, 4 und 6", "24 : 6", 0, true, "Hutmacher", () => divT(pick([3, 4, 6]), rand(2, 10))),
+    mk("d5", "teilen", "Teilen durch 7, 8 und 9", "56 : 8", 0, true, "Glockengießer", () => divT(pick([7, 8, 9]), rand(2, 10))),
+  );
+  // In welcher Reihenfolge die Teilen-Zünfte dazukommen (Einstellung „Schritt für Schritt“): erst Lehrling werden, dann geht es weiter
+  const TEILEN_NEEDS = { d3: ["d1", "d2"], d4: ["d3"], d5: ["d4"] };
   const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s) => [s.id, s]));
   // ungefähre Zahl verschiedener Aufgaben je Fähigkeit: bestimmt, wie lange dieselbe Aufgabe pausieren muss
   const SPACE = { p1: 45, m1: 54, p2: 45, m2: 45, p3: 36, m3: 45, p4: 150, m4: 150, p5: 36, m5: 36, p6: 300, m6: 300, p7: 2000, m7: 2000 };
   SKILLS.filter((s) => s.group === "mal").forEach((s) => { SPACE[s.id] = s.hard ? 8 : 10; });
-  Object.assign(SPACE, { l1: 100, l2: 600, l3: 400, l4: 160 });
+  Object.assign(SPACE, { l1: 100, l2: 600, l3: 400, l4: 160, d1: 16, d2: 20, d3: 30, d4: 27, d5: 27 });
 
   // ---------- Einstellungen (Eltern-Menü) ----------
   const DEFAULT_SK = { x6: 2, x8: 2 };   // Schwerpunkt-Reihen, 0 = aus, 1 = normal, 2 = öfter
   const CFG_DEF = {
     mode: "auto", anteil: 40, sicher: "4in5", steigern: "mittel", erfolg: true, retry: true, uebTag: true,
-    helpAfter: 2, detektiv: true, frustN: 3, hilfe: "auto",
+    helpAfter: 2, detektiv: true, frustN: 3, hilfe: "auto", teilenStufen: "schritt",
     fx: true, vol: "mittel", speech: true, speechMode: "lob", readTask: false, name: "", titel: "f",
     rewardEvery: 5, goldEvery: 100,
   };
   const CFG_RULE = {
     mode: ["auto", "manual"], sicher: ["3in3", "4in5", "9in10"], steigern: ["langsam", "mittel", "schnell"],
     helpAfter: [1, 2, 3], frustN: [0, 2, 3, 4, 5], vol: ["leise", "mittel", "laut"], speechMode: ["lob", "mut"],
-    titel: ["f", "m"], hilfe: ["auto", "strahl", "punkte"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200],
+    titel: ["f", "m"], hilfe: ["auto", "strahl", "punkte"], teilenStufen: ["schritt", "alle"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200],
   };
   const DATA_GEN = 2;   // Spielstände ab Version 1.1; ältere beginnen einmalig bei null
 
   const freshState = () => ({
-    max: 100, ops: { plus: true, minus: true, mal: true, luecke: true }, level: "mix", pad: "auto", sound: true,
+    max: 100, ops: { plus: true, minus: true, mal: true, luecke: true, teilen: true }, level: "mix", pad: "auto", sound: true,
     correct: 0, sincePic: 0, album: [], savedAt: 0, seq: 0,
     cfg: { ...CFG_DEF, sk: {} }, stats: {}, days: {}, err: {},
   });
@@ -1693,8 +1724,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const out = freshState();
     if ([10, 20, 100].includes(raw.max)) out.max = raw.max;
     if (raw.ops && typeof raw.ops === "object") {
-      const ops = { plus: !!raw.ops.plus, minus: !!raw.ops.minus, mal: !!raw.ops.mal, luecke: raw.ops.luecke === undefined ? true : !!raw.ops.luecke };
-      if (ops.plus || ops.minus || ops.mal || ops.luecke) out.ops = ops;
+      const dflt = (k) => (raw.ops[k] === undefined ? true : !!raw.ops[k]);   // neue Rechenarten sind bei alten Spielständen an
+      const ops = { plus: !!raw.ops.plus, minus: !!raw.ops.minus, mal: !!raw.ops.mal, luecke: dflt("luecke"), teilen: dflt("teilen") };
+      if (ops.plus || ops.minus || ops.mal || ops.luecke || ops.teilen) out.ops = ops;
     }
     if (["easy", "mix", "hard"].includes(raw.level)) out.level = raw.level;
     if (["auto", "show", "hide"].includes(raw.pad)) out.pad = raw.pad;
@@ -1747,11 +1779,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   // ---------- Auswahl: kurzes Gedächtnis dieser Sitzung ----------
   const mem = { recent: [], skills: [], ops: [], hard: [], codes: [], miss: 0, streak: 0, retry: [], cool: 0, easy: 0, last: "" };
-  const taskKey = (t) => (t.gap ? `${t.gap}:${t.a}${t.op}${t.b}` : t.op === "−" ? `${t.a}−${t.b}` : `${t.op}${Math.min(t.a, t.b)}_${Math.max(t.a, t.b)}`);
+  const taskKey = (t) => (t.op === ":" ? `${t.pic || ""}${t.a}:${t.b}` : t.gap ? `${t.gap}:${t.a}${t.op}${t.b}` : t.op === "−" ? `${t.a}−${t.b}` : `${t.op}${Math.min(t.a, t.b)}_${Math.max(t.a, t.b)}`);
 
+  const unlocked = (s) => {
+    const need = TEILEN_NEEDS[s.id];
+    if (!need || state.cfg.teilenStufen === "alle") return true;
+    return need.some((id) => ((state.stats[id] || {}).g || 0) >= 1);
+  };
   function enabledSkills() {
     const ok = (s) => state.ops[s.group] && s.min <= state.max;
-    const on = SKILLS.filter((s) => ok(s) && skLevel(s.id) !== 0);
+    const on = SKILLS.filter((s) => ok(s) && skLevel(s.id) !== 0 && unlocked(s));
     return on.length ? on : SKILLS.filter(ok).length ? SKILLS.filter(ok) : [SKILL_BY_ID.p1];
   }
   function wpick(items, wf) {
@@ -1771,7 +1808,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function mixWeight(s) {                       // normale Mischung: Neues zuerst kennenlernen, Sicheres seltener
     const status = statusOf(s.id);
-    let w = status === "neu" ? 1.5 : status === "wackelig" ? 1.2 : status === "sicher" ? (rate10(s.id) < 0.8 ? 0.8 : sinceSeen(s.id) > 60 ? 1.2 : 0.35) : 1;
+    let w = status === "neu" ? 1.5 : status === "wackelig" ? 1.2 : status === "sicher" ? (rate10(s.id) < 0.8 ? 0.8 : sinceSeen(s.id) > 90 ? 3 : sinceSeen(s.id) > 50 ? 1.2 : 0.35) : 1;
     if (sinceSeen(s.id) < 3) w *= 0.3;
     return w;
   }
@@ -1800,9 +1837,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       group: O.length >= 3 && O.slice(-3).every((o) => o === O[O.length - 1]) && groups.size > 1 ? O[O.length - 1] : null,
       hard: H.length >= 3 && H.slice(-3).every(Boolean) && skills.some((s) => !s.hard),   // nach drei schweren eine Verschnaufpause
       hard2: H.length >= 2 && H.slice(-2).every(Boolean),
+      teilen: O.slice(-3).includes("teilen") && groups.size > 1,   // Teilen ist neu: höchstens jede vierte Aufgabe
     };
   }
-  const allowed = (list, av) => list.filter((s) => !av.skills.has(s.id) && s.group !== av.group && !(av.hard && s.hard));
+  const allowed = (list, av) => list.filter((s) => !av.skills.has(s.id) && s.group !== av.group && !(av.hard && s.hard) && !(av.teilen && s.group === "teilen"));
 
   // Der Topf (Übung, Mischung, Erfolg) wird einmal pro Aufgabe festgelegt, damit die Anteile stabil bleiben.
   function decidePool(skills, plan) {
@@ -1854,7 +1892,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       if (plan === "retry") {
         const s = SKILL_BY_ID[retry.skill];
         if (attempt === 0 && retry.exact) {
-          t = retry.gap ? gapT(retry.a, retry.op, retry.b, retry.gap) : { a: retry.a, b: retry.b, op: retry.op, result: retry.op === "+" ? retry.a + retry.b : retry.op === "−" ? retry.a - retry.b : retry.a * retry.b };
+          t = retry.gap ? gapT(retry.a, retry.op, retry.b, retry.gap) : { a: retry.a, b: retry.b, op: retry.op, result: retry.op === "+" ? retry.a + retry.b : retry.op === "−" ? retry.a - retry.b : retry.op === ":" ? retry.a / retry.b : retry.a * retry.b };
           Object.assign(t, { skill: s.id, group: s.group, hard: s.hard });
           identOk = true;
         } else t = makeFor(s);
@@ -1886,7 +1924,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mem.codes.push(code); if (mem.codes.length > 30) mem.codes.shift();
     mem.miss = code <= 1 ? mem.miss + 1 : 0;
     mem.streak = code >= 2 ? mem.streak + 1 : 0;
-    if (code <= 1 && state.cfg.retry && !t.retried) mem.retry.push({ skill: id, a: t.a, b: t.b, op: t.op, gap: t.gap, due: state.seq + rand(5, 8), exact: Math.random() < 0.3 });
+    if (code <= 1 && state.cfg.retry && !t.retried) mem.retry.push({ skill: id, a: t.a, b: t.b, op: t.op, gap: t.gap, due: state.seq + rand(5, 8), exact: !t.pic && Math.random() < 0.3 });
     // Zunftgrad: 1 Lehrling (3 Aufgaben ohne Hilfe), 2 Geselle (sicher), 3 Meister (an zwei Tagen sicher). Er sinkt nie.
     let g = st.c >= 3 ? 1 : 0;
     if (st.w) g = 2;
@@ -1904,6 +1942,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const OPNAME = { "+": "Plus", "−": "Minus", "·": "Mal" };
   function diagnose(t, val) {
     if (!Number.isFinite(val) || val === t.result) return null;
+    if (t.op === ":") {
+      const a = t.a, b = t.b, r = t.result, d = val - r;
+      if (val === a * b || val === a + b || val === a - b) return { kind: "op", text: "Schau aufs Zeichen: Hier wird geteilt. Jeder bekommt gleich viel." };
+      if (val === a) return { kind: "copy", text: t.pic ? "Das sind alle zusammen. Wie viele sind es in einer Gruppe?" : "Das ist die Zahl, die geteilt wird. Was kommt heraus?" };
+      if (val === b && b !== r) return { kind: "copy", text: t.pic === "verteilen" ? "So viele Teller sind es. Wie viele kommen auf einen Teller?" : t.pic ? "So viele kommen jeweils zusammen. Wie viele Gruppen werden es?" : "Durch diese Zahl wird geteilt. Was kommt heraus?" };
+      if (Math.abs(d) === 1) return { kind: "row", text: "Ganz knapp! Prüf es mit der Malaufgabe nach." };
+      return null;
+    }
     if (t.gap) {
       // Lücke: typisch ist, die sichtbaren Zahlen einfach zu verrechnen, statt rückwärts zu denken
       const known = t.gap === "a" ? t.b : t.a, r = t.result, d = val - r;
@@ -1961,7 +2007,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.6.2";
+  const VERSION = "1.7";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -2124,11 +2170,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const $ = (id) => document.getElementById(id);
   const fbEl = $("feedback"), hintEl = $("hint"), starsEl = $("stars"), answerEl = $("answer");
   const STAR_PATH = "M17 2.5 L21.2 11.6 L31 12.7 L23.6 19.4 L25.7 29.2 L17 24.2 L8.3 29.2 L10.4 19.4 L3 12.7 L12.8 11.6 Z";
-  const OP_WORD = { "+": "plus", "−": "minus", "·": "mal" };
+  const OP_WORD = { "+": "plus", "−": "minus", "·": "mal", ":": "geteilt durch" };
 
   // Das Antwortfeld bleibt dasselbe Element, damit der Tastatur-Fokus nie verloren geht
   // Bei Lückenaufgaben wandert das Antwortfeld an die Stelle der fehlenden Zahl (nur beim Wechsel, damit der Fokus bleibt)
-  const taskWords = (t) => (t.gap ? `${t.gap === "a" ? "wie viel" : t.a} ${OP_WORD[t.op]} ${t.gap === "b" ? "wie viel" : t.b} gleich ${t.c}` : `${t.a} ${OP_WORD[t.op]} ${t.b}`);
+  const taskWords = (t) => (t.pic ? picQuestion(t) : t.gap ? `${t.gap === "a" ? "wie viel" : t.a} ${OP_WORD[t.op]} ${t.gap === "b" ? "wie viel" : t.b} gleich ${t.c}` : `${t.a} ${OP_WORD[t.op]} ${t.b}`);
   function renderTask(cls) {
     const g = task.gap || null, eq = $("equation");
     const order = g === "a" ? [answerEl, $("opSign"), $("numB"), $("eqSign"), $("numC")]
@@ -2147,7 +2193,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("numC").textContent = g ? task.c : "";
     answerEl.value = input;
     answerEl.readOnly = locked;
-    answerEl.setAttribute("aria-label", g ? `Welche Zahl fehlt? ${taskWords(task)}` : `Ergebnis von ${task.a} ${OP_WORD[task.op]} ${task.b}`);
+    answerEl.setAttribute("aria-label", task.pic ? picQuestion(task) : g ? `Welche Zahl fehlt? ${taskWords(task)}` : `Ergebnis von ${task.a} ${OP_WORD[task.op]} ${task.b}`);
     answerEl.className = "answer";
     if (cls) { void answerEl.offsetWidth; answerEl.classList.add(cls); } // Wackel-Animation neu starten
   }
@@ -2182,6 +2228,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // Welche Hilfe passt? Zahlenstrahl, Zwanzigerfeld, Punktefeld oder Rechenweg, je nach Aufgabe und Einstellung im Eltern-Menü
   function hintType(t) {
     const mode = state.cfg.hilfe;
+    if (t.pic) return "pic";
+    if (t.op === ":") return mode === "strahl" ? "line" : "field";
     if (t.gap) return "line";
     if (t.op === "·") return mode === "strahl" && t.a * t.b <= 100 ? "line" : "field";
     if (Math.max(t.a, t.result) <= 20 && mode !== "strahl") return "dots";
@@ -2226,6 +2274,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   // Zahlenstrahl: Haltepunkte und Sprünge. Die gesuchte Zahl wird nie beschriftet, dort steht ein „?“.
   function lineSpec(t) {
+    if (t.op === ":") {
+      // Teilen als Sprünge: Wie oft passt die b in die a?
+      const stops = Array.from({ length: t.result + 1 }, (_, k) => k * t.b);
+      return { stops, unknown: null, labels: [0, t.a], jump: (k) => (k === 0 ? `+${t.b}` : ""), hops: true,
+        text: `Wie oft passt die ${t.b} in die ${t.a}? Spring in ${t.b}er-Sprüngen von 0 bis ${t.a} und zähl die Sprünge.` };
+    }
     const tenUp = (x) => Math.ceil((x + 1) / 10) * 10, tenDown = (x) => Math.floor((x - 1) / 10) * 10;
     if (t.op === "·") {
       const step = t.gap ? (t.gap === "a" ? t.b : t.a) : t.b, n = t.gap ? t.result : t.a;
@@ -2286,9 +2340,104 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return { svg: `<svg class="numline" viewBox="0 0 ${W} ${H}" aria-hidden="true">${s}</svg>`, text: sp.text };
   }
 
+  // ---------- Teilen mit Bildern ----------
+  // Verteilen: a Dinge gerecht auf b Teller. Aufteilen: a Dinge, immer b in einen Korb.
+  // Nach der Antwort (und als Hilfe) wandern die Dinge reihum auf die Teller bzw. gruppenweise in die Körbe.
+  const ITEMS = {
+    verteilen: [
+      { n: "Törtchen", d: '<path d="M-8 -1L-6 10H6L8 -1Z" fill="#e69ab0" stroke="#8a4a5e" stroke-width="1.2"/><path d="M-4 0V9M0 0V9M4 0V9" stroke="#8a4a5e" stroke-width=".8"/><path d="M-9 0C-10 -6 -5 -9 0 -9S10 -6 9 0Z" fill="#fff4e0" stroke="#b49a7a" stroke-width="1.2"/><circle cx="0" cy="-10" r="2.6" fill="#d23c3c"/>' },
+      { n: "Kekse", d: '<circle r="9" fill="#d9a35a" stroke="#8a5a26" stroke-width="1.3"/><g fill="#5a3418"><circle cx="-3" cy="-3" r="1.4"/><circle cx="3" cy="-1" r="1.4"/><circle cx="-1" cy="4" r="1.4"/><circle cx="4" cy="4" r="1.1"/></g>' },
+      { n: "Kirschen", d: '<path d="M-4 3C-3 -4 0 -8 4 -10M4 3C4 -3 4 -7 4 -10" fill="none" stroke="#4f7a3a" stroke-width="1.4"/><circle cx="-4" cy="5" r="5" fill="#c7263b" stroke="#7a1422" stroke-width="1.1"/><circle cx="4.5" cy="5" r="5" fill="#d6304a" stroke="#7a1422" stroke-width="1.1"/><circle cx="-5.5" cy="3.5" r="1.3" fill="#fff" opacity=".7"/>' },
+    ],
+    aufteilen: [
+      { n: "Äpfel", box: ["einen Korb", "Körbe"], d: '<circle cx="0" cy="1" r="8.5" fill="#d8413a" stroke="#86211c" stroke-width="1.2"/><path d="M0 -6V-10" stroke="#5a3a1a" stroke-width="1.6"/><ellipse cx="3.5" cy="-9" rx="3.4" ry="1.7" transform="rotate(-25 3.5 -9)" fill="#5c9a44"/><circle cx="-3" cy="-2" r="1.8" fill="#fff" opacity=".55"/>' },
+      { n: "Eier", box: ["eine Schachtel", "Schachteln"], d: '<ellipse cx="0" cy="0" rx="7" ry="9" fill="#efd6ad" stroke="#9a7444" stroke-width="1.4"/><ellipse cx="-2.4" cy="-3" rx="1.8" ry="2.6" fill="#fff" opacity=".8"/>' },
+      { n: "Münzen", box: ["einen Beutel", "Beutel"], d: '<circle r="8.5" fill="#efc24a" stroke="#a87a12" stroke-width="1.3"/><circle r="5.6" fill="none" stroke="#a87a12" stroke-width=".9"/><path d="M-2 -3H2M-2 0H2M-2 3H2" stroke="#a87a12" stroke-width="1"/>' },
+    ],
+  };
+  const picItem = (t) => ITEMS[t.pic][t.item % 3];
+  function picQuestion(t) {
+    const it = picItem(t);
+    return t.pic === "verteilen"
+      ? `${t.a} ${it.n} sollen gerecht auf ${t.b} Teller verteilt werden. Wie viele kommen auf jeden Teller?`
+      : `${t.a} ${it.n}. Immer ${t.b} kommen in ${it.box[0]}. Wie viele ${it.box[1]} werden voll?`;
+  }
+  // Ziel-Platz eines Dings: Verteilen reihum (1. Ding auf Teller 1, 2. auf Teller 2 …), Aufteilen gruppenweise
+  function picTargets(t) {
+    const groups = t.pic === "verteilen" ? t.b : t.result, per = t.pic === "verteilen" ? t.result : t.b;
+    return Array.from({ length: t.a }, (_, i) => {
+      const g = t.pic === "verteilen" ? i % t.b : Math.floor(i / t.b), slot = t.pic === "verteilen" ? Math.floor(i / t.b) : i % t.b;
+      const cols = Math.min(per, 3), col = slot % cols, row = Math.floor(slot / cols), gx = (320 * (g + 0.5)) / groups;
+      return { g, x: gx + (col - (cols - 1) / 2) * 15, y: 120 - row * 13 };
+    });
+  }
+  function picTaskSVG(t) {
+    const it = picItem(t), groups = t.pic === "verteilen" ? t.b : t.result;
+    let s = "";
+    // Teller stehen von Anfang an da; Körbe erscheinen erst, wenn die Gruppen gepackt sind
+    for (let g = 0; g < groups; g++) {
+      const gx = (320 * (g + 0.5)) / groups;
+      if (t.pic === "verteilen") s += `<ellipse cx="${gx.toFixed(1)}" cy="130" rx="${Math.min(30, 300 / groups / 2 - 3).toFixed(1)}" ry="8" class="pt-plate"/><ellipse cx="${gx.toFixed(1)}" cy="128" rx="${(Math.min(30, 300 / groups / 2 - 3) * 0.6).toFixed(1)}" ry="4" class="pt-plate-in"/>`;
+      else s += `<g class="pt-box" data-g="${g}"><path d="M${(gx - 24).toFixed(1)} 110H${(gx + 24).toFixed(1)}L${(gx + 20).toFixed(1)} 136H${(gx - 20).toFixed(1)}Z" class="pt-basket"/><path d="M${(gx - 22).toFixed(1)} 120H${(gx + 22).toFixed(1)}M${(gx - 21).toFixed(1)} 128H${(gx + 21).toFixed(1)}" class="pt-weave"/></g>`;
+    }
+    for (let i = 0; i < t.a; i++) {
+      const row = Math.floor(i / 10), inRow = Math.min(10, t.a - row * 10), x = 160 + ((i % 10) - (inRow - 1) / 2) * 29, y = 20 + row * 30;
+      s += `<g class="pt-it" data-i="${i}" data-x="${x.toFixed(1)}" data-y="${y}"><g transform="translate(${x.toFixed(1)} ${y}) scale(1.12)">${it.d}</g></g>`;
+    }
+    return `<svg class="pt-svg" viewBox="0 0 320 152" role="img" aria-label="${picQuestion(t)}">${s}<g class="pt-labels"></g></svg>`;
+  }
+  // Animation: final = nach der richtigen Antwort (mit Anzahl an jedem Teller/Korb), sonst als Hilfe
+  let picRun = 0;
+  function animateShare(final) {
+    const t = task, svg = $("picArt").querySelector("svg");
+    if (!t || !t.pic || !svg) return 0;
+    const run = ++picRun, targets = picTargets(t), step = Math.max(55, Math.min(110, 1800 / t.a)), reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    svg.querySelectorAll(".pt-it").forEach((el) => {
+      const i = Number(el.dataset.i), tg = targets[i], dx = tg.x - Number(el.dataset.x), dy = tg.y - Number(el.dataset.y);
+      el.style.transitionDelay = reduce ? "0ms" : `${i * step}ms`;
+      el.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(.62)`;
+    });
+    const total = reduce ? 0 : (t.a - 1) * step + 450;
+    if (t.pic === "aufteilen") svg.querySelectorAll(".pt-box").forEach((b) => { b.style.transitionDelay = reduce ? "0ms" : `${((Number(b.dataset.g) + 1) * t.b - 1) * step + 300}ms`; b.classList.add("on"); });
+    if (final) setTimeout(() => {
+      if (run !== picRun) return;
+      const groups = t.pic === "verteilen" ? t.b : t.result;
+      svg.querySelector(".pt-labels").innerHTML = Array.from({ length: groups }, (_, g) => {
+        const gx = (320 * (g + 0.5)) / groups;
+        return `<text x="${gx.toFixed(1)}" y="150" class="pt-count">${t.pic === "verteilen" ? t.result : t.b}</text>`;
+      }).join("");
+    }, total);
+    return total;
+  }
+  function renderPic() {
+    const t = task, on = !!t.pic;
+    $("picTask").hidden = !on;
+    $("divNote").hidden = !(t.op === ":" && (on || !((state.stats[t.skill] || {}).g >= 2)));
+    if (!on) return;
+    picRun++;
+    $("picQ").textContent = picQuestion(t);
+    $("picArt").innerHTML = picTaskSVG(t);
+  }
+
   function renderHint() {
     const t = task, type = hintType(t);
     hintEl.className = "hint";
+    if (type === "pic") {
+      const txt = t.pic === "verteilen" ? "Verteile reihum: Jeder Teller bekommt eins, dann noch eins … Wie viele liegen am Ende auf einem Teller?"
+        : `Pack immer ${t.b} zusammen. Wie viele ${picItem(t).box[1]} werden es?`;
+      hintEl.innerHTML = `<p class="steps caption">${txt}</p>`;
+      hintEl.removeAttribute("aria-label");
+      hintEl.hidden = false;
+      animateShare(false);
+      return;
+    }
+    if (type === "field" && t.op === ":") {
+      hintEl.classList.add("small");
+      hintEl.innerHTML = dotRows(Array(t.a).fill("a"), t.b) + `<p class="steps caption">${t.a} Punkte, immer ${t.b} in einer Reihe. Wie viele Reihen sind es?<br>Denk an das Einmaleins: <span class="nb">${t.b} · ? = ${t.a}</span></p>`;
+      hintEl.setAttribute("aria-label", `${t.a} Punkte in Reihen zu je ${t.b}`);
+      hintEl.hidden = false;
+      return;
+    }
     if (type === "line") {
       const { svg, text } = numberLineSVG(t);
       const html = text.replace(/\d+ [+−] \d+ = (\d+|\?)/g, (m) => `<span class="nb">${m}</span>`).replace(/\. /g, ".<br>");
@@ -2443,6 +2592,23 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     l4: (c, d, u) => `<clipPath id="${u}n"><circle cx="20" cy="22" r="17"/></clipPath><g clip-path="url(#${u}n)" stroke="${c}" stroke-width="1" fill="none" opacity=".75">${[-20, -13, -6, 1, 8, 15, 22, 29, 36].map((k) => `<path d="M${k} 0L${k + 40} 44M${k + 40} 0L${k} 44"/>`).join("")}</g>
       <circle cx="20" cy="22" r="17" fill="none" stroke="${c}" stroke-width="1.6"/>
       <path d="M8 21C13 13 25 12 31 20 25 28 13 28 8 21ZM30 20L38 14L37 26Z" fill="${c}" stroke="${d}" stroke-width="1.2"/><circle cx="12.5" cy="19.4" r="1.4" fill="${d}"/><path d="M17 15C19 19 19 23 17 27" fill="none" stroke="${d}" stroke-width="1"/>`,
+    // Zuckerbäcker: Torte mit Kerze
+    d1: (c, d) => `<rect x="2.5" y="35.5" width="35" height="2.6" rx="1" fill="${c}"/><rect x="5" y="23" width="30" height="12.5" rx="2" fill="${c}"/><rect x="9.5" y="13" width="21" height="10.5" rx="2" fill="${c}"/>
+      <rect x="18.7" y="5" width="2.6" height="8.5" fill="${c}"/><path d="M20 -.5C22 2 22.4 3.6 20 5 17.6 3.6 18 2 20 -.5Z" fill="${c}"/>
+      <path d="M5 27.5Q8.75 31 12.5 27.5T20 27.5T27.5 27.5T35 27.5M9.5 16.5Q13 19.5 16.5 16.5T23.5 16.5T30.5 16.5" fill="none" stroke="${d}" stroke-width="1.3"/>`,
+    // Kaufleute: Waage
+    d2: (c, d) => `<path d="M20 5V34" stroke="${c}" stroke-width="2.6"/><path d="M12 37H28L25 33H15Z" fill="${c}"/><path d="M4 9H36" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="5" r="2.4" fill="${c}"/>
+      <path d="M5 9L1.5 23M5 9L8.5 23M35 9L31.5 23M35 9L38.5 23" stroke="${c}" stroke-width="1"/><path d="M0 23H10Q5 30 0 23Z" fill="${c}"/><path d="M30 23H40Q35 30 30 23Z" fill="${c}"/>
+      <circle cx="5" cy="21.3" r="1.6" fill="${d}"/><circle cx="35" cy="21.3" r="1.6" fill="${d}"/>`,
+    // Wagner: Wagenrad mit Speichen
+    d3: (c, d) => `<g transform="translate(20 20)"><circle r="16" fill="none" stroke="${c}" stroke-width="3.4"/><circle r="12.6" fill="none" stroke="${c}" stroke-width="1"/>
+      ${Array.from({ length: 10 }, (_, i) => `<path d="M0 0L0 -13" stroke="${c}" stroke-width="2" transform="rotate(${i * 36})"/>`).join("")}<circle r="4.6" fill="${c}"/><circle r="1.6" fill="${d}"/></g>`,
+    // Hutmacher: Hut mit Band und Feder
+    d4: (c, d) => `<path d="M10 26C10 13 13 7 20 7S30 13 30 26Z" fill="${c}"/><ellipse cx="20" cy="27" rx="18.5" ry="5" fill="${c}"/><path d="M10.4 21H29.6V25H10.4Z" fill="${d}" opacity=".85"/>
+      <path d="M28 22C33 14 35 7 39 2 38 10 35 17 30 23Z" fill="${c}" stroke="${d}" stroke-width=".9"/><path d="M29.5 21.5C33 15 35.5 9 38.5 3" fill="none" stroke="${d}" stroke-width=".7"/>`,
+    // Glockengießer: Glocke mit Klöppel
+    d5: (c, d) => `<path d="M17 5A3 3 0 0 1 23 5" fill="none" stroke="${c}" stroke-width="2"/><path d="M20 5.5C27 5.5 29.5 11 29.5 19 29.5 26 31.5 29.5 35.5 32H4.5C8.5 29.5 10.5 26 10.5 19 10.5 11 13 5.5 20 5.5Z" fill="${c}"/>
+      <rect x="3" y="31.5" width="34" height="3.2" rx="1.4" fill="${c}"/><circle cx="20" cy="37.5" r="2.6" fill="${c}"/><path d="M11.5 15H28.5M10.8 19H29.2" stroke="${d}" stroke-width="1"/><path d="M14 25L16 23L18 25L20 23L22 25L24 23L26 25" fill="none" stroke="${d}" stroke-width=".9"/>`,
   };
   // Heraldische Farben für die Schilde: Rot, Blau, Grün, Purpur, Schwarz
   const TINCT = ["#a5322c", "#2d5496", "#2e6c45", "#6c2f74", "#2a3138"];
@@ -2475,6 +2641,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     l2: "Schuster nähen Stiefel und Schuhe aus Leder und setzen neue Sohlen auf alte Schuhe.",
     l3: "Früher hießen die Waldimker Zeidler. Sie holten den Honig aus hohlen Bäumen und hatten sogar ein eigenes Gericht.",
     l4: "Fischer flicken ihre Netze immer wieder, denn durch ein Loch im Netz schwimmt der Fang davon.",
+    d1: "Zuckerbäcker, heute heißen sie Konditoren, backen Torten und Pralinen. Eine Torte wird in gleich große Stücke geteilt.",
+    d2: "Kaufleute wogen ihre Waren auf der Waage und füllten sie in gleich große Säcke und Kisten.",
+    d3: "Wagner bauten Räder und Wagen aus Holz. Die Speichen müssen gleichmäßig verteilt sein, sonst eiert das Rad.",
+    d4: "Hutmacher formen Hüte aus Filz über einer Form aus Holz.",
+    d5: "Glockengießer gießen Glocken aus geschmolzener Bronze in eine Form aus Lehm.",
   };
   let emblemUid = 0;
   // g: 0 = noch nicht erreicht (blasser Umriss), 1 Lehrling, 2 Gesellin, 3 Meisterin
@@ -2569,6 +2740,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     l1: { o: "Schneiderstube", m: "Meisterin Dora", w: "Hemden", wz: "Nadel und Schere", k: "Ein Spielmann", kw: "einen Flicken für seinen Mantel", ms: "ein Festgewand ohne sichtbare Naht", pc: "#7c3f86" },
     l2: { o: "Schusterwerkstatt", m: "Meister Valentin", w: "Stiefel", wz: "einen Schusterhammer", k: "Ein Wanderer", kw: "neue Sohlen für seine Stiefel", ms: "ein Paar Stiefel für Siebenmeilenschritte", pc: "#6b4226" },
     l3: { o: "Imkerei", m: "Meisterin Rosa", w: "Honigtöpfe", wz: "einen Rauchtopf", k: "Die Lebküchnerin", kw: "zwei Töpfe Honig für ihre Lebkuchen", ms: "eine Wabe, so groß wie ein Fenster", pc: "#e3a72f" },
+    d1: { o: "Zuckerbäckerei", m: "Meisterin Luise", w: "Törtchen", wz: "einen Spritzbeutel", h: "der Ofen für die Torten", k: "Die Prinzessin", kw: "eine Torte, die für zwölf Gäste reicht", ms: "eine Hochzeitstorte mit fünf Stockwerken", pc: "#e7a0b8" },
+    d2: { o: "Kaufmannsstube", m: "Meister Anton", w: "Gewürzsäckchen", wz: "eine Waage", k: "Eine Köchin", kw: "Pfeffer, gerecht auf vier Säckchen verteilt", ms: "ein Laden, in dem es alles gibt", pc: "#c98a3a" },
+    d3: { o: "Wagnerei", m: "Meisterin Frieda", w: "Räder", wz: "ein Zugmesser", k: "Eine Bäuerin", kw: "vier neue Räder für ihren Erntewagen", ms: "eine Kutsche für die Königin", pc: "#a8743f" },
+    d4: { o: "Hutmacherei", m: "Meister Oskar", w: "Hüte", wz: "eine Hutform aus Holz", h: "der Dampfkessel, über dem der Filz weich wird", k: "Der Bürgermeister", kw: "einen Hut mit einer langen Feder", ms: "ein Hut, der zu jedem Fest passt", pc: "#4a5a7a" },
+    d5: { o: "Glockengießerei", m: "Meisterin Walburga", w: "Glöckchen", wz: "einen Gießlöffel", h: "der Schmelzofen für die Bronze", k: "Die Kirchengemeinde", kw: "eine Glocke für den neuen Turm", ms: "eine Glocke, die man im ganzen Tal hört", pc: "#c9973a" },
     l4: { o: "Fischerhütte", m: "Meister Jonas", w: "Netze", wz: "eine Netznadel", k: "Die Köchin der Burg", kw: "zwanzig Fische für das Festmahl", ms: "ein Netz ohne ein einziges Loch", pc: "#3a7a8a" },
   };
   const WS_STEPS = [3, 6, 9, 13, 18, 24, 30, 38];   // ohne Hilfe gelöste Aufgaben dieser Art bis Kapitel 1 … 8
@@ -2725,7 +2901,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     task = nextTask();
     input = ""; tries = 0; revealed = false; locked = false;
     shownAt = performance.now(); firstMs = null; away = false;
-    renderTask(""); renderTags();
+    renderTask(""); renderTags(); renderPic();
     hintEl.hidden = true;
     focusAnswer();
     if (state.cfg.readTask) speak(taskWords(task));
@@ -2827,7 +3003,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (grade === 1) setTimeout(() => announceGrade(task.skill, 1), 500);
     else if (grade >= 2) certQueue = { s: SKILL_BY_ID[task.skill], g: grade, ws: ws1 > ws0 ? ws1 : 0 };
     else if (ws1 > ws0) setTimeout(() => announceChapter(task.skill, ws1), 500);
-    setTimeout(reward ? showReward : () => (certQueue ? showCert() : afterTask()), reward ? 900 : code === 0 ? 1300 : 1000);
+    // Bei Bildaufgaben erst zuschauen, wie verteilt wird
+    const shareMs = task.pic ? animateShare(true) + 900 : 0;
+    setTimeout(reward ? showReward : () => (certQueue ? showCert() : afterTask()), Math.max(shareMs, reward ? 900 : code === 0 ? 1300 : 1000));
   }
 
   function wrong(val) {
@@ -2847,7 +3025,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       if (state.cfg.speechMode === "mut") speak(phrase(PHRASES.mut1));
     } else if (tries === h) {
       const type = hintType(task);
-      setFeedback(detective ? detective.text : type === "line" ? (task.gap ? "Schau auf den Zahlenstrahl:" : "Spring auf dem Zahlenstrahl mit:") : type === "field" ? "Zähl die Punkte. In Fünferschritten geht's schneller!"
+      setFeedback(detective ? detective.text : type === "pic" ? "Schau, wie es verteilt wird:" : type === "line" ? (task.gap ? "Schau auf den Zahlenstrahl:" : "Spring auf dem Zahlenstrahl mit:") : type === "field" ? (task.op === ":" ? "Zähl die Reihen!" : "Zähl die Punkte. In Fünferschritten geht's schneller!")
         : type === "steps" ? "Hier ist ein Rechenweg für dich:"
         : task.op === "+" ? "Zähl alle Punkte zusammen." : "Zähl die Punkte, die übrig bleiben.", "try");
       renderHint();
@@ -3098,13 +3276,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
           <label class="opt"><input type="checkbox" data-p="ops.minus" id="opMinus"><span>Minus</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.mal" id="opMal"><span>Einmaleins</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.luecke" id="opLuecke"><span>Lücken</span></label>
-        </div>${note("Lücken: 8 + □ = 15, 15 − □ = 8, □ · 4 = 28. Das übt das Rückwärtsdenken (Umkehraufgabe). Teilen kommt später dazu.")}</fieldset>
+          <label class="opt"><input type="checkbox" data-p="ops.teilen" id="opTeilen"><span>Teilen</span></label>
+        </div>${note("Lücken: 8 + □ = 15, 15 − □ = 8, □ · 4 = 28. Das übt das Rückwärtsdenken (Umkehraufgabe). Teilen beginnt mit Bildaufgaben und kommt höchstens bei jeder vierten Aufgabe.")}</fieldset>
+        ${seg("cfg.teilenStufen", "Teilen einführen", [["schritt", "Schritt für Schritt"], ["alle", "alles gleich"]],
+          "Schritt für Schritt: erst Verteilen und Aufteilen mit Bildern. Wenn sie dort Lehrling ist, kommt Teilen durch 2, 5 und 10 dazu, danach durch 3, 4 und 6, zuletzt durch 7, 8 und 9.")}
         ${seg("max", "Zahlenraum für Plus und Minus", [[10, "bis 10"], [20, "bis 20"], [100, "bis 100"]], "Bis 1000 kommt in einer späteren Version.", { 10: "max10", 20: "max20", 100: "max100" })}
         <fieldset class="p-field"><legend>Einmaleins-Reihen</legend>
           <div class="chips" id="rowChips">${rows.map((s) => `<button type="button" class="rchip" data-chip="${s.id}"></button>`).join("")}</div>
           ${note("Tippen wechselt: <b>normal</b> → <b>★ öfter üben</b> → <b>aus</b>. Öfter geübte Reihen zählen im Auto-Modus von Anfang an als Schwerpunkt.")}
         </fieldset>
-        <details class="pg-in"><summary>Plus-, Minus- und Lückenaufgaben im Detail</summary>
+        <details class="pg-in"><summary>Plus, Minus, Lücken und Teilen im Detail</summary>
           <div class="sk-list">${pm.map((s) => `<div class="sk-row"><div class="sk-name">${s.label}<small>${s.ex}${s.hard ? " · Knobelaufgabe" : ""}</small></div>
             <div class="seg seg-sm">${[[0, "Aus"], [1, "Normal"], [2, "Öfter"]].map(([v, l]) =>
               `<label class="opt"><input type="radio" name="sk-${s.id}" data-sk="${s.id}" data-v="${v}"><span>${l}</span></label>`).join("")}</div></div>`).join("")}</div>
@@ -3259,7 +3440,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       const v = t.type === "checkbox" ? t.checked : NUM_PATHS.has(p) ? Number(t.dataset.v) : t.dataset.v;
       if (p.startsWith("ops.")) {
         const next = { ...state.ops, [p.slice(4)]: v };
-        if (!next.plus && !next.minus && !next.mal && !next.luecke) { parentsSync(); return; }   // mindestens eine Rechenart
+        if (!next.plus && !next.minus && !next.mal && !next.luecke && !next.teilen) { parentsSync(); return; }   // mindestens eine Rechenart
       }
       setP(p, v); afterChange(p);
     });
