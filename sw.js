@@ -1,6 +1,6 @@
 // Rechenreise: Offline-Betrieb. Die Seite selbst kommt immer zuerst aus dem Netz (damit neue Versionen sofort da sind)
 // und fällt ohne Netz auf die gespeicherte Fassung zurück. Die Schriften stecken in der Seite selbst.
-const CACHE = "rechenreise-1.8";
+const CACHE = "rechenreise-1.9";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {
