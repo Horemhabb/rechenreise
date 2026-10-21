@@ -181,6 +181,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   display: flex; gap: 12px; align-items: center; padding: 10px 14px;
   background: var(--card); border: 1.5px solid var(--gold-dark); border-radius: 12px;
   box-shadow: 0 0 0 3px var(--gold-soft), 4px 4px 0 rgba(59, 47, 69, .18);
+  pointer-events: none;   /* nur Anzeige: Tippen geht durch, zum Beispiel auf „Schließen“ im Album */
 }
 .toast.in { animation: toastIn .45s ease-out; }
 .toast svg { width: 58px; height: 68px; flex: none; }
@@ -418,6 +419,42 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .pt-weave { stroke: #8a6230; stroke-width: 1; fill: none; }
 .pt-count { font: 700 13px var(--font-num); fill: var(--plum-dark); text-anchor: middle; }
 .div-note { margin: -2px 0 0; font-size: 0.85rem; color: var(--muted); }
+
+/* Goldbilder (ab 1.8): Legende mit Strahlenkranz, Aufblitzen, fliegenden Sternchen, Glitzern und Lichtstreif */
+.reward.gold .sheet { position: relative; overflow: hidden; background: radial-gradient(circle at 50% 40%, #fffaf0 0, #fdf1d6 45%, #f3d58c 100%); border-color: var(--gold-dark); }
+.reward.gold .sheet::before {
+  content: ""; position: absolute; left: 50%; top: 40%; width: 1000px; height: 1000px; margin: -500px 0 0 -500px; pointer-events: none;
+  background: repeating-conic-gradient(rgba(255, 205, 70, .32) 0deg 7deg, rgba(255, 205, 70, 0) 7deg 18deg); animation: spin 30s linear infinite;
+}
+.reward.gold .sheet > :not(.gspark) { position: relative; }
+.reward.gold h2 { color: #8a5f08; }
+@keyframes spin { to { transform: rotate(1turn); } }
+.reward .pic.legend { animation: goldIn 1.8s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes goldIn {
+  0% { transform: perspective(700px) rotateY(540deg) scale(.3); filter: brightness(3) saturate(0); opacity: 0; }
+  40% { opacity: 1; filter: brightness(2.2) saturate(.4); }
+  75% { transform: perspective(700px) rotateY(0) scale(1.07); filter: brightness(1.15); }
+  100% { transform: none; filter: none; }
+}
+.gspark {
+  position: absolute; left: 50%; top: 40%; width: 16px; height: 16px; background: #ffd24a; pointer-events: none;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); animation: gfly 1.5s ease-out both;
+}
+.gspark:nth-child(odd) { background: #fff3b0; width: 11px; height: 11px; }
+@keyframes gfly { 0% { transform: translate(-50%, -50%) scale(.2); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(90deg); opacity: 0; } }
+.pic svg .tw { transform-box: fill-box; transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
+.pic svg .tw1 { animation-delay: .8s; }
+.pic svg .tw2 { animation-delay: 1.6s; }
+.pic svg .foil { animation: foil 5s ease-in-out 1.6s infinite; }
+@keyframes twinkle { 0%, 100% { opacity: .2; transform: scale(.5); } 50% { opacity: 1; transform: scale(1.15); } }
+@keyframes foil { 0% { transform: translateX(0); } 45%, 100% { transform: translateX(480px); } }
+.album-item .pic svg .tw { animation: none; }
+.album-item .pic svg .foil { display: none; }
+.wchip.legend { background: linear-gradient(90deg, #fff3c4, #ffe08a); box-shadow: inset 0 0 0 1.5px var(--gold-dark); }
+@media (prefers-reduced-motion: reduce) {
+  .reward.gold .sheet::before, .reward .pic.legend, .gspark, .pic svg .tw, .pic svg .foil { animation: none; }
+  .gspark { display: none; }
+}
 </style>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#7a4bb0">
@@ -595,7 +632,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     { id: "princess", world: "burg", noun: "Prinzessin", golden: "Goldene", weight: 1 },
     { id: "knight", world: "burg", noun: "Ritter", golden: "Goldener", weight: 1 },
     { id: "dragon", world: "burg", noun: "Drache", golden: "Goldener", weight: 1 },
+    // Legenden (ab 1.8): nur als Goldbild, nur mit der neuen Zeichnung
+    { id: "weisshirsch", world: "wald", noun: "Weißer Hirsch", legend: true, weight: 0 },
+    { id: "sternenwal", world: "meer", noun: "Sternenwal", legend: true, weight: 0 },
+    { id: "regenbogeneinhorn", world: "fabel", noun: "Regenbogen-Einhorn", legend: true, weight: 0 },
+    { id: "golddrache", world: "burg", noun: "Goldener Drache", legend: true, weight: 0 },
   ];
+  const OLD_CREATURES = 15;   // so viele Wesen kennt die erste Zeichnung
   const WORLDS = [{ id: "fabel", name: "Fabelwelt", what: "Fabelwesen" }, { id: "wald", name: "Wald", what: "Waldtieren" }, { id: "meer", name: "Meer", what: "Meeresbewohnern" }, { id: "burg", name: "Burg", what: "Burgbewohnern" }];
   const GOLD = [44, 100, 64];
 
@@ -618,29 +661,42 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     };
   }
 
-  // Gold gibt es planbar (Eltern-Menü), nicht zufällig. Nie dieselbe Welt zweimal hintereinander, kein Wesen der letzten zwei
-  // und keine Landschaft der letzten drei Bilder. Noch nicht entdeckte Wesen kommen dreimal so oft dran.
+  // Karten mit v: 2 (ab 1.8) nutzen die Landschaften der zweiten Generation
+  const sceneOf = (k) => (k.v === 2 ? PIC2.SC[k.n] || PIC2.SC[0] : SCENES[k.n] || SCENES[0]);
+
+  // Gold gibt es planbar (Eltern-Menü), nicht zufällig, und zeigt eine Legende: zuerst die noch nicht entdeckten.
+  // Sonst nie dieselbe Welt zweimal hintereinander, kein Wesen der letzten zwei und keine Landschaft der letzten drei Bilder.
+  // Noch nicht entdeckte Wesen kommen dreimal so oft dran.
   function newCard(prev, gold, recent, album) {
     const rec = recent || (prev ? [prev] : []), seen = new Set((album || rec).map((k) => k.c));
-    const last = rec[rec.length - 1], lastW = last ? (SCENES[last.n] || SCENES[0]).world : null;
-    const noC = rec.slice(-2).map((k) => k.c), noN = rec.slice(-3).map((k) => k.n), all = CREATURES.map((_, i) => i);
+    const s = Math.floor(Math.random() * 4294967296);
+    if (gold) {
+      const legends = CREATURES.map((_, i) => i).filter((i) => CREATURES[i].legend), fresh = legends.filter((i) => !seen.has(i));
+      const lastLeg = [...(album || rec)].reverse().find((k) => CREATURES[k.c] && CREATURES[k.c].legend);
+      const pool = fresh.length ? fresh : legends.filter((i) => !lastLeg || i !== lastLeg.c);
+      const c = pool[Math.floor(Math.random() * pool.length)];
+      return { s, n: PIC2.sceneFor(CREATURES[c].world, true, CREATURES[c].id), c, g: 1, v: 2 };
+    }
+    const last = rec[rec.length - 1], lastW = last ? sceneOf(last).world : null;
+    const noC = rec.slice(-2).map((k) => k.c), noN = rec.slice(-3).filter((k) => k.v === 2).map((k) => k.n);
+    const all = CREATURES.map((_, i) => i).filter((i) => !CREATURES[i].legend);
     let cands = all.filter((i) => CREATURES[i].world !== lastW && !noC.includes(i));
     if (!cands.length) cands = all.filter((i) => !noC.includes(i));
     const wt = (i) => (seen.has(i) ? 1 : 3) * CREATURES[i].weight;
     let r = Math.random() * cands.reduce((a, i) => a + wt(i), 0), c = cands[cands.length - 1];
     for (const i of cands) { r -= wt(i); if (r < 0) { c = i; break; } }
-    const world = CREATURES[c].world, inWorld = SCENES.map((_, i) => i).filter((i) => SCENES[i].world === world);
-    const free = inWorld.filter((i) => !noN.includes(i)), pool = free.length ? free : inWorld;
-    return { s: Math.floor(Math.random() * 4294967296), n: pool[Math.floor(Math.random() * pool.length)], c, g: gold ? 1 : 0 };
+    return { s, n: PIC2.sceneFor(CREATURES[c].world, false, null, noN, Math.random), c, g: 0, v: 2 };
   }
 
   function cardName(card) {
-    const sc = SCENES[card.n] || SCENES[0], cr = CREATURES[card.c] || CREATURES[0];
+    const sc = sceneOf(card), cr = CREATURES[card.c] || CREATURES[0];
+    if (card.v === 2) return `${cr.legend ? "Legende: " : ""}${cr.noun} ${sc.at}`;
     if (sc.world !== "fabel") return `${card.g ? cr.golden + " " : ""}${cr.noun} ${sc.at}`;
     return `${card.g ? cr.golden + " " : ""}${sc.name}-${cr.noun}`;
   }
 
   function cardSVG(card, uid) {
+    if (card.v === 2) return PIC2.draw(card, CREATURES[card.c] || CREATURES[0], uid);
     const rng = mulberry32(card.s);
     const R = (a, b) => a + rng() * (b - a);
     const sc = SCENES[card.n] || SCENES[0], cr = CREATURES[card.c] || CREATURES[0];
@@ -1376,6 +1432,477 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return s + snowCaps + flags + win;
   }
 
+  // ---------- Bilder, zweite Generation (ab 1.8) ----------
+  // Bilderbuch statt Scherenschnitt: farbige Wesen mit Gesicht, natürliche Landschaften, auch nachts gut erkennbar.
+  // Karten mit v: 2 werden hiermit gezeichnet, ältere Karten bleiben genau so, wie sie gesammelt wurden.
+  // Goldbilder zeigen Legenden, die es nur in Gold gibt, in eigenen Landschaften.
+  const PIC2 = (() => {
+    const INK = "#2a2030";
+    // Farbe aufhellen (t > 0) oder abdunkeln (t < 0)
+    const sh = (hex, t) => {
+      const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255];
+      return "#" + c.map((v) => Math.round(t < 0 ? v * (1 + t) : v + (255 - v) * t).toString(16).padStart(2, "0")).join("");
+    };
+    const eye = (x, y, r) => `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${f1(r * 1.15)}" fill="${INK}"/><circle cx="${f1(x + r * 0.32)}" cy="${f1(y - r * 0.4)}" r="${f1(r * 0.42)}" fill="#fff"/><circle cx="${f1(x - r * 0.3)}" cy="${f1(y + r * 0.38)}" r="${f1(r * 0.17)}" fill="#fff" opacity=".85"/>`;
+    const cheek = (x, y, r) => `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${f1(r * 0.6)}" fill="#ff6f86" opacity=".38"/>`;
+    const smile = (x, y, w, c = INK) => `<path d="M${f1(x - w)} ${y}Q${x} ${f1(y + w * 0.9)} ${f1(x + w)} ${y}" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/>`;
+    // Umriss in dunklerer Farbe: wirkt gezeichnet und hebt sich von hellem und dunklem Grund ab
+    const S = (fill, w = 2) => `fill="${fill}" stroke="${sh(fill, -0.45)}" stroke-width="${w}" stroke-linejoin="round"`;
+
+    // ----- Wesen: Blick nach rechts. Landtiere stehen auf (0|0), Flieger und Schwimmer haben (0|0) in der Körpermitte -----
+    function fox(o = {}) {
+      const O = o.c || "#e9822f", W = "#fff6ea", D = "#4a2a1e";
+      return `<path d="M-14 -8C-46 -4 -64 -26 -57 -50C-53 -64 -40 -71 -33 -62C-40 -50 -38 -30 -12 -24Z" ${S(O)}/>` +
+        `<path d="M-57 -50C-53 -64 -40 -71 -33 -62C-37 -56 -39 -52 -40 -47C-47 -45 -53 -46 -57 -50Z" fill="${W}"/>` +
+        `<ellipse cx="-12" cy="-13" rx="15" ry="13" ${S(O)}/>` +
+        `<path d="M-24 0C-31 -26 -22 -56 0 -60C22 -58 28 -28 22 0Z" ${S(O)}/>` +
+        `<path d="M-2 -57C14 -52 18 -26 11 -5C3 -14 -6 -36 -2 -57Z" fill="${W}"/>` +
+        `<path d="M4 -36C3 -22 3 -10 4 -3Q9 1 14 -3C15 -10 15 -22 14 -36Z" ${S(O, 1.6)}/><path d="M3.4 -14C3.3 -9 3.5 -5 4 -3Q9 1 14 -3C14.5 -5 14.7 -9 14.6 -14Z" fill="${D}"/>` +
+        `<ellipse cx="-6" cy="-2" rx="10" ry="4" fill="${D}"/>` +
+        `<path d="M-11 -82L-13 -107L4 -89Z" ${S(O)}/><path d="M-9 -86L-11 -101L0 -89Z" fill="${D}"/>` +
+        `<path d="M8 -89L19 -107L24 -83Z" ${S(O)}/><path d="M11 -89L18 -101L20 -86Z" fill="${D}"/>` +
+        `<ellipse cx="6" cy="-73" rx="20" ry="17" ${S(O)}/>` +
+        `<path d="M18 -79C30 -79 40 -73 43 -68C37 -62 24 -62 16 -64Z" ${S(O)}/>` +
+        `<path d="M-10 -67C0 -59 22 -59 43 -68C35 -56 14 -52 0 -56C-6 -58 -10 -62 -10 -67Z" fill="${W}"/>` +
+        `<ellipse cx="42" cy="-68.5" rx="3.6" ry="3" fill="${INK}"/>` + eye(15, -78, 3.8) + cheek(14, -66, 4.5) +
+        `<path d="M35 -63Q38 -61 41 -63" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>`;
+    }
+    function deer(o = {}) {
+      const B = o.c || "#b8743e", W = "#fbf1e2", D = "#4a2c1a", A = o.antler || "#d9c3a0";
+      const leg = (x, y0) => `<path d="M${x - 4.5} ${y0}C${x - 3} ${y0 + 14} ${x - 3.4} -14 ${x - 2.6} -2H${x + 2.6}C${x + 3.4} -14 ${x + 3} ${y0 + 14} ${x + 4.5} ${y0}Z" ${S(B, 1.6)}/><path d="M${x - 2.9} -6H${x + 2.9}L${x + 2.6} -1H${x - 2.6}Z" fill="${D}"/>`;
+      let spots = "";
+      [[-22, -58], [-12, -62], [-2, -60], [-17, -50], [-6, -52], [-28, -50]].forEach(([x, y]) => { spots += `<ellipse cx="${x}" cy="${y}" rx="2.4" ry="1.8" fill="${W}" opacity=".9"/>`; });
+      return leg(-26, -44) + leg(14, -44) +
+        `<ellipse cx="-8" cy="-52" rx="32" ry="16" ${S(B)}/>` + `<path d="M-30 -46C-18 -38 4 -38 16 -46" fill="none" stroke="${W}" stroke-width="5" stroke-linecap="round" opacity=".8"/>` +
+        leg(-18, -44) + leg(22, -44) + spots +
+        `<path d="M-39 -58C-46 -64 -46 -54 -40 -52Z" ${S(W, 1.4)}/>` +
+        `<path d="M14 -60C18 -74 22 -86 26 -92L38 -88C34 -76 30 -62 24 -50Z" ${S(B)}/>` +
+        `<path d="M24 -96C22 -112 16 -118 12 -124M22 -108L14 -112M25 -100C30 -114 36 -120 42 -124M31 -110L38 -110" fill="none" stroke="${sh(A, -0.35)}" stroke-width="5" stroke-linecap="round"/>` +
+        `<path d="M24 -96C22 -112 16 -118 12 -124M22 -108L14 -112M25 -100C30 -114 36 -120 42 -124M31 -110L38 -110" fill="none" stroke="${A}" stroke-width="3" stroke-linecap="round"/>` +
+        `<ellipse cx="18" cy="-96" rx="9" ry="5" transform="rotate(-30 18 -96)" ${S(B, 1.6)}/><ellipse cx="18" cy="-96" rx="5" ry="2.5" transform="rotate(-30 18 -96)" fill="#f2b8a8"/>` +
+        `<path d="M22 -104C34 -106 44 -98 50 -88C52 -82 48 -78 42 -78C34 -78 26 -82 22 -90Z" ${S(B)}/>` +
+        `<path d="M40 -84C44 -80 50 -82 50 -86" fill="${W}"/>` + `<ellipse cx="49.5" cy="-86" rx="3" ry="2.6" fill="${INK}"/>` +
+        eye(34, -94, 3.6) + cheek(36, -84, 3.8);
+    }
+    function owl(o = {}) {
+      const B = o.c || "#9a6a43", L = "#e9d2ad", D = "#5b3b22";
+      let fe = "";
+      for (let r = 0; r < 3; r++) for (let i = 0; i < 4 - (r % 2); i++) fe += `<path d="M${-12 + i * 8 + (r % 2) * 4} ${-28 + r * 8}q3 4 6 0" fill="none" stroke="${D}" stroke-width="1.3" opacity=".6"/>`;
+      return `<path d="M-24 -6C-34 -30 -30 -62 0 -64C30 -62 34 -30 24 -6C14 2 -14 2 -24 -6Z" ${S(B)}/>` +
+        `<path d="M-16 -8C-22 -24 -18 -40 0 -42C18 -40 22 -24 16 -8C8 -2 -8 -2 -16 -8Z" fill="${L}"/>` + fe +
+        `<path d="M-26 -40C-38 -30 -36 -12 -24 -8C-24 -20 -22 -32 -26 -40Z" ${S(sh(B, -0.15))}/><path d="M26 -40C38 -30 36 -12 24 -8C24 -20 22 -32 26 -40Z" ${S(sh(B, -0.15))}/>` +
+        `<path d="M-22 -60L-26 -78L-10 -64Z" ${S(B)}/><path d="M22 -60L26 -78L10 -64Z" ${S(B)}/>` +
+        `<circle cx="-10" cy="-50" r="11" fill="${L}"/><circle cx="10" cy="-50" r="11" fill="${L}"/>` +
+        `<circle cx="-10" cy="-50" r="7.5" fill="#f5b931"/><circle cx="10" cy="-50" r="7.5" fill="#f5b931"/>` + eye(-10, -50, 4.6) + eye(10, -50, 4.6) +
+        `<path d="M-3 -42L3 -42L0 -36Z" fill="#e8962e" stroke="#9a5a14" stroke-width="1"/>` +
+        `<path d="M-10 -2v6M-6 -2v6M6 -2v6M10 -2v6" stroke="#e8962e" stroke-width="3" stroke-linecap="round"/>`;
+    }
+    function hare(o = {}) {
+      const B = o.c || "#b99a7c", W = "#fbf4ec", P = "#f3b2b6";
+      return `<circle cx="-30" cy="-16" r="8" fill="${W}" stroke="${sh(W, -0.3)}" stroke-width="1.5"/>` +
+        `<path d="M-28 -2C-34 -24 -24 -48 -2 -50C18 -50 26 -30 20 -4C10 2 -18 2 -28 -2Z" ${S(B)}/>` +
+        `<ellipse cx="-14" cy="-14" rx="16" ry="13" ${S(B)}/><ellipse cx="-4" cy="-2.5" rx="14" ry="4" ${S(sh(B, 0.2), 1.5)}/>` +
+        `<path d="M2 -40C12 -36 14 -16 8 -4C2 -10 -2 -26 2 -40Z" fill="${W}"/>` +
+        `<path d="M8 -28C7 -18 7 -9 8 -4Q12 -1 16 -4C17 -9 17 -18 16 -28Z" ${S(B, 1.6)}/>` +
+        `<path d="M2 -72C-6 -96 -4 -114 4 -116C12 -114 14 -96 10 -72Z" ${S(B)}/><path d="M4 -78C0 -96 2 -108 5 -110C8 -108 9 -96 8 -78Z" fill="${P}"/>` +
+        `<path d="M10 -70C14 -94 22 -110 30 -108C36 -104 30 -88 18 -68Z" ${S(B)}/><path d="M14 -74C18 -92 24 -102 28 -102C30 -98 26 -88 18 -74Z" fill="${P}"/>` +
+        `<ellipse cx="12" cy="-58" rx="18" ry="16" ${S(B)}/>` +
+        `<ellipse cx="24" cy="-52" rx="8" ry="6" fill="${W}"/><ellipse cx="29" cy="-56" rx="2.6" ry="2" fill="#d9707c"/>` +
+        eye(18, -62, 3.8) + cheek(16, -51, 4) + `<path d="M26 -50Q28 -48 30 -50" fill="none" stroke="${INK}" stroke-width="1.3"/>`;
+    }
+    // Pferdekörper für Einhorn und Pegasus
+    function horse(o) {
+      const B = o.c, M = o.mane, H = o.hoof || "#c9a77a";
+      const leg = (x) => `<path d="M${x - 5} -42C${x - 4} -28 ${x - 4.5} -16 ${x - 3.6} -5H${x + 3.6}C${x + 4.5} -16 ${x + 4} -28 ${x + 5} -42Z" ${S(B, 1.6)}/><path d="M${x - 4.4} -6H${x + 4.4}L${x + 4.6} 0H${x - 4.6}Z" fill="${H}" stroke="${sh(H, -0.4)}" stroke-width="1.2"/>`;
+      const mane = M.map((c, i) => `<path d="M${18 - i * 3} ${-98 + i * 9}C${4 - i * 4} ${-92 + i * 9} ${0 - i * 4} ${-80 + i * 8} ${6 - i * 3} ${-70 + i * 8}" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/>`).join("");
+      const tail = M.map((c, i) => `<path d="M-36 -56C${-52 - i * 3} ${-54 + i * 3} ${-56 - i * 2} ${-36 + i * 3} ${-48 - i} ${-20 + i * 3}" fill="none" stroke="${c}" stroke-width="6.5" stroke-linecap="round"/>`).join("");
+      return tail + leg(-26) + leg(12) +
+        `<ellipse cx="-8" cy="-50" rx="32" ry="17" ${S(B)}/>` + leg(-18) + leg(20) +
+        `<path d="M10 -58C14 -74 18 -88 22 -96L38 -92C34 -78 30 -64 24 -48Z" ${S(B)}/>` +
+        `<path d="M20 -100C30 -106 46 -100 54 -88C58 -82 54 -76 48 -76C38 -76 28 -80 20 -86Z" ${S(B)}/>` +
+        `<ellipse cx="51" cy="-82" rx="2" ry="1.6" fill="${sh(B, -0.5)}"/>` +
+        `<path d="M22 -100L22 -114L30 -104Z" ${S(B, 1.6)}/>` + mane +
+        eye(36, -92, 4) + `<path d="M33 -98l-2 -3M36 -99l0 -3.4M39 -98l2 -3" stroke="${INK}" stroke-width="1.2" stroke-linecap="round"/>` + cheek(40, -82, 4.4) +
+        `<path d="M46 -78Q49 -76 52 -78" fill="none" stroke="${INK}" stroke-width="1.3" stroke-linecap="round"/>`;
+    }
+    const PASTEL = ["#ff9fc4", "#ffd36e", "#8fdcc4", "#9fb8ff", "#c9a2ff"];
+    const RAINBOW = ["#ff5a5f", "#ffae3c", "#ffe14d", "#5fd068", "#4fa8ff", "#9b6bff"];
+    function unicorn(o = {}) {
+      const horn = `<path d="M30 -104L42 -134L40 -102Z" fill="url(#${o.uid}horn)" stroke="#b98a1e" stroke-width="1.4"/><path d="M33 -110l7 -2M35 -118l5 -1.6M37 -126l3 -1" stroke="#b98a1e" stroke-width="1"/>`;
+      return horse({ c: o.c || "#fbf8ff", mane: o.mane || PASTEL.slice(0, 4), hoof: "#e8c766" }) + horn;
+    }
+    function wing(c, tip) {
+      const edge = "M0 0C-8 -24 -26 -50 -58 -64C-50 -54 -52 -48 -46 -42C-56 -40 -54 -32 -46 -28C-54 -24 -50 -16 -40 -14C-44 -8 -38 -2 -28 -4C-24 2 -12 4 0 0Z";
+      return `<path d="${edge}" ${S(c, 1.6)}/>` +
+        `<path d="M-46 -42C-36 -38 -28 -34 -20 -26M-46 -28C-36 -24 -26 -20 -16 -14M-40 -14C-30 -12 -20 -8 -12 -4" fill="none" stroke="${tip}" stroke-width="2.2" stroke-linecap="round"/>` +
+        `<path d="M-6 -6C-14 -26 -28 -44 -50 -56" fill="none" stroke="${sh(c, -0.12)}" stroke-width="1.4"/>`;
+    }
+    function pegasus(o = {}) {
+      const W = `<g transform="translate(-2 -60) scale(1.1)">${wing("#ffffff", o.tip || "#c9b8ff")}</g>`;
+      return horse({ c: o.c || "#eef3ff", mane: o.mane || ["#8fb4ff", "#b8a2ff", "#9fe0ff"], hoof: "#c9b2ff" }) + W;
+    }
+    function fairy(o = {}) {
+      const D = o.c || "#ff8fbf", H = o.hair || "#f6c35a", K = "#ffd9c2";
+      return `<g opacity=".75"><path d="M-2 -18C-30 -48 -48 -28 -36 -14C-28 -6 -12 -10 -2 -16Z" fill="#cff4ff" stroke="#7fc8e8" stroke-width="1.4"/><path d="M-2 -12C-26 -6 -32 14 -16 14C-8 14 -4 2 -2 -10Z" fill="#e7dcff" stroke="#a894e8" stroke-width="1.4"/>` +
+        `<path d="M2 -18C30 -48 48 -28 36 -14C28 -6 12 -10 2 -16Z" fill="#cff4ff" stroke="#7fc8e8" stroke-width="1.4"/><path d="M2 -12C26 -6 32 14 16 14C8 14 4 2 2 -10Z" fill="#e7dcff" stroke="#a894e8" stroke-width="1.4"/></g>` +
+        `<path d="M-4 18L-6 34M4 18L6 34" stroke="${sh(K, -0.2)}" stroke-width="3.4" stroke-linecap="round"/>` +
+        `<path d="M-6 -20C-10 -6 -18 12 -22 22C-10 18 0 24 6 20C12 24 20 20 22 22C18 12 10 -6 6 -20Z" ${S(D)}/>` +
+        `<path d="M-22 22C-18 16 -14 22 -10 18C-6 24 -2 18 2 22C6 18 10 24 14 18C18 22 20 16 22 22" fill="none" stroke="${sh(D, -0.3)}" stroke-width="1.4"/>` +
+        `<path d="M6 -14C14 -16 20 -24 24 -32" fill="none" stroke="${K}" stroke-width="3.4" stroke-linecap="round"/><path d="M-6 -14C-12 -8 -16 -2 -18 4" fill="none" stroke="${K}" stroke-width="3.4" stroke-linecap="round"/>` +
+        `<path d="M24 -34L34 -50" stroke="#c99a3a" stroke-width="2" stroke-linecap="round"/><path d="${starPath(35, -52, 7)}" fill="#ffe26a" stroke="#d6a21c" stroke-width="1.2"/>` +
+        `<path d="M-15 -36C-22 -58 -6 -66 2 -64C14 -64 22 -54 16 -36C20 -28 14 -18 10 -24Z" fill="${H}" stroke="${sh(H, -0.35)}" stroke-width="1.6"/>` +
+        `<circle cx="0" cy="-38" r="12" fill="${K}" stroke="${sh(K, -0.3)}" stroke-width="1.4"/>` +
+        `<path d="M-12 -40C-10 -52 2 -54 12 -46C6 -48 -2 -48 -12 -40Z" fill="${H}"/>` +
+        `<circle cx="-11" cy="-52" r="4" fill="#ff8fbf"/><circle cx="-14" cy="-48" r="2.6" fill="#ffd36e"/>` +
+        eye(-4, -38, 2.6) + eye(5, -38, 2.6) + cheek(-7, -32, 3) + cheek(8, -32, 3) + smile(0.5, -31, 3);
+    }
+    function phoenix(o = {}) {
+      const R = o.c || "#ff6a3d", Y = "#ffc93c", O = "#ff9a3c";
+      let tail = "";
+      [[R, -70, 10], [O, -78, -4], [Y, -66, -16], [R, -60, 22]].forEach(([c, x, y], i) => { tail += `<path d="M-14 4C-30 ${8 + i * 2} ${x + 20} ${y + 12} ${x} ${y}C${x + 16} ${y + 2} ${-26 + i * 2} ${-2 + i} -10 -6Z" ${S(c, 1.5)}/>`; });
+      return tail +
+        `<path d="M-10 -8C-30 -34 -44 -60 -54 -70C-30 -66 -12 -50 0 -26Z" ${S(O, 1.6)}/><path d="M-12 -14C-28 -36 -36 -52 -42 -60C-26 -54 -14 -42 -4 -24Z" fill="${Y}"/>` +
+        `<ellipse cx="2" cy="-6" rx="22" ry="15" ${S(R)}/><path d="M-6 2C4 6 16 2 20 -6C10 0 0 0 -6 2Z" fill="${Y}"/>` +
+        `<path d="M4 -10C10 -40 18 -60 40 -64C30 -48 22 -30 14 -6Z" ${S(O, 1.6)}/><path d="M10 -14C16 -38 22 -52 34 -58C26 -44 20 -30 16 -12Z" fill="${Y}"/>` +
+        `<circle cx="24" cy="-22" r="13" ${S(R)}/>` +
+        `<path d="M20 -34C18 -46 24 -52 28 -50C26 -44 28 -40 26 -34Z" fill="${Y}" stroke="${sh(Y, -0.4)}" stroke-width="1.2"/><path d="M24 -34C26 -44 32 -46 34 -42C30 -40 30 -36 28 -32Z" fill="${O}"/>` +
+        `<path d="M36 -24L46 -20L36 -16Z" fill="#ffd36e" stroke="#b07a12" stroke-width="1.3"/>` + eye(29, -24, 3.4) + cheek(28, -15, 3.2);
+    }
+    function whale(o = {}) {
+      const B = o.c || "#5a8fd0", W = o.belly || "#e3f1ff";
+      return `<path d="M-60 -6C-74 -24 -84 -20 -90 -26C-84 -10 -80 -2 -86 10C-78 6 -70 4 -60 4Z" ${S(B)}/>` +
+        `<path d="M-62 0C-58 -30 -30 -44 6 -44C40 -44 58 -26 58 -4C58 18 36 28 4 28C-28 28 -50 20 -62 0Z" ${S(B)}/>` +
+        `<path d="M-52 8C-30 22 16 30 50 8C48 20 30 28 4 28C-24 28 -42 20 -52 8Z" fill="${W}"/>` +
+        `<path d="M-30 18C-10 24 20 24 38 16M-24 22C-6 27 18 27 32 21" fill="none" stroke="${sh(W, -0.25)}" stroke-width="1.3"/>` +
+        `<path d="M-6 12C0 24 -10 34 -20 36C-18 26 -14 18 -10 12Z" ${S(sh(B, -0.1), 1.6)}/>` +
+        eye(32, -6, 4.2) + cheek(34, 4, 5) + `<path d="M44 8Q50 10 54 4" fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>` +
+        (o.stars ? o.stars : "");
+    }
+    function turtle(o = {}) {
+      const G = o.c || "#5fb56a", Sh = o.shell || "#8a6a3a", K = "#c9b06a";
+      let hex = "";
+      [[-14, -10], [4, -12], [-24, 0], [-6, 2], [12, 0], [-14, 10], [4, 10]].forEach(([x, y]) => { hex += `<path d="M${x - 6} ${y}L${x - 3} ${y - 5}H${x + 3}L${x + 6} ${y}L${x + 3} ${y + 5}H${x - 3}Z" fill="${K}" opacity=".7"/>`; });
+      return `<path d="M-30 6C-46 2 -54 14 -50 22C-40 20 -32 14 -26 10Z" ${S(G, 1.6)}/><path d="M-14 12C-22 26 -16 34 -8 34C-6 26 -6 18 -6 14Z" ${S(G, 1.6)}/>` +
+        `<path d="M18 2C30 -6 44 -2 40 10C32 10 24 8 18 8Z" ${S(G, 1.6)}/>` +
+        `<ellipse cx="-6" cy="0" rx="32" ry="20" ${S(Sh)}/>` + hex +
+        `<path d="M8 10C22 30 30 34 38 30C34 22 24 14 14 8Z" ${S(G, 1.6)}/>` +
+        `<ellipse cx="38" cy="-6" rx="13" ry="11" ${S(G)}/>` + eye(42, -9, 3.4) + cheek(42, -1, 3.4) + smile(46, 0, 2.4);
+    }
+    function seahorse(o = {}) {
+      const Y = o.c || "#ffb547", F = "#ffe08a";
+      return `<path d="M-2 40C-16 40 -18 22 -6 22C2 22 2 32 -4 32" fill="none" stroke="${sh(Y, -0.45)}" stroke-width="8.5" stroke-linecap="round"/><path d="M-2 40C-16 40 -18 22 -6 22C2 22 2 32 -4 32" fill="none" stroke="${Y}" stroke-width="5.5" stroke-linecap="round"/>` +
+        `<path d="M-4 24C-18 10 -18 -14 -6 -24C6 -32 16 -24 14 -12C12 0 10 14 -4 24Z" ${S(Y)}/>` +
+        `<path d="M0 18C8 6 10 -6 8 -16" fill="none" stroke="${F}" stroke-width="4" stroke-linecap="round"/>` +
+        `<path d="M-14 -4C-26 -10 -26 4 -16 6Z" fill="${F}" stroke="${sh(Y, -0.3)}" stroke-width="1.2"/>` +
+        `<path d="M-10 -26C-8 -44 10 -46 14 -34C16 -28 14 -24 8 -22Z" ${S(Y)}/>` +
+        `<path d="M10 -36C18 -36 26 -32 30 -30C30 -26 18 -26 10 -28Z" ${S(Y, 1.6)}/>` +
+        `<path d="M-8 -40L-12 -50L-4 -44L-2 -54L2 -44" fill="${F}" stroke="${sh(Y, -0.3)}" stroke-width="1.2"/>` +
+        eye(4, -36, 3.2) + cheek(6, -28, 2.8);
+    }
+    function mermaid(o = {}) {
+      const T = o.c || "#3cc7b5", H = o.hair || "#e0573c", K = "#ffd9c2", Top = "#c99bff";
+      let sc = "";
+      for (let i = 0; i < 5; i++) sc += `<path d="M${-8 + (i % 2) * 6} ${10 + i * 8}q4 4 8 0" fill="none" stroke="${sh(T, -0.3)}" stroke-width="1.2"/>`;
+      return `<path d="M-8 -56C-26 -52 -30 -30 -26 -10C-24 4 -30 14 -36 20C-24 20 -14 10 -12 -4C-10 -18 -10 -36 -4 -50Z" fill="${H}" stroke="${sh(H, -0.35)}" stroke-width="1.6"/>` +
+        `<path d="M-10 0C-20 20 -14 44 6 54C14 58 26 56 34 50C20 48 8 40 4 24C2 14 6 6 8 0Z" ${S(T)}/>` + sc +
+        `<path d="M34 50C44 40 56 40 60 46C52 52 50 58 54 66C44 64 36 58 34 50Z" ${S(sh(T, 0.15))}/>` +
+        `<path d="M-12 -24C-14 -12 -12 -2 -10 2H10C12 -4 12 -14 8 -24Z" fill="${K}" stroke="${sh(K, -0.3)}" stroke-width="1.4"/>` +
+        `<path d="M-11 -18C-6 -22 -2 -18 -1 -14C-4 -10 -10 -12 -11 -18ZM1 -14C2 -18 6 -22 10 -18C10 -12 4 -10 1 -14Z" fill="${Top}" stroke="${sh(Top, -0.35)}" stroke-width="1.2"/>` +
+        `<path d="M8 -20C16 -26 22 -34 24 -42" fill="none" stroke="${K}" stroke-width="3.6" stroke-linecap="round"/>` +
+        `<path d="M-10 -40C-30 -58 -6 -70 6 -66C20 -62 22 -50 16 -40C22 -30 20 -20 14 -18C14 -28 10 -34 6 -36Z" fill="${H}" stroke="${sh(H, -0.35)}" stroke-width="1.6"/>` +
+        `<circle cx="0" cy="-42" r="12" fill="${K}" stroke="${sh(K, -0.3)}" stroke-width="1.4"/>` +
+        `<path d="M-12 -44C-10 -56 2 -58 12 -50C6 -52 -2 -52 -12 -44Z" fill="${H}"/>` +
+        `<path d="M8 -54l4 -4l1 5z" fill="#ffd36e"/>` + `<circle cx="11" cy="-54" r="3" fill="#fff6a8" stroke="#d6a21c" stroke-width="1"/>` +
+        eye(-3, -42, 2.6) + eye(6, -42, 2.6) + cheek(-6, -36, 3) + cheek(9, -36, 3) + smile(1.5, -35, 3);
+    }
+    function princess(o = {}) {
+      const D = o.c || "#c77dff", H = o.hair || "#8a4b2a", K = "#ffd9c2", G = "#ffd24a";
+      return `<path d="M-12 -86C-26 -78 -28 -50 -20 -40C-16 -52 -12 -66 -8 -74Z" fill="${H}" stroke="${sh(H, -0.35)}" stroke-width="1.4"/><path d="M12 -86C26 -78 28 -50 20 -40C16 -52 12 -66 8 -74Z" fill="${H}" stroke="${sh(H, -0.35)}" stroke-width="1.4"/>` +
+        `<path d="M-8 -60C-12 -50 -12 -40 -10 -36C-20 -20 -30 -6 -36 0H36C30 -6 20 -20 10 -36C12 -40 12 -50 8 -60Z" ${S(D)}/>` +
+        `<path d="M-36 0C-30 -4 -24 2 -18 -2C-12 2 -6 -2 0 2C6 -2 12 2 18 -2C24 2 30 -4 36 0" fill="none" stroke="${sh(D, 0.5)}" stroke-width="2.4"/>` +
+        `<path d="M-10 -36C-4 -32 4 -32 10 -36" fill="none" stroke="${G}" stroke-width="2.4"/>` +
+        `<path d="M-9 -56C-18 -46 -22 -38 -20 -30M9 -56C18 -46 22 -38 20 -30" fill="none" stroke="${K}" stroke-width="3.6" stroke-linecap="round"/>` +
+        `<path d="M20 -30L22 -40" stroke="#4f9a4a" stroke-width="1.6"/><circle cx="22" cy="-42" r="3.6" fill="#ff6f86" stroke="#b03a54" stroke-width="1"/>` +
+        `<path d="M-4 -60H4V-66H-4Z" fill="${K}"/>` +
+        `<circle cx="0" cy="-74" r="12" fill="${K}" stroke="${sh(K, -0.3)}" stroke-width="1.4"/>` +
+        `<path d="M-13 -74C-14 -88 -4 -92 4 -90C12 -88 16 -80 13 -72C8 -80 -4 -82 -13 -74Z" fill="${H}"/>` +
+        `<path d="M-9 -86L-10 -96L-5 -90L0 -99L5 -90L10 -96L9 -86Z" fill="${G}" stroke="#b07a12" stroke-width="1.3"/><circle cx="0" cy="-90" r="1.8" fill="#ff5a7a"/>` +
+        eye(-4, -73, 2.5) + eye(5, -73, 2.5) + cheek(-7, -67, 3) + cheek(8, -67, 3) + smile(0.5, -66, 3);
+    }
+    function knight(o = {}) {
+      const M = "#c9d3de", C = o.c || "#3f7fd6", K = "#ffd9c2", G = "#ffd24a";
+      return `<path d="M-14 -10V-2H-4V-10ZM4 -10V-2H14V-10Z" ${S(M, 1.6)}/>` +
+        `<path d="M-18 -50C-20 -34 -18 -18 -16 -10H16C18 -18 20 -34 18 -50Z" ${S(C)}/>` +
+        `<path d="M0 -48V-12M-12 -32H12" stroke="${G}" stroke-width="3"/>` +
+        `<path d="M18 -46L28 -74" stroke="#7a5a3a" stroke-width="3" stroke-linecap="round"/><path d="M27 -74L46 -70L28 -62Z" fill="${G}" stroke="#b07a12" stroke-width="1.2"/>` +
+        `<path d="M-16 -46C-24 -40 -26 -30 -22 -26" fill="none" stroke="${M}" stroke-width="6" stroke-linecap="round"/>` +
+        `<path d="M-34 -40H-12V-24C-12 -16 -18 -10 -23 -8C-28 -10 -34 -16 -34 -24Z" ${S(C, 1.8)}/><path d="M-23 -36V-14M-31 -26H-15" stroke="${G}" stroke-width="2.6"/>` +
+        `<path d="M16 -46C22 -42 24 -40 22 -44" fill="none" stroke="${M}" stroke-width="6" stroke-linecap="round"/>` +
+        `<path d="M-15 -60C-16 -80 -8 -86 0 -86C8 -86 16 -80 15 -60C10 -54 -10 -54 -15 -60Z" ${S(M)}/>` +
+        `<path d="M-9 -74H9V-60C6 -56 -6 -56 -9 -60Z" fill="${K}"/>` +
+        `<path d="M0 -86C2 -96 10 -102 18 -98C12 -96 6 -92 4 -86Z" fill="#ff5a5f" stroke="#a8302f" stroke-width="1.2"/>` +
+        eye(-3.5, -67, 2.4) + eye(4.5, -67, 2.4) + cheek(-6, -61.5, 2.6) + cheek(7, -61.5, 2.6) + smile(0.5, -60.5, 2.6);
+    }
+    function dragon(o = {}) {
+      const G = o.c || "#6cc46a", B = o.belly || "#f5e6a3", W = o.wing || "#a4dd7f";
+      let stripes = "";
+      for (let i = 0; i < 4; i++) stripes += `<path d="M${-2 + i} ${-48 + i * 10}h${12 - i}" stroke="${sh(B, -0.25)}" stroke-width="1.3"/>`;
+      return `<path d="M-20 -8C-44 -2 -58 -14 -62 -28C-54 -22 -46 -18 -38 -22" fill="none" stroke="${sh(G, -0.45)}" stroke-width="12" stroke-linecap="round"/><path d="M-20 -8C-44 -2 -58 -14 -62 -28C-54 -22 -46 -18 -38 -22" fill="none" stroke="${G}" stroke-width="8.5" stroke-linecap="round"/>` +
+        `<path d="M-62 -28L-72 -36L-60 -38Z" ${S(sh(G, -0.15), 1.4)}/>` +
+        `<path d="M-12 -46C-30 -70 -40 -84 -54 -88C-48 -74 -50 -62 -40 -56C-46 -52 -44 -44 -34 -42C-34 -36 -24 -34 -14 -36Z" ${S(W, 1.6)}/>` +
+        `<path d="M-24 -2C-32 -30 -20 -58 4 -58C26 -56 30 -28 22 -2Z" ${S(G)}/>` +
+        `<path d="M-4 -52C10 -52 16 -32 12 -6C4 -4 -6 -4 -10 -8C-12 -30 -10 -46 -4 -52Z" fill="${B}"/>` + stripes +
+        `<ellipse cx="-14" cy="-10" rx="14" ry="11" ${S(G)}/><ellipse cx="-8" cy="-2" rx="11" ry="4" ${S(sh(G, 0.15), 1.5)}/>` +
+        `<path d="M10 -36C18 -32 20 -24 16 -20" fill="none" stroke="${G}" stroke-width="7" stroke-linecap="round"/>` +
+        `<path d="M-4 -74L-8 -90L4 -78Z" fill="#fff3c4" stroke="#b49a5a" stroke-width="1.2"/><path d="M8 -78L10 -94L18 -78Z" fill="#fff3c4" stroke="#b49a5a" stroke-width="1.2"/>` +
+        `<path d="M-14 -64C-16 -80 0 -86 12 -82C26 -80 38 -74 40 -64C40 -54 30 -50 18 -50C4 -50 -12 -52 -14 -64Z" ${S(G)}/>` +
+        `<path d="M-14 -66L-22 -70L-16 -60Z" ${S(sh(G, -0.15), 1.2)}/>` +
+        `<circle cx="34" cy="-68" r="1.6" fill="${sh(G, -0.5)}"/><circle cx="37" cy="-64" r="1.6" fill="${sh(G, -0.5)}"/>` +
+        eye(14, -68, 4) + cheek(18, -57, 4.4) + `<path d="M28 -56Q33 -53 38 -57" fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round"/>` + (o.crown ? `<path d="M-2 -80L-4 -92L2 -86L8 -96L12 -86L18 -92L16 -80Z" fill="#ffe14d" stroke="#a87a12" stroke-width="1.3"/>` : "");
+    }
+    const DRAW = { fox, deer, owl, hare, unicorn, pegasus, fairy, phoenix, whale, turtle, seahorse, mermaid, princess, knight, dragon };
+
+    // ----- Legenden: gibt es nur als Goldbild -----
+    const LEGEND = {
+      weisshirsch: { base: "deer", o: { c: "#f4f1ea", antler: "#ffd24a" }, scene: "silberwald" },
+      sternenwal: { base: "whale", o: { c: "#3d4fa8", belly: "#c9d6ff" }, scene: "sternenmeer", stars: true },
+      regenbogeneinhorn: { base: "unicorn", o: { mane: RAINBOW }, scene: "regenbogenbruecke" },
+      golddrache: { base: "dragon", o: { c: "#f2b632", belly: "#fff1b8", wing: "#ffd970", crown: true }, scene: "schatzkammer" },
+    };
+
+    // ----- Bausteine der Landschaften -----
+    const hill = (R, y, amp, n, fill, extra = "") => {
+      const w = 320 / n;
+      let d = `M-10 300L-10 ${f1(y + R(-amp, amp) * 0.4)}`;
+      for (let i = 0; i < n; i++) { const x = -10 + w * (i + 1); d += `Q${f1(x - w / 2)} ${f1(y - R(0.4, 1) * amp)} ${f1(x)} ${f1(y + R(-amp, amp) * 0.3)}`; }
+      return `<path d="${d}L310 300Z" fill="${fill}"${extra}/>`;
+    };
+    const cloud = (x, y, s, c = "#ffffff", d = "#dfeaf7") =>
+      `<g transform="translate(${f1(x)} ${f1(y)}) scale(${f1(s * 100) / 100})"><ellipse cx="4" cy="8" rx="34" ry="9" fill="${d}"/>` +
+      `<circle cx="-16" cy="2" r="11" fill="${c}"/><circle cx="0" cy="-6" r="15" fill="${c}"/><circle cx="16" cy="0" r="12" fill="${c}"/><circle cx="28" cy="5" r="8" fill="${c}"/><ellipse cx="4" cy="6" rx="32" ry="7" fill="${c}"/></g>`;
+    const sun = (u, x, y, r) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r * 3)}" fill="url(#${u}sunglow)"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="#fff3a8"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r * 0.8)}" fill="#ffe46b"/>`;
+    const moon = (u, x, y, r, crescent) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r * 3.2)}" fill="url(#${u}moonglow)"/>` +
+      (crescent ? `<path d="M${f1(x)} ${f1(y - r)}A${r} ${r} 0 0 1 ${f1(x)} ${f1(y + r)}A${f1(r * 1.25)} ${f1(r * 1.25)} 0 0 0 ${f1(x)} ${f1(y - r)}Z" fill="#fff6cf" transform="rotate(-25 ${f1(x)} ${f1(y)})"/>`
+        : `<circle cx="${f1(x)}" cy="${f1(y)}" r="${r}" fill="#fff6d6"/><circle cx="${f1(x - r * 0.3)}" cy="${f1(y - r * 0.2)}" r="${f1(r * 0.18)}" fill="#efe3b8"/><circle cx="${f1(x + r * 0.28)}" cy="${f1(y + r * 0.3)}" r="${f1(r * 0.12)}" fill="#efe3b8"/><circle cx="${f1(x + r * 0.2)}" cy="${f1(y - r * 0.38)}" r="${f1(r * 0.09)}" fill="#efe3b8"/>`);
+    const stars = (R, n, y1, c = "#fff") => {
+      let o = "";
+      for (let i = 0; i < n; i++) o += `<circle cx="${f1(R(4, 296))}" cy="${f1(R(4, y1))}" r="${f1(R(0.5, 1.5))}" fill="${c}" opacity="${f1(R(0.5, 1))}"/>`;
+      for (let i = 0; i < Math.ceil(n / 12); i++) o += `<path d="${starPath(R(10, 290), R(10, y1 * 0.8), R(3, 5))}" fill="${c}"/>`;
+      return o;
+    };
+    const roundTree = (x, y, h, c, trunk = "#8a5a3a") => {
+      const r = h * 0.32;
+      return `<path d="M${f1(x - h * 0.05)} ${f1(y)}L${f1(x - h * 0.035)} ${f1(y - h * 0.55)}H${f1(x + h * 0.035)}L${f1(x + h * 0.05)} ${f1(y)}Z" fill="${trunk}"/>` +
+        `<circle cx="${f1(x - r * 0.6)}" cy="${f1(y - h * 0.6)}" r="${f1(r * 0.8)}" fill="${sh(c, -0.12)}"/><circle cx="${f1(x + r * 0.6)}" cy="${f1(y - h * 0.62)}" r="${f1(r * 0.85)}" fill="${sh(c, -0.12)}"/>` +
+        `<circle cx="${f1(x)}" cy="${f1(y - h * 0.8)}" r="${f1(r)}" fill="${c}"/><circle cx="${f1(x - r * 0.3)}" cy="${f1(y - h * 0.88)}" r="${f1(r * 0.4)}" fill="${sh(c, 0.2)}"/>`;
+    };
+    const pine = (x, y, h, c, snow) => {
+      let o = `<rect x="${f1(x - h * 0.04)}" y="${f1(y - h * 0.16)}" width="${f1(h * 0.08)}" height="${f1(h * 0.16)}" fill="#6b4a34"/>`;
+      for (let i = 0; i < 3; i++) {
+        const top = y - h * (0.45 + i * 0.27), bot = y - h * (0.1 + i * 0.25), w = h * (0.36 - i * 0.09);
+        o += `<path d="M${f1(x)} ${f1(top - h * 0.1)}L${f1(x + w)} ${f1(bot)}Q${f1(x)} ${f1(bot + h * 0.05)} ${f1(x - w)} ${f1(bot)}Z" fill="${c}"/>`;
+        if (snow) o += `<path d="M${f1(x)} ${f1(top - h * 0.1)}L${f1(x + w * 0.5)} ${f1(top + (bot - top) * 0.35)}Q${f1(x)} ${f1(top + (bot - top) * 0.5)} ${f1(x - w * 0.5)} ${f1(top + (bot - top) * 0.35)}Z" fill="#fbfdff"/>`;
+      }
+      return o;
+    };
+    const birch = (x, y, h, crown, bark = "#f6f3ec") => {
+      let o = `<rect x="${f1(x - 3)}" y="${f1(y - h)}" width="6" height="${f1(h)}" fill="${bark}"/>`;
+      for (let i = 1; i < 6; i++) o += `<rect x="${f1(x - 3)}" y="${f1(y - h * i / 6)}" width="${i % 2 ? 4 : 3}" height="1.6" fill="#4a4a52"/>`;
+      return o + `<ellipse cx="${f1(x)}" cy="${f1(y - h)}" rx="${f1(h * 0.22)}" ry="${f1(h * 0.28)}" fill="${crown}"/><ellipse cx="${f1(x - h * 0.05)}" cy="${f1(y - h * 1.08)}" rx="${f1(h * 0.1)}" ry="${f1(h * 0.12)}" fill="${sh(crown, 0.18)}"/>`;
+    };
+    const flower = (x, y, c, s = 1) => {
+      let o = `<path d="M${f1(x)} ${f1(y)}V${f1(y - 9 * s)}" stroke="#4f9a44" stroke-width="${f1(1.3 * s)}"/>`;
+      for (let i = 0; i < 5; i++) { const a = (i * 72 * Math.PI) / 180; o += `<circle cx="${f1(x + Math.cos(a) * 2.6 * s)}" cy="${f1(y - 10 * s + Math.sin(a) * 2.6 * s)}" r="${f1(2 * s)}" fill="${c}"/>`; }
+      return o + `<circle cx="${f1(x)}" cy="${f1(y - 10 * s)}" r="${f1(1.5 * s)}" fill="#ffcf3a"/>`;
+    };
+    const tuft = (x, y, s, c) => `<path d="M${f1(x - 4 * s)} ${f1(y)}Q${f1(x - 3 * s)} ${f1(y - 6 * s)} ${f1(x - 6 * s)} ${f1(y - 10 * s)}M${f1(x)} ${f1(y)}Q${f1(x + s)} ${f1(y - 8 * s)} ${f1(x)} ${f1(y - 13 * s)}M${f1(x + 4 * s)} ${f1(y)}Q${f1(x + 4 * s)} ${f1(y - 6 * s)} ${f1(x + 7 * s)} ${f1(y - 9 * s)}" fill="none" stroke="${c}" stroke-width="${f1(1.6 * s)}" stroke-linecap="round"/>`;
+    const mushroom = (x, y, s, cap = "#e5483c") => `<path d="M${f1(x - 3 * s)} ${f1(y)}L${f1(x - 2.4 * s)} ${f1(y - 8 * s)}H${f1(x + 2.4 * s)}L${f1(x + 3 * s)} ${f1(y)}Z" fill="#fbf1de" stroke="#c9b38f" stroke-width="${f1(0.6 * s)}"/>` +
+      `<path d="M${f1(x - 9 * s)} ${f1(y - 7 * s)}Q${f1(x)} ${f1(y - 19 * s)} ${f1(x + 9 * s)} ${f1(y - 7 * s)}Z" fill="${cap}" stroke="${sh(cap, -0.35)}" stroke-width="${f1(0.8 * s)}"/>` +
+      `<circle cx="${f1(x - 3.5 * s)}" cy="${f1(y - 10 * s)}" r="${f1(1.3 * s)}" fill="#fff"/><circle cx="${f1(x + 3 * s)}" cy="${f1(y - 11.5 * s)}" r="${f1(1.1 * s)}" fill="#fff"/><circle cx="${f1(x + 0.5 * s)}" cy="${f1(y - 8.5 * s)}" r="${f1(0.9 * s)}" fill="#fff"/>`;
+    const butterfly = (x, y, c, s = 1) => `<g transform="translate(${f1(x)} ${f1(y)}) scale(${s})"><ellipse cx="-4" cy="-3" rx="4.5" ry="3.5" fill="${c}"/><ellipse cx="4" cy="-3" rx="4.5" ry="3.5" fill="${c}"/><ellipse cx="-3" cy="2.5" rx="3" ry="2.4" fill="${sh(c, 0.3)}"/><ellipse cx="3" cy="2.5" rx="3" ry="2.4" fill="${sh(c, 0.3)}"/><path d="M0 -4V4" stroke="${INK}" stroke-width="1.2"/></g>`;
+    const fish = (x, y, s, c, flip) => `<g transform="translate(${f1(x)} ${f1(y)}) scale(${flip ? -s : s} ${s})"><path d="M-8 0L-14 -5V5Z" fill="${sh(c, -0.15)}"/><ellipse cx="0" cy="0" rx="9" ry="5.5" fill="${c}"/><path d="M-1 -5Q2 0 -1 5" fill="none" stroke="${sh(c, 0.4)}" stroke-width="1.4"/><circle cx="4.5" cy="-1" r="1.4" fill="${INK}"/></g>`;
+    const weed = (x, y, h, c, R) => { let d = `M${f1(x)} ${f1(y)}`; for (let i = 1; i <= 4; i++) d += `Q${f1(x + (i % 2 ? 7 : -7))} ${f1(y - h * (i - 0.5) / 4)} ${f1(x + R(-2, 2))} ${f1(y - h * i / 4)}`; return `<path d="${d}" fill="none" stroke="${c}" stroke-width="${f1(R(3.5, 5.5))}" stroke-linecap="round"/>`; };
+    const coral = (x, y, h, c, R) => {
+      let d = "";
+      const br = (x0, y0, a, l, k) => { if (k > 2 || l < 6) return; const x1 = x0 + Math.sin(a) * l, y1 = y0 - Math.cos(a) * l; d += `M${f1(x0)} ${f1(y0)}L${f1(x1)} ${f1(y1)}`; br(x1, y1, a - R(0.3, 0.6), l * 0.7, k + 1); br(x1, y1, a + R(0.3, 0.6), l * 0.7, k + 1); };
+      br(x, y, 0, h * 0.42, 0);
+      return `<path d="${d}" fill="none" stroke="${sh(c, -0.25)}" stroke-width="8" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="5.5" stroke-linecap="round"/>`;
+    };
+    const bubbles = (R, n, y0, y1) => { let o = ""; for (let i = 0; i < n; i++) o += `<circle cx="${f1(R(10, 290))}" cy="${f1(R(y0, y1))}" r="${f1(R(1.5, 4))}" fill="#ffffff" fill-opacity=".25" stroke="#ffffff" stroke-opacity=".7" stroke-width="1"/>`; return o; };
+    const rays = (R, n, c, op) => { let o = ""; for (let i = 0; i < n; i++) { const x = R(0, 300), w = R(10, 26), sk = R(30, 80); o += `<path d="M${f1(x)} -5H${f1(x + w)}L${f1(x + w + sk)} 260H${f1(x + sk - w * 0.5)}Z" fill="${c}" opacity="${f1(op * R(0.6, 1))}"/>`; } return o; };
+    const glow = (x, y, r, c, op = 1) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r * 3)}" fill="${c}" opacity="${f1(0.18 * op)}"/><circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="${c}" opacity="${f1(op)}"/>`;
+    const jelly = (x, y, s, c) => `<g transform="translate(${f1(x)} ${f1(y)}) scale(${f1(s)})"><circle r="16" fill="${c}" opacity=".18"/><path d="M-9 0Q-9 -11 0 -11Q9 -11 9 0Q4.5 -2 0 0Q-4.5 -2 -9 0Z" fill="${c}" opacity=".85"/><path d="M-6 0q-2 6 0 12M-2 0q2 7 0 14M2 0q-2 7 0 13M6 0q2 6 0 11" fill="none" stroke="${c}" stroke-width="1.3" opacity=".8"/></g>`;
+    const castle = (x, base, s, stone, roof, win) => {
+      const S2 = (n) => f1(n * s);
+      const tower = (tx, w, h, r) => `<rect x="${f1(x + tx * s - w * s / 2)}" y="${f1(base - h * s)}" width="${S2(w)}" height="${S2(h)}" fill="${stone}" stroke="${sh(stone, -0.3)}" stroke-width="1"/>` +
+        `<path d="M${f1(x + tx * s - w * s * 0.62)} ${f1(base - h * s)}L${f1(x + tx * s)} ${f1(base - (h + r) * s)}L${f1(x + tx * s + w * s * 0.62)} ${f1(base - h * s)}Z" fill="${roof}" stroke="${sh(roof, -0.3)}" stroke-width="1"/>` +
+        `<path d="M${f1(x + tx * s)} ${f1(base - (h + r) * s)}V${f1(base - (h + r + 12) * s)}" stroke="#7a5a3a" stroke-width="1"/><path d="M${f1(x + tx * s)} ${f1(base - (h + r + 12) * s)}l${S2(9)} ${S2(3)}l${S2(-9)} ${S2(3)}Z" fill="${roof}"/>` +
+        `<rect x="${f1(x + tx * s - 2.5 * s)}" y="${f1(base - h * s * 0.7)}" width="${S2(5)}" height="${S2(8)}" rx="${S2(2.5)}" fill="${win}"/>`;
+      let crn = "";
+      for (let i = -3; i <= 3; i++) crn += `<rect x="${f1(x + (i * 10 - 3.5) * s)}" y="${f1(base - 48 * s)}" width="${S2(7)}" height="${S2(6)}" fill="${stone}" stroke="${sh(stone, -0.3)}" stroke-width="1"/>`;
+      return crn + `<rect x="${f1(x - 36 * s)}" y="${f1(base - 43 * s)}" width="${S2(72)}" height="${S2(43)}" fill="${stone}" stroke="${sh(stone, -0.3)}" stroke-width="1"/>` +
+        `<path d="M${f1(x - 9 * s)} ${f1(base)}V${f1(base - 16 * s)}Q${f1(x)} ${f1(base - 28 * s)} ${f1(x + 9 * s)} ${f1(base - 16 * s)}V${f1(base)}Z" fill="#7a5638"/>` +
+        tower(-40, 18, 70, 24) + tower(40, 18, 70, 24) + tower(0, 22, 92, 30) +
+        `<rect x="${f1(x - 22 * s)}" y="${f1(base - 32 * s)}" width="${S2(5)}" height="${S2(8)}" rx="${S2(2.5)}" fill="${win}"/><rect x="${f1(x + 17 * s)}" y="${f1(base - 32 * s)}" width="${S2(5)}" height="${S2(8)}" rx="${S2(2.5)}" fill="${win}"/>`;
+    };
+    const rainbow = (x, y, r, op = 0.85) => RAINBOW.map((c, i) => `<path d="M${f1(x - r + i * 6)} ${f1(y)}A${f1(r - i * 6)} ${f1(r - i * 6)} 0 0 1 ${f1(x + r - i * 6)} ${f1(y)}" fill="none" stroke="${c}" stroke-width="6.5" opacity="${op}"/>`).join("");
+    const sparkle = (x, y, r, c = "#fff", cls = "") => `<path class="${cls}" d="${starPath(x, y, r)}" fill="${c}"/>`;
+
+    // ----- Landschaften. sky: Himmel oben → unten. Jede liefert hinten (back) und vorne (front) -----
+    // kind: land (steht auf dem Boden), sea (unter Wasser). night: dunkler Himmel, Wesen bekommt einen Lichtschein
+    const SC = [
+      { id: "fruehling", world: "wald", name: "Frühlingswiese", at: "auf der Frühlingswiese", sky: ["#7cc6f5", "#bfe6fb", "#e6f6ff"], ground: 236,
+        back: (c) => sun(c.u, c.side ? 60 : 240, 54, 18) + cloud(c.R(40, 120), c.R(40, 70), c.R(0.7, 1)) + cloud(c.R(170, 260), c.R(30, 60), c.R(0.6, 0.9)) +
+          hill(c.R, 206, 14, 3, "#b5ddb0") + [0, 1, 2, 3, 4, 5, 6].map((i) => roundTree(i * 50 + c.R(-10, 10), 222, c.R(44, 62), c.pick(["#7cc36e", "#6db864", "#8bcf78"]))).join("") +
+          hill(c.R, 236, 6, 2, "#8fd16b"),
+        front: (c) => { let o = ""; for (let i = 0; i < 40; i++) o += flower(c.R(0, 300), c.R(250, 298), c.pick(["#ffffff", "#ffd84a", "#ff8fb1", "#b98cff"]), c.R(0.8, 1.2)); for (let i = 0; i < 12; i++) o += tuft(c.R(0, 300), c.R(245, 300), c.R(0.8, 1.2), "#5fae4c"); return o + butterfly(c.R(30, 270), c.R(110, 170), c.pick(["#ff9fc4", "#ffd36e", "#9fb8ff"]), 1.2) + butterfly(c.R(30, 270), c.R(150, 200), "#ffb547", 1); } },
+      { id: "lichtung", world: "wald", name: "Waldlichtung", at: "auf der Waldlichtung", sky: ["#a6dcf3", "#d6f0f7", "#f2fbe6"], ground: 238,
+        back: (c) => { let o = ""; for (let i = 0; i < 9; i++) { const x = i * 36 + c.R(-8, 8); o += `<rect x="${f1(x - 5)}" y="0" width="${f1(c.R(8, 12))}" height="240" fill="${c.pick(["#a98a6e", "#b49678", "#9d7f63"])}"/>`; }
+          o += `<path d="M-10 -10H310V30Q280 60 250 34Q220 64 190 36Q160 70 130 40Q100 66 70 36Q40 62 10 34Q0 44 -10 40Z" fill="#6fb35f"/><path d="M-10 -10H310V14Q270 40 230 18Q190 44 150 20Q110 46 70 20Q30 40 -10 18Z" fill="#5aa252"/>`;
+          return o + rays(c.R, 4, "#fffbe0", 0.28) + hill(c.R, 238, 6, 2, "#86c967"); },
+        front: (c) => { let o = ""; for (let i = 0; i < 6; i++) o += `<path d="M${f1(c.R(0, 300))} 300c-6 -18 -18 -28 -30 -32c12 2 24 10 30 22c-2 -14 2 -26 10 -34c-4 12 -6 24 -4 40Z" fill="#4f9a48"/>`; for (let i = 0; i < 3; i++) o += mushroom(c.R(10, 290), c.R(262, 290), c.R(1, 1.4)); for (let i = 0; i < 14; i++) o += tuft(c.R(0, 300), c.R(248, 300), c.R(0.8, 1.2), "#4f9a48"); return o; } },
+      { id: "herbst", world: "wald", name: "Herbstwald", at: "im Herbstwald", sky: ["#ffc98a", "#ffe0b0", "#fff1d6"], ground: 238,
+        back: (c) => sun(c.u, c.side ? 70 : 230, 70, 16) + hill(c.R, 200, 12, 3, "#efc79a") + [0, 1, 2, 3, 4, 5, 6].map((i) => roundTree(i * 50 + c.R(-12, 12), 226, c.R(52, 74), c.pick(["#f08a3c", "#e86a3a", "#f5b13d", "#d9573a"]), "#7a4a2e")).join("") + hill(c.R, 238, 6, 2, "#d9a55a"),
+        front: (c) => { let o = ""; for (let i = 0; i < 30; i++) o += `<ellipse cx="${f1(c.R(0, 300))}" cy="${f1(c.R(246, 298))}" rx="3.4" ry="2" fill="${c.pick(["#e86a3a", "#f5b13d", "#c9502e"])}"/>`; for (let i = 0; i < 10; i++) o += `<ellipse cx="${f1(c.R(0, 300))}" cy="${f1(c.R(20, 200))}" rx="3.6" ry="2.2" fill="${c.pick(["#e86a3a", "#f5b13d", "#c9502e"])}" opacity=".9"/>`; for (let i = 0; i < 3; i++) o += mushroom(c.R(10, 290), c.R(262, 292), c.R(1, 1.3), "#b9653a"); return o; } },
+      { id: "winter", world: "wald", name: "Winterwald", at: "im Winterwald", sky: ["#a9d3f2", "#d3e9f9", "#eef7ff"], ground: 240,
+        back: (c) => cloud(c.R(30, 110), c.R(40, 70), 0.8, "#ffffff", "#dde8f4") + hill(c.R, 204, 12, 3, "#e3eef9") + [0, 1, 2, 3, 4, 5, 6, 7].map((i) => pine(i * 42 + c.R(-8, 8), 230, c.R(60, 90), c.pick(["#3f8066", "#4a8a70"]), true)).join("") + hill(c.R, 240, 5, 2, "#f6fbff"),
+        front: (c) => { let o = `<path d="M-10 300V270Q150 258 310 272V300Z" fill="#dde9f6"/>`; for (let i = 0; i < 50; i++) o += `<circle cx="${f1(c.R(0, 300))}" cy="${f1(c.R(0, 300))}" r="${f1(c.R(1, 2.6))}" fill="#fff" opacity=".9"/>`; return o; } },
+      { id: "mondlichtung", world: "wald", name: "Mondlichtung", at: "auf der Mondlichtung", night: true, sky: ["#1f3466", "#35538f", "#5577b3"], ground: 240,
+        back: (c) => stars(c.R, 50, 150) + moon(c.u, c.side ? 64 : 236, 62, 22) + hill(c.R, 206, 12, 3, "#3e5f8c") + [0, 1, 2, 3, 4, 5, 6, 7].map((i) => pine(i * 42 + c.R(-8, 8), 232, c.R(60, 86), c.pick(["#2f5577", "#355d80"]))).join("") + hill(c.R, 240, 5, 2, "#3f7569"),
+        front: (c) => { let o = ""; for (let i = 0; i < 14; i++) o += tuft(c.R(0, 300), c.R(250, 300), c.R(0.8, 1.2), "#5a9a85"); for (let i = 0; i < 16; i++) o += glow(c.R(5, 295), c.R(120, 290), c.R(1.4, 2.4), "#fff27a", c.R(0.6, 1)); for (let i = 0; i < 6; i++) o += flower(c.R(0, 300), c.R(262, 298), "#cfe0ff", 0.9); return o; } },
+
+      { id: "regenbogental", world: "fabel", name: "Regenbogental", at: "im Regenbogental", sky: ["#86ccf7", "#c3e8fb", "#eaf8ff"], ground: 236,
+        back: (c) => rainbow(c.side ? 90 : 210, 210, 130) + cloud(c.R(20, 90), c.R(40, 80), 0.9) + cloud(c.R(200, 280), c.R(50, 90), 0.8) + hill(c.R, 196, 16, 2, "#a8e09a") + hill(c.R, 220, 10, 3, "#8fd47e") + hill(c.R, 236, 5, 2, "#7cc96a"),
+        front: (c) => { let o = ""; for (let i = 0; i < 36; i++) o += flower(c.R(0, 300), c.R(250, 298), c.pick(["#ff8fb1", "#ffd84a", "#ffffff", "#9fb8ff", "#ff9a5a"]), c.R(0.8, 1.2)); for (let i = 0; i < 8; i++) o += sparkle(c.R(10, 290), c.R(20, 200), c.R(2.5, 4.5), "#ffffff"); return o; } },
+      { id: "wolkenland", world: "fabel", name: "Wolkenland", at: "im Wolkenland", sky: ["#8fb0f5", "#d9b8f0", "#ffd9c8"], ground: 236,
+        back: (c) => sun(c.u, c.side ? 70 : 230, 80, 20) + `<g opacity=".8">${castle(c.side ? 236 : 64, 196, 0.5, "#ffffff", "#c9b8ff", "#ffe08a")}</g>` + cloud(c.side ? 236 : 64, 200, 1.6, "#ffffff", "#e9e3ff") + cloud(c.R(100, 200), c.R(150, 180), 1.2, "#fff", "#ece6ff") + cloud(-10, 244, 2.6, "#f6eefe", "#ddd0f6") + cloud(170, 240, 2.8, "#f6eefe", "#ddd0f6") + `<rect x="-10" y="250" width="320" height="60" fill="#ece2fc"/>`,
+        front: (c) => cloud(40, 314, 2.2, "#f6eefe", "#ddd0f6") + cloud(270, 316, 2, "#f6eefe", "#ddd0f6") + [0, 1, 2, 3, 4, 5].map(() => sparkle(c.R(10, 290), c.R(20, 180), c.R(2.5, 4.5), "#fffbe6")).join("") },
+      { id: "feenwiese", world: "fabel", name: "Feenwiese", at: "auf der Feenwiese", sky: ["#9ee0d0", "#d4f3dc", "#fff4c8"], ground: 236,
+        back: (c) => hill(c.R, 196, 12, 3, "#b6e3b0") + [0, 1, 2, 3, 4, 5].map((i) => roundTree(i * 60 + c.R(-12, 12), 222, c.R(50, 70), c.pick(["#7cc39a", "#6fb88c"]))).join("") + hill(c.R, 236, 5, 2, "#93d47c") +
+          mushroom(c.side ? 240 : 60, 252, 4.2, "#e5483c") + mushroom(c.side ? 200 : 100, 246, 2.6, "#ff7aa8"),
+        front: (c) => { let o = ""; for (let i = 0; i < 30; i++) o += flower(c.R(0, 300), c.R(252, 298), c.pick(["#ff8fb1", "#ffffff", "#c9a2ff", "#ffd84a"]), c.R(0.8, 1.2)); for (let i = 0; i < 18; i++) o += glow(c.R(5, 295), c.R(40, 260), c.R(1.2, 2.2), c.pick(["#fff7a8", "#ffd6f0"]), c.R(0.6, 1)); return o; } },
+      { id: "sternennacht", world: "fabel", name: "Sternennacht", at: "in der Sternennacht", night: true, sky: ["#283a7c", "#4a4f9e", "#8a74b8"], ground: 236,
+        back: (c) => stars(c.R, 90, 190) + `<path d="M${f1(c.R(40, 120))} ${f1(c.R(30, 60))}l60 26" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".8"/>` + moon(c.u, c.side ? 62 : 238, 60, 20, true) + hill(c.R, 200, 14, 3, "#6a69ad") + hill(c.R, 222, 10, 2, "#5a6aa8") + hill(c.R, 236, 5, 2, "#4f7aa0"),
+        front: (c) => { let o = ""; for (let i = 0; i < 12; i++) o += flower(c.R(0, 300), c.R(254, 298), c.pick(["#d9ccff", "#ffd6f0", "#fff6c4"]), c.R(0.8, 1.1)); for (let i = 0; i < 10; i++) o += glow(c.R(5, 295), c.R(150, 290), c.R(1.2, 2), "#fff6b0", c.R(0.6, 1)); return o; } },
+      { id: "nordlicht", world: "fabel", name: "Nordlicht", at: "unter dem Nordlicht", night: true, sky: ["#1d3560", "#245a74", "#3b7f8c"], ground: 240,
+        back: (c) => { let o = stars(c.R, 60, 160); for (let i = 0; i < 4; i++) { const y = c.R(40, 100), col2 = c.pick(["#7dffc4", "#5fe0d0", "#c99bff", "#9dffb0"]); o += `<path d="M-10 ${f1(y)}C80 ${f1(y - c.R(30, 60))} 160 ${f1(y + c.R(20, 50))} 310 ${f1(y - c.R(0, 40))}" fill="none" stroke="${col2}" stroke-width="${f1(c.R(14, 26))}" opacity=".35" filter="url(#${c.u}blur)"/>`; }
+          return o + hill(c.R, 204, 14, 3, "#b9d3ea") + [0, 1, 2, 3, 4, 5, 6].map((i) => pine(i * 48 + c.R(-10, 10), 228, c.R(46, 70), "#2f6a6a", true)).join("") + hill(c.R, 240, 5, 2, "#e8f2fb"); },
+        front: (c) => `<path d="M-10 300V272Q150 262 310 274V300Z" fill="#d3e3f3"/>` },
+
+      { id: "lagune", world: "meer", kind: "sea", name: "Lagune", at: "in der Lagune", sky: ["#8fe6f2", "#4fc9dc", "#2aa9c4"], ground: 262,
+        back: (c) => rays(c.R, 5, "#ffffff", 0.22) + bubbles(c.R, 10, 20, 240) + `<path d="M-10 300V262Q80 250 160 262T310 258V300Z" fill="#f3dca0"/>` + [0, 1, 2, 3, 4, 5].map(() => weed(c.R(0, 300), 266, c.R(40, 80), c.pick(["#5fc36a", "#7ad37a"]), c.R)).join("") + fish(c.R(30, 270), c.R(40, 110), 1.1, "#ffd23a", c.rng() < 0.5) + fish(c.R(30, 270), c.R(60, 130), 0.9, "#ff8a5a", c.rng() < 0.5),
+        front: (c) => `<path d="${starPath(c.R(20, 120), c.R(276, 292), 7)}" fill="#ff8a5a" stroke="#c4552c" stroke-width="1"/>` + `<ellipse cx="${f1(c.R(170, 280))}" cy="${f1(c.R(280, 292))}" rx="7" ry="5" fill="#ffe0ec" stroke="#d9a0b4" stroke-width="1"/>` },
+      { id: "riff", world: "meer", kind: "sea", name: "Korallenriff", at: "am Korallenriff", sky: ["#6fd8ee", "#36b4dc", "#1f8cc4"], ground: 262,
+        back: (c) => rays(c.R, 4, "#ffffff", 0.2) + bubbles(c.R, 8, 20, 220) + `<path d="M-10 300V264Q80 254 160 266T310 260V300Z" fill="#e9d29a"/>` + [0, 1, 2, 3, 4, 5, 6].map(() => coral(c.R(0, 300), 272, c.R(50, 90), c.pick(["#ff7aa8", "#ff9a5a", "#b98cff", "#ffd36e"]), c.R)).join("") +
+          [0, 1, 2].map(() => fish(c.R(20, 280), c.R(30, 140), c.R(0.8, 1.2), c.pick(["#ffd23a", "#ff6a5a", "#7affd0", "#ffffff"]), c.rng() < 0.5)).join(""),
+        front: (c) => [0, 1].map(() => `<ellipse cx="${f1(c.R(0, 300))}" cy="${f1(c.R(284, 300))}" rx="${f1(c.R(14, 24))}" ry="10" fill="#c99a6a"/>`).join("") },
+      { id: "seegras", world: "meer", kind: "sea", name: "Seegraswiese", at: "auf der Seegraswiese", sky: ["#9fe8cf", "#5ccab4", "#2f9f9a"], ground: 264,
+        back: (c) => rays(c.R, 4, "#ffffff", 0.2) + bubbles(c.R, 10, 20, 230) + `<path d="M-10 300V266Q90 256 170 268T310 262V300Z" fill="#d9cf98"/>` + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(() => weed(c.R(0, 300), 272, c.R(60, 130), c.pick(["#3f9f5a", "#56b66a", "#6bc47a"]), c.R)).join("") + fish(c.R(30, 270), c.R(40, 100), 1, "#ffb547", c.rng() < 0.5),
+        front: (c) => `<ellipse cx="${f1(c.R(20, 120))}" cy="292" rx="22" ry="12" fill="#8a9a8a"/><ellipse cx="${f1(c.R(200, 290))}" cy="294" rx="18" ry="10" fill="#9aaa98"/>` },
+      { id: "leuchtmeer", world: "meer", kind: "sea", night: true, name: "Leuchtmeer", at: "im Leuchtmeer", sky: ["#2f6db0", "#245a9c", "#1d4c88"], ground: 264,
+        back: (c) => { let o = ""; for (let i = 0; i < 50; i++) o += `<circle cx="${f1(c.R(0, 300))}" cy="${f1(c.R(0, 280))}" r="${f1(c.R(0.6, 1.6))}" fill="#bff6ff" opacity="${f1(c.R(0.4, 0.9))}"/>`;
+          for (let i = 0; i < 4; i++) o += jelly(c.R(20, 280), c.R(30, 200), c.R(0.8, 1.3), c.pick(["#ff9fe0", "#7ff0ff", "#c9a2ff"]));
+          return o + `<path d="M-10 300V266Q90 256 170 268T310 262V300Z" fill="#3f6f9a"/>` + [0, 1, 2, 3, 4].map(() => weed(c.R(0, 300), 272, c.R(40, 80), "#4fb0a0", c.R)).join(""); },
+        front: (c) => [0, 1, 2, 3].map(() => glow(c.R(10, 290), c.R(270, 296), c.R(1.5, 2.5), "#7ff0ff")).join("") },
+      { id: "wrack", world: "meer", kind: "sea", name: "Schiffswrack", at: "beim Schiffswrack", sky: ["#7fd4ea", "#3fa9d4", "#2a7fb8"], ground: 262,
+        back: (c) => { const x = c.side ? 200 : 20;
+          return rays(c.R, 4, "#ffffff", 0.2) + bubbles(c.R, 8, 20, 220) + `<g transform="translate(${x} 200) rotate(${c.side ? 8 : -8} 40 30)" opacity=".85"><path d="M0 20H90L78 52H12Z" fill="#9a7458" stroke="#6a4a34" stroke-width="2"/><path d="M8 30H84M12 40H80" stroke="#6a4a34" stroke-width="1.5"/><path d="M44 20V-50" stroke="#6a4a34" stroke-width="3"/><path d="M44 -44L70 -30L44 -20Z" fill="#e9dcc6" opacity=".7"/><circle cx="26" cy="34" r="3.5" fill="#3f5f7a"/><circle cx="62" cy="34" r="3.5" fill="#3f5f7a"/></g>` +
+            `<path d="M-10 300V262Q80 252 160 264T310 258V300Z" fill="#e3cf98"/>` + [0, 1, 2, 3].map(() => weed(c.R(0, 300), 268, c.R(40, 70), "#5fb06a", c.R)).join("") + fish(c.R(30, 270), c.R(40, 110), 1, "#ffd23a", c.rng() < 0.5); },
+        front: (c) => { const x = c.side ? 40 : 230; return `<g transform="translate(${x} 266)"><path d="M0 0H34V18H0Z" fill="#a8743e" stroke="#5a3a1e" stroke-width="2"/><path d="M-2 0Q17 -16 36 0Z" fill="#c08a4a" stroke="#5a3a1e" stroke-width="2"/><path d="M14 4h6v8h-6z" fill="#ffd24a"/><circle cx="8" cy="-4" r="4" fill="#ffd24a"/><circle cx="22" cy="-6" r="4" fill="#ffe46b"/>${glow(17, -2, 3, "#fff3a8", 0.8)}</g>`; } },
+
+      { id: "sonnenburg", world: "burg", name: "Sonnenburg", at: "vor der Sonnenburg", sky: ["#78c2f3", "#b8e1fa", "#e4f5ff"], ground: 240,
+        back: (c) => sun(c.u, c.side ? 40 : 260, 46, 16) + cloud(c.R(80, 220), c.R(30, 60), 0.8) + hill(c.R, 216, 16, 2, "#9fd88a") + castle(c.side ? 210 : 90, 214, 0.95, "#efe2c8", c.pick(["#4f7fd6", "#e8574a"]), "#5a6aa8") + hill(c.R, 240, 5, 2, "#86ca6a"),
+        front: (c) => { let o = `<path d="M${c.side ? 210 : 90} 240Q${c.side ? 180 : 120} 270 ${c.side ? 230 : 70} 300H${c.side ? 260 : 40}Q${c.side ? 210 : 90} 270 ${c.side ? 222 : 78} 240Z" fill="#e9d29a"/>`; for (let i = 0; i < 26; i++) o += flower(c.R(0, 300), c.R(252, 298), c.pick(["#ffffff", "#ffd84a", "#ff8fb1"]), c.R(0.8, 1.1)); return o; } },
+      { id: "rosengarten", world: "burg", name: "Rosengarten", at: "im Rosengarten", sky: ["#8fd0f7", "#c9eafb", "#f0f9ff"], ground: 240,
+        back: (c) => cloud(c.R(30, 270), c.R(30, 60), 0.8) + castle(c.side ? 220 : 80, 196, 0.8, "#e8dcc8", "#c9508a", "#5a6aa8") +
+          `<path d="M-10 240V196Q0 186 20 190Q40 180 60 190Q80 182 100 190Q120 180 140 190Q160 182 180 190Q200 180 220 190Q240 182 260 190Q280 180 310 192V240Z" fill="#4f9a50"/>` +
+          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => `<circle cx="${f1(i * 28 + c.R(-6, 6))}" cy="${f1(c.R(196, 226))}" r="4.5" fill="${c.pick(["#ff5a7a", "#ff8fb1", "#ffffff"])}"/>`).join("") + hill(c.R, 240, 4, 2, "#8fd06e"),
+        front: (c) => { let o = ""; for (let i = 0; i < 18; i++) o += flower(c.R(0, 300), c.R(254, 298), c.pick(["#ff5a7a", "#ff8fb1", "#ffffff"]), c.R(1, 1.3)); return o + butterfly(c.R(30, 270), c.R(120, 190), "#ffd36e", 1.1); } },
+      { id: "abendrot", world: "burg", name: "Abendrot", at: "bei der Burg im Abendrot", sky: ["#7f7cc9", "#f39a9a", "#ffcf8a"], ground: 240,
+        back: (c) => sun(c.u, c.side ? 60 : 240, 190, 24) + cloud(c.R(60, 240), c.R(40, 70), 0.8, "#ffd9c2", "#f3b4a0") + hill(c.R, 214, 14, 2, "#b984a8") + castle(c.side ? 210 : 90, 214, 0.95, "#c79aa8", "#7a5aa8", "#ffe08a") + hill(c.R, 240, 5, 2, "#9a7aa8"),
+        front: (c) => { let o = ""; for (let i = 0; i < 14; i++) o += tuft(c.R(0, 300), c.R(250, 300), c.R(0.8, 1.2), "#7a5a98"); for (let i = 0; i < 10; i++) o += flower(c.R(0, 300), c.R(256, 298), "#ffd9a8", 0.9); return o; } },
+      { id: "vollmond", world: "burg", name: "Vollmondnacht", at: "in der Vollmondnacht", night: true, sky: ["#22397a", "#3a5aa0", "#5c7fc0"], ground: 240,
+        back: (c) => stars(c.R, 60, 170) + moon(c.u, c.side ? 60 : 240, 64, 26) + hill(c.R, 214, 14, 2, "#40609a") + castle(c.side ? 210 : 90, 214, 0.95, "#8c9fcc", "#4a5f9a", "#ffe08a") + hill(c.R, 240, 5, 2, "#3e6f78"),
+        front: (c) => { let o = ""; for (let i = 0; i < 14; i++) o += tuft(c.R(0, 300), c.R(250, 300), c.R(0.8, 1.2), "#5f9a98"); for (let i = 0; i < 10; i++) o += glow(c.R(5, 295), c.R(150, 290), c.R(1.2, 2), "#fff27a", c.R(0.6, 1)); return o; } },
+      { id: "winterburg", world: "burg", name: "Winterburg", at: "auf der Winterburg", sky: ["#a2cff2", "#d0e8fa", "#f0f8ff"], ground: 240,
+        back: (c) => hill(c.R, 216, 16, 2, "#e6f0fa") + castle(c.side ? 210 : 90, 214, 0.95, "#e3e9f2", "#5a8ad6", "#ffd27a") + [0, 1, 2].map((i) => pine((c.side ? 20 : 200) + i * 36, 226, c.R(40, 60), "#3f8066", true)).join("") + hill(c.R, 240, 5, 2, "#f6fbff"),
+        front: (c) => { let o = `<path d="M-10 300V272Q150 260 310 274V300Z" fill="#dde9f6"/>`; for (let i = 0; i < 50; i++) o += `<circle cx="${f1(c.R(0, 300))}" cy="${f1(c.R(0, 300))}" r="${f1(c.R(1, 2.6))}" fill="#fff" opacity=".9"/>`; return o; } },
+
+      // Goldlandschaften der Legenden
+      { id: "silberwald", world: "wald", gold: true, night: true, name: "Silberwald", at: "im Silberwald", sky: ["#2b3f7a", "#4b6aa8", "#8fb0d8"], ground: 240,
+        back: (c) => stars(c.R, 60, 150, "#fff8d8") + moon(c.u, c.side ? 64 : 236, 60, 24) + hill(c.R, 210, 10, 3, "#6a88b8") + [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => birch(i * 36 + c.R(-6, 6), 236, c.R(70, 110), c.pick(["#c9d8f0", "#dbe6f8"]), "#ffffff")).join("") + hill(c.R, 240, 5, 2, "#7a9ac8"),
+        front: (c) => { let o = ""; for (let i = 0; i < 26; i++) o += glow(c.R(5, 295), c.R(60, 290), c.R(1.4, 2.6), "#ffe46b", c.R(0.6, 1)); for (let i = 0; i < 10; i++) o += flower(c.R(0, 300), c.R(258, 298), "#ffffff", 1); return o; } },
+      { id: "sternenmeer", world: "meer", gold: true, kind: "sea", night: true, name: "Sternenmeer", at: "im Sternenmeer", sky: ["#3a3a92", "#2e4fa0", "#2b6fae"], ground: 268,
+        back: (c) => stars(c.R, 110, 280, "#fff6c4") + [0, 1, 2].map(() => jelly(c.R(20, 280), c.R(30, 220), c.R(0.8, 1.1), "#ffe46b")).join("") + `<path d="M-10 300V270Q90 262 170 272T310 266V300Z" fill="#4a5fa8"/>`,
+        front: (c) => [0, 1, 2, 3, 4].map(() => `<path d="${starPath(c.R(10, 290), c.R(272, 294), c.R(5, 8))}" fill="#ffd24a" stroke="#b07a12" stroke-width="1"/>`).join("") },
+      { id: "regenbogenbruecke", world: "fabel", gold: true, name: "Regenbogenbrücke", at: "auf der Regenbogenbrücke", sky: ["#8fb8ff", "#ffd0ec", "#fff1c4"], ground: 240,
+        back: (c) => sun(c.u, c.side ? 60 : 240, 60, 22) + rainbow(150, 250, 150, 0.95) + cloud(0, 250, 2.6, "#fff", "#f1e6ff") + cloud(240, 250, 2.6, "#fff", "#f1e6ff") + cloud(120, 262, 2.2, "#fff", "#f1e6ff"),
+        front: (c) => cloud(60, 296, 2.6, "#fff", "#f1e6ff") + cloud(240, 300, 2.4, "#fff", "#f1e6ff") + [0, 1, 2, 3, 4, 5, 6, 7].map(() => sparkle(c.R(10, 290), c.R(20, 220), c.R(3, 5.5), "#fffbe0")).join("") },
+      { id: "schatzkammer", world: "burg", gold: true, name: "Schatzkammer", at: "in der Schatzkammer", sky: ["#5a3a2a", "#7a4f34", "#9a6a44"], ground: 246, night: true,
+        back: (c) => { let o = `<path d="M-10 -10H310V60Q260 40 230 70Q200 30 160 56Q120 26 90 60Q50 34 20 62Q0 50 -10 56Z" fill="#4a2f22"/>`;
+          [40, 260].forEach((x) => { o += `<rect x="${x - 3}" y="110" width="6" height="26" fill="#6a4a34"/><path d="M${x} 92C${x + 8} 100 ${x + 6} 110 ${x} 112C${x - 6} 110 ${x - 8} 100 ${x} 92Z" fill="#ffb03a"/><circle cx="${x}" cy="104" r="40" fill="#ffd27a" opacity=".22"/>`; });
+          o += `<path d="M-10 300V230Q40 196 90 214Q150 186 210 214Q260 194 310 226V300Z" fill="#f2c23a"/>`;
+          for (let i = 0; i < 60; i++) o += `<ellipse cx="${f1(c.R(0, 300))}" cy="${f1(c.R(214, 296))}" rx="4.4" ry="2.4" fill="${c.pick(["#ffe46b", "#f5b13d", "#ffd24a"])}" stroke="#a87a12" stroke-width=".8"/>`;
+          return o; },
+        front: (c) => [0, 1, 2, 3, 4, 5].map(() => { const x = c.R(10, 290), y = c.R(262, 294), g = c.pick(["#ff5a7a", "#4fa8ff", "#5fd068", "#c99bff"]); return `<path d="M${f1(x - 6)} ${f1(y)}L${f1(x - 3)} ${f1(y - 5)}H${f1(x + 3)}L${f1(x + 6)} ${f1(y)}L${f1(x)} ${f1(y + 7)}Z" fill="${g}" stroke="${sh(g, -0.4)}" stroke-width="1"/>`; }).join("") +
+          [0, 1, 2, 3, 4, 5].map(() => sparkle(c.R(10, 290), c.R(150, 280), c.R(3, 5), "#fffbe0")).join("") },
+    ];
+
+    // Wie groß und wo die Wesen stehen
+    const FIT = {
+      fox: [1.15, "land"], deer: [1.0, "land"], owl: [1.15, "perch"], hare: [1.0, "land"], unicorn: [0.95, "land"], pegasus: [0.95, "land"],
+      fairy: [1.1, "fly"], phoenix: [1.0, "fly"], whale: [0.95, "swim"], turtle: [1.15, "swim"], seahorse: [1.2, "swim"], mermaid: [1.0, "swim"],
+      princess: [1.15, "land"], knight: [1.15, "land"], dragon: [1.1, "land"],
+    };
+
+    function draw(card, cr, uid) {
+      const rng = mulberry32(card.s), R = (a, b) => a + rng() * (b - a), pick = (a) => a[Math.floor(rng() * a.length)];
+      const sc = SC[card.n] || SC[0], leg = cr.legend ? LEGEND[cr.id] : null, base = leg ? leg.base : cr.id;
+      const side = rng() < 0.5;               // true: Wesen rechts, Mond/Burg links
+      const c = { R, rng, pick, u: uid, side };
+      const [fs, how] = FIT[base];
+      const s = fs * R(0.94, 1.06), cx = side ? R(178, 206) : R(94, 122), gy = sc.ground + R(6, 18);
+      const flip = how === "swim" || how === "fly" ? (side ? -1 : 1) : side ? -1 : 1;
+      let who = DRAW[base]({ uid, ...(leg ? leg.o : {}) });
+      if (leg && leg.stars) { let st = ""; for (let i = 0; i < 9; i++) st += `<circle cx="${f1(R(-50, 40))}" cy="${f1(R(-36, 10))}" r="${f1(R(1, 2.2))}" fill="#fff6a8"/>`; who += st; }
+      let x = cx, y = gy, extra = "";
+      if (how === "perch") {   // Eule sitzt auf einem Baumstumpf
+        y = gy - 26 * s;
+        extra = `<path d="M${f1(cx - 22 * s)} ${f1(gy)}L${f1(cx - 18 * s)} ${f1(y)}H${f1(cx + 18 * s)}L${f1(cx + 22 * s)} ${f1(gy)}Z" fill="#8a5a3a" stroke="#5a3a24" stroke-width="2"/><ellipse cx="${f1(cx)}" cy="${f1(y)}" rx="${f1(18 * s)}" ry="${f1(5 * s)}" fill="#c99a6a" stroke="#5a3a24" stroke-width="2"/>`;
+      } else if (how === "fly") { y = R(118, 148); }
+      else if (how === "swim") { x = base === "whale" ? R(140, 160) : cx; y = R(140, 170); }
+      const night = !!sc.night;
+      const shadow = how === "fly" || how === "swim" ? "" : `<ellipse cx="${f1(cx)}" cy="${f1(gy + 2)}" rx="${f1(30 * s)}" ry="${f1(5 * s)}" fill="#000" opacity="${night ? 0.25 : 0.16}"/>`;
+      // nachts und bei Legenden ein Lichtschein hinter dem Wesen, damit es sich klar abhebt
+      const halo = night || leg ? `<circle cx="${f1(x)}" cy="${f1(how === "land" || how === "perch" ? y - 60 * s : y)}" r="${f1(80 * s)}" fill="url(#${uid}halo)"/>` : "";
+      const defs = `<defs><linearGradient id="${uid}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sc.sky[0]}"/><stop offset=".55" stop-color="${sc.sky[1]}"/><stop offset="1" stop-color="${sc.sky[2]}"/></linearGradient>` +
+        `<radialGradient id="${uid}sunglow"><stop offset="0" stop-color="#fff6c4" stop-opacity=".9"/><stop offset="1" stop-color="#fff6c4" stop-opacity="0"/></radialGradient>` +
+        `<radialGradient id="${uid}moonglow"><stop offset="0" stop-color="#fff6d6" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d6" stop-opacity="0"/></radialGradient>` +
+        `<radialGradient id="${uid}halo"><stop offset="0" stop-color="${leg ? "#fff2b0" : "#dfe9ff"}" stop-opacity="${leg ? 0.75 : 0.5}"/><stop offset="1" stop-color="${leg ? "#fff2b0" : "#dfe9ff"}" stop-opacity="0"/></radialGradient>` +
+        `<linearGradient id="${uid}horn" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffcf3a"/><stop offset="1" stop-color="#fff6c4"/></linearGradient>` +
+        `<filter id="${uid}blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>` +
+        `<linearGradient id="${uid}foil"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`;
+      const body = `<g transform="translate(${f1(x)} ${f1(y)}) scale(${f1(flip * s * 100) / 100} ${f1(s * 100) / 100})">${who}</g>`;
+      let gold = "";
+      if (card.g) {   // Goldbild: Glitzern, Goldrand und ein Lichtstreif, der darüber wandert
+        for (let i = 0; i < 9; i++) gold += sparkle(R(12, 288), R(12, 288), R(3, 7), i % 3 ? "#fff8d0" : "#ffe46b", `tw tw${i % 3}`);
+        gold += `<path class="foil" d="M-60 0H10L-90 300H-160Z" fill="url(#${uid}foil)"/>` +
+          `<rect x="5" y="5" width="290" height="290" rx="10" fill="none" stroke="#f2c23a" stroke-width="5"/><rect x="11" y="11" width="278" height="278" rx="6" fill="none" stroke="#fff3b0" stroke-width="1.5"/>` +
+          [[16, 16], [284, 16], [16, 284], [284, 284]].map(([a, b]) => `<path d="${starPath(a, b, 9)}" fill="#ffe46b" stroke="#a87a12" stroke-width="1"/>`).join("");
+      }
+      return `<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" role="img">${defs}<rect width="300" height="300" fill="url(#${uid}sky)"/>${sc.back(c)}${halo}${extra}${shadow}${body}${sc.front(c)}` +
+        `${gold}</svg>`;
+    }
+
+    // Auswahl: normale Bilder in normalen Landschaften, Goldbilder zeigen eine Legende in ihrer Landschaft
+    const sceneIdx = (pred) => SC.map((_, i) => i).filter((i) => pred(SC[i]));
+    function sceneFor(world, gold, legendId, noN, rand) {
+      if (gold) return SC.findIndex((s) => s.id === LEGEND[legendId].scene);
+      const all = sceneIdx((s) => s.world === world && !s.gold), free = all.filter((i) => !noN.includes(i)), pool = free.length ? free : all;
+      return pool[Math.floor(rand() * pool.length)];
+    }
+    return { DRAW, LEGEND, SC, draw, sceneFor, sh };
+  })();
   // ---------- Hintergrund: Märchenszene wie mit Buntstift ins Rechenheft gemalt ----------
   // Die Szene wird für die echte Fenstergröße komponiert und füllt das ganze Blatt:
   // oben Himmel mit Drache, Ballon und Wolken, in der Mitte Burg und Berge, unten Ritter, Zelt, Einhorn und Bach.
@@ -1667,10 +2194,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   let state = freshState();
 
   const int = (v, lo, hi) => (Number.isInteger(v) && v >= lo && v <= hi ? v : null);
+  // Karte: [Samen, Landschaft, Wesen, golden, Zeichnung]. Ohne Zeichnung = erste Generation, bleibt für immer so
   const toCard = (k) => {
-    const [s, n, c, g] = Array.isArray(k) ? k : k && typeof k === "object" ? [k.s, k.n, k.c, k.g] : [];
-    if (int(s, 0, 4294967295) === null || int(n, 0, SCENES.length - 1) === null || int(c, 0, CREATURES.length - 1) === null) return null;
-    return { s, n, c, g: g ? 1 : 0 };
+    const [s, n, c, g, v] = Array.isArray(k) ? k : k && typeof k === "object" ? [k.s, k.n, k.c, k.g, k.v] : [];
+    const v2 = v === 2;
+    if (int(s, 0, 4294967295) === null || int(n, 0, (v2 ? PIC2.SC.length : SCENES.length) - 1) === null || int(c, 0, (v2 ? CREATURES.length : OLD_CREATURES) - 1) === null) return null;
+    return v2 ? { s, n, c, g: g ? 1 : 0, v: 2 } : { s, n, c, g: g ? 1 : 0 };
   };
   function cleanCfg(raw) {
     const c = { ...CFG_DEF, sk: {} };
@@ -2004,17 +2533,172 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   const gradeName = (g) => ["", "Lehrling", state.cfg.titel === "m" ? "Geselle" : "Gesellin", state.cfg.titel === "m" ? "Meister" : "Meisterin"][g] || "";
   // ---------- LOGIK-ENDE ----------
+  // ---------- Protokoll ----------
+  // Zeichnet auf, wie gespielt wird, damit Eltern es mit Claude teilen und die App gezielt verbessern können.
+  // Bleibt auf diesem Gerät, getrennt vom Spielstand (nicht im Spielstand-Code). Kein Name, keine Geräte-Kennung.
+  // Ein Eintrag ist [Zeit in ms, Art, …Daten]. Älteres fällt nach 60 Tagen oder 6000 Einträgen heraus.
+  const LOG_KEY = "zauber-rechnen-log", LOG_MAX = 6000, LOG_DAYS = 60, LOG_GAP = 10 * 60e3;
+  const LOG = { on: true, ev: [], dirty: false, timer: 0, last: 0 };
+  function logLoad() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(LOG_KEY) || "null");
+      if (raw && typeof raw === "object") {
+        LOG.on = raw.on !== false;
+        LOG.ev = Array.isArray(raw.ev) ? raw.ev.filter((e) => Array.isArray(e) && typeof e[0] === "number" && typeof e[1] === "string") : [];
+      }
+    } catch (e) { /* ohne Protokoll weiterspielen */ }
+    const cut = Date.now() - LOG_DAYS * 864e5;
+    LOG.ev = LOG.ev.filter((e) => e[0] >= cut).slice(-LOG_MAX);
+    LOG.last = LOG.ev.length ? LOG.ev[LOG.ev.length - 1][0] : 0;
+  }
+  function logFlush() {
+    clearTimeout(LOG.timer); LOG.timer = 0;
+    if (!LOG.dirty) return;
+    LOG.dirty = false;
+    try { localStorage.setItem(LOG_KEY, JSON.stringify({ on: LOG.on, ev: LOG.ev })); }
+    catch (e) { LOG.ev = LOG.ev.slice(-Math.floor(LOG.ev.length / 2)); }   // Speicher voll: ältere Hälfte opfern, beim nächsten Mal klappt es
+  }
+  // ev("A", …): neuer Eintrag; nach mehr als 10 Minuten Ruhe beginnt automatisch eine neue Sitzung
+  function logEv(kind, ...data) {
+    if (!LOG.on) return;
+    const now = Date.now();
+    if (kind !== "S" && (!LOG.last || now - LOG.last > LOG_GAP)) LOG.ev.push(logStart(now));
+    LOG.ev.push([now, kind, ...data]);
+    LOG.last = now;
+    if (LOG.ev.length > LOG_MAX + 200) LOG.ev = LOG.ev.slice(-LOG_MAX);
+    LOG.dirty = true;
+    if (!LOG.timer) LOG.timer = setTimeout(logFlush, 4000);
+  }
+  const logStart = (now) => {
+    const home = navigator.standalone === true || !!(window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    return [now, "S", typeof VERSION === "string" ? VERSION : "", home ? "Home-App" : window.claude ? "Claude" : "Browser", `${screen.width}x${screen.height}`];
+  };
+  const logTask = (t) => (t.pic ? `${t.pic === "verteilen" ? "Bild-Verteilen" : "Bild-Aufteilen"} ${t.a}:${t.b}`
+    : t.gap ? `${t.gap === "a" ? "□" : t.a}${t.op}${t.gap === "b" ? "□" : t.b}=${t.c}` : `${t.a}${t.op}${t.b}`);
+  function logSet(on) {
+    LOG.on = on;
+    if (on) LOG.last = 0;
+    LOG.dirty = true; logFlush();
+  }
+  function logClear() { LOG.ev = []; LOG.last = 0; LOG.dirty = true; logFlush(); }
+
+  // ---------- Protokoll als Text: erst eine Auswertung, dann der Verlauf ----------
+  const p2 = (x) => String(x).padStart(2, "0");
+  const dayOf = (t) => { const d = new Date(t); return `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.`; };
+  const timeOf = (t) => { const d = new Date(t); return `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`; };
+  const sec = (ms) => (ms / 1000).toFixed(1).replace(".", ",") + " s";
+  const mins = (ms) => Math.round(ms / 6e4) + " min";
+  const median = (a) => { if (!a.length) return 0; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+  const pct = (a, b) => (b ? Math.round((100 * a) / b) + " %" : "–");
+  const LOG_WHAT = {
+    S: "Start", A: "Aufgabe", R: "Antwort", H: "Hilfe", L: "Lösung gezeigt", F: "Angebot „leichter“", FA: "Angebot beantwortet",
+    B: "Bild bekommen", BZ: "Bild geschlossen", G: "Zunftgrad", W: "Werkstatt-Kapitel", O: "geöffnet", OZ: "geschlossen",
+    E: "Einstellung", P: "App verlassen", Z: "App wieder da", X: "Fehler im Programm",
+  };
+  function logLine(e) {
+    const [t, k, ...d] = e;
+    let x = d;
+    if (k === "R") x = [d[0], d[1] ? "richtig" : "falsch", sec(d[2]), `${d[3]}. Versuch`, d[4] ? `Detektiv: ${d[4]}` : ""];
+    else if (k === "B") x = [d[0] ? "GOLD" : "normal", d[1] ? "neu entdeckt" : "", d[2], d[3]];
+    else if (k === "FA") x = [d[0] ? "ja, leichter" : "nein, weiter so"];
+    else if (k === "S") x = ["Version " + d[0], d[1], d[2]];
+    return `${timeOf(t)}  ${LOG_WHAT[k] || k}  ${x.filter((v) => v !== "" && v !== undefined).join("  ")}`.trimEnd();
+  }
+  // Sitzungen: von einem Start bis zum nächsten
+  function logSessions(ev) {
+    const out = [];
+    ev.forEach((e) => { if (e[1] === "S" || !out.length) out.push([]); out[out.length - 1].push(e); });
+    return out;
+  }
+  function logSummary(ev) {
+    const L = [], ses = logSessions(ev);
+    const dur = ses.map((s) => s[s.length - 1][0] - s[0][0]);
+    const tasksPer = ses.map((s) => s.filter((e) => e[1] === "A").length);
+    L.push(`Sitzungen: ${ses.length} · Dauer im Mittel (Median) ${mins(median(dur))}, kürzeste ${mins(Math.min(...dur))}, längste ${mins(Math.max(...dur))} · Aufgaben je Sitzung im Mittel ${median(tasksPer)}`);
+    // Spielzeit je Tag
+    const days = {};
+    ses.forEach((s, i) => { const d = dayOf(s[0][0]); days[d] = days[d] || [0, 0, 0]; days[d][0] += dur[i]; days[d][1] += tasksPer[i]; days[d][2] += 1; });
+    L.push("Je Tag: " + Object.entries(days).map(([d, [ms, n, k]]) => `${d} ${mins(ms)}, ${n} Aufgaben, ${k}× gestartet`).join(" · "));
+    // Aufgaben auswerten: erster Versuch, Antwortzeit, Hilfe
+    const per = {}, hard = {};
+    let cur = null;
+    ev.forEach((e) => {
+      if (e[1] === "A") { cur = { skill: e[2], text: e[3], first: null, ms: null, help: false, tries: 0 }; (per[e[2]] = per[e[2]] || []).push(cur); }
+      else if (cur && e[1] === "R") { cur.tries += 1; if (cur.first === null) { cur.first = !!e[3]; cur.ms = e[4]; } if (!e[3]) { const h = (hard[cur.text] = hard[cur.text] || [0, 0]); h[0] += 1; } }
+      else if (cur && (e[1] === "H" || e[1] === "L")) cur.help = true;
+      if (e[1] === "A") { const h = (hard[e[3]] = hard[e[3]] || [0, 0]); h[1] += 1; }
+    });
+    const label = (id) => (typeof SKILL_BY_ID !== "undefined" && SKILL_BY_ID[id] ? SKILL_BY_ID[id].label : id);
+    const rows = Object.entries(per).filter(([, a]) => a.some((x) => x.first !== null)).map(([id, a]) => {
+      const done = a.filter((x) => x.first !== null), ok = done.filter((x) => x.first).length, ms = done.filter((x) => x.first && x.ms > 0 && x.ms < 120e3).map((x) => x.ms);
+      return `- ${label(id)} (${id}): ${done.length} Aufgaben, beim 1. Versuch richtig ${pct(ok, done.length)}, mit Hilfe ${done.filter((x) => x.help).length}, Zeit bis zur richtigen 1. Antwort im Mittel ${ms.length ? sec(median(ms)) : "–"}`;
+    });
+    if (rows.length) L.push("Je Aufgabenart:", ...rows);
+    const worst = Object.entries(hard).filter(([, [f]]) => f > 0).sort((a, b) => b[1][0] - a[1][0] || b[1][1] - a[1][1]).slice(0, 10);
+    if (worst.length) L.push("Meiste Fehlversuche: " + worst.map(([t, [f, n]]) => `${t} (${f} falsch bei ${n}× gestellt)`).join(" · "));
+    // Wie enden Sitzungen? Was geschah direkt vor dem letzten Eintrag
+    const ends = {};
+    ses.forEach((s) => {
+      const real = s.filter((e) => e[1] !== "P" && e[1] !== "Z" && e[1] !== "OZ");
+      const last = real[real.length - 1], prevR = [...real].reverse().find((e) => e[1] === "R");
+      let why = "direkt nach dem Start";
+      if (last[1] === "A") why = prevR && !prevR[3] ? "neue Aufgabe offen, davor ein Fehler" : "neue Aufgabe offen, nicht beantwortet";
+      else if (last[1] === "R") why = last[3] ? "nach einer richtigen Antwort" : "nach einer falschen Antwort";
+      else if (last[1] === "H" || last[1] === "L") why = "während eine Hilfe gezeigt wurde";
+      else if (last[1] === "B" || last[1] === "BZ") why = "nach einem Bild";
+      else if (last[1] === "O") why = `in ${last[2]}`;
+      else if (last[1] !== "S") why = LOG_WHAT[last[1]] || last[1];
+      ends[why] = (ends[why] || 0) + 1;
+    });
+    L.push("Sitzungsende: " + Object.entries(ends).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n}× ${w}`).join(" · "));
+    const pics = ev.filter((e) => e[1] === "B"), look = [];
+    ev.forEach((e, i) => { if (e[1] === "B") { const z = ev.slice(i + 1).find((x) => x[1] === "BZ"); if (z && z[0] - e[0] < 600e3) look.push(z[0] - e[0]); } });
+    const opens = {};
+    ev.filter((e) => e[1] === "O").forEach((e) => { opens[e[2]] = (opens[e[2]] || 0) + 1; });
+    L.push(`Bilder: ${pics.length} bekommen (${pics.filter((e) => e[2]).length} golden), angeschaut im Mittel ${look.length ? sec(median(look)) : "–"} · Geöffnet: ${Object.entries(opens).map(([w, n]) => `${w} ${n}×`).join(", ") || "nichts"}`);
+    const offers = ev.filter((e) => e[1] === "FA");
+    if (offers.length) L.push(`Angebot „etwas Leichteres“: ${offers.length}×, davon angenommen ${offers.filter((e) => e[2]).length}×`);
+    const errs = ev.filter((e) => e[1] === "X");
+    if (errs.length) L.push(`Programmfehler: ${errs.length}× (siehe Verlauf, „Fehler im Programm“)`);
+    return L;
+  }
+  function logText(days) {
+    const cut = days ? Date.now() - days * 864e5 : 0, ev = LOG.ev.filter((e) => e[0] >= cut);
+    const now = new Date(), L = [];
+    L.push("# Rechenreise – Protokoll", "");
+    L.push(`Version ${VERSION} · erstellt am ${dayOf(now)}${now.getFullYear()} um ${timeOf(now).slice(0, 5)} · ${ev.length} Einträge${ev.length ? ` vom ${dayOf(ev[0][0])} bis ${dayOf(ev[ev.length - 1][0])}` : ""}${days ? ` (letzte ${days} Tage)` : ""}`);
+    L.push("", "Hinweis für Claude: Das ist das Nutzungsprotokoll eines Mathe-Lernspiels für ein Kind der 3. Klasse (Einmaleins, Plus/Minus bis 100, Lücken, Teilen). " +
+      "Bitte werte aus, wo das Kind hängt, wann und warum es aufhört, welche Hilfen wirken und was man an Spiel oder Einstellungen verbessern könnte. " +
+      "Zeitangaben sind Ortszeit. „Antwort“: eingegebene Zahl, richtig/falsch, Sekunden seit die Aufgabe erschien, Versuch Nr. „□“ ist die Lücke. Der Name des Kindes ist nicht enthalten.");
+    L.push("", "## Auswertung", "");
+    if (!ev.length) L.push("Noch keine Einträge.");
+    else L.push(...logSummary(ev));
+    L.push("", "## Einstellungen und Lernstand", "");
+    const { name, ...cfg } = state.cfg;
+    L.push(`Einstellungen: ${JSON.stringify({ max: state.max, ops: state.ops, ...cfg })}`);
+    L.push(`Gesamt: ${state.correct} richtige Aufgaben, ${state.album.length} Bilder, Fehlerarten ${JSON.stringify(state.err)}`);
+    if (typeof SKILLS !== "undefined") L.push("Lernstand: " + SKILLS.filter((s) => state.stats[s.id]).map((s) => `${s.id} ${statusOf(s.id)}${state.stats[s.id].g ? " Grad " + state.stats[s.id].g : ""}`).join(" · "));
+    L.push("", "## Verlauf", "");
+    let day = "";
+    ev.forEach((e) => {
+      const d = dayOf(e[0]);
+      if (d !== day) { day = d; L.push("", `### ${d}`); }
+      if (e[1] === "S") L.push("");
+      L.push(logLine(e));
+    });
+    return L.join("\n") + "\n";
+  }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.7";
+  const VERSION = "1.8";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
   let input = "", tries = 0, revealed = false, locked = false, localOk = true;
   let shownAt = 0, firstMs = null, away = false, offerOpen = false, dirtyTask = false;
 
-  const stored = () => ({ ...state, gen: DATA_GEN, album: state.album.map((k) => [k.s, k.n, k.c, k.g]) });
+  const stored = () => ({ ...state, gen: DATA_GEN, album: state.album.map((k) => (k.v ? [k.s, k.n, k.c, k.g, k.v] : [k.s, k.n, k.c, k.g])) });
 
   function load() {
     try {
@@ -2082,8 +2766,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
   }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") { away = true; clearTimeout(cloud.timer); flushCloud(); }
+    if (document.visibilityState === "hidden") { away = true; clearTimeout(cloud.timer); flushCloud(); logEv("P"); logFlush(); }
+    else logEv("Z");
   });
+  window.addEventListener("pagehide", logFlush);
+  window.addEventListener("error", (e) => logEv("X", String((e && e.message) || "?").slice(0, 160)));
 
   // Einen neueren Stand übernehmen (aus dem Konto oder per Code); die laufende Aufgabe bleibt, wenn sie noch passt
   const genSig = () => JSON.stringify([state.max, state.ops, state.level, state.cfg.mode, state.cfg.sk]);
@@ -2862,10 +3549,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function announceGrade(skillId, g) {
     const s = SKILL_BY_ID[skillId];
+    logEv("G", skillId, g);
     showToast(`${emblemSVG(s, g)}<div><b>Lehrling bei den ${/n$/.test(s.zunft) ? s.zunft : s.zunft + "n"}!</b><span>Neues Zunftzeichen für ${s.group === "mal" ? "die " + s.label : "„" + s.label + "“"}. Deine ${(GUILD[s.id] || GUILD.x2).o} ist eröffnet!</span></div>`);
   }
   function announceChapter(id, k) {
     const s = SKILL_BY_ID[id], G = GUILD[id] || GUILD.x2, g = (state.stats[id] || {}).g || 1;
+    logEv("W", id, k);
     showToast(`${emblemSVG(s, g)}<div><b>Neues Kapitel in deiner ${G.o}!</b><span>Kapitel ${k}: ${wsChapters(s)[k - 1][0]}. Zu lesen im Album unter Zunftzeichen.</span></div>`);
     speak(`Neues Kapitel in deiner ${G.o}!`);
   }
@@ -2874,6 +3563,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   function showCert() {
     const { s, g, ws: certWs } = certQueue;
     certQueue = null;
+    logEv("G", s.id, g);
     const name = state.cfg.name, f = state.cfg.titel !== "m", what = s.group === "mal" ? "die " + s.label : "„" + s.label + "“";
     $("certTitle").textContent = g >= 3 ? "Meisterbrief" : "Gesellenbrief";
     $("certZunft").textContent = "Zunft der " + s.zunft;
@@ -2902,6 +3592,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     input = ""; tries = 0; revealed = false; locked = false;
     shownAt = performance.now(); firstMs = null; away = false;
     renderTask(""); renderTags(); renderPic();
+    logEv("A", task.skill, logTask(task));
     hintEl.hidden = true;
     focusAnswer();
     if (state.cfg.readTask) speak(taskWords(task));
@@ -2912,6 +3603,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function showOffer() {
     offerOpen = true; locked = true;
+    logEv("F");
     setFeedback("", "");
     hintEl.hidden = true;
     $("offer").hidden = false;
@@ -2924,6 +3616,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function closeOffer(accept) {
     offerAnswered(accept);
+    logEv("FA", accept ? 1 : 0);
     $("offer").hidden = true;
     offerOpen = false;
     applyPad();
@@ -2975,6 +3668,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   function solved() {
     locked = true;
+    logEv("R", task.result, 1, Math.round(performance.now() - shownAt), tries + 1, "");
     renderTask("right");
     const h = state.cfg.helpAfter;
     const code = revealed ? 0 : tries === 0 ? 3 : tries < h ? 2 : 1;
@@ -3020,6 +3714,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       const kind = detective ? detective.kind : "other";
       state.err[kind] = (state.err[kind] || 0) + 1;
     }
+    logEv("R", val, 0, Math.round(performance.now() - shownAt), tries, detective ? detective.kind : "");
     if (tries < h) {
       setFeedback(detective ? detective.text : phrase(PHRASES.nudge1), "try");
       if (state.cfg.speechMode === "mut") speak(phrase(PHRASES.mut1));
@@ -3029,9 +3724,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         : type === "steps" ? "Hier ist ein Rechenweg für dich:"
         : task.op === "+" ? "Zähl alle Punkte zusammen." : "Zähl die Punkte, die übrig bleiben.", "try");
       renderHint();
+      logEv("H", type);
       if (state.cfg.speechMode === "mut") speak(phrase(PHRASES.mut2));
     } else {
       revealed = true;
+      logEv("L");
       setFeedback(`Das Ergebnis ist ${task.result}. Tipp es ein!`, "try");
       renderHint();
     }
@@ -3081,21 +3778,35 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const card = newCard(state.album[state.album.length - 1], gold, state.album.slice(-3), state.album);
     const isNew = !state.album.some((k) => k.c === card.c);
     state.album.push(card);
+    logEv("B", card.g, isNew ? 1 : 0, CREATURES[card.c].noun, cardName(card));
     save();
     const mark = gold ? Math.floor(state.correct / state.cfg.goldEvery) * state.cfg.goldEvery : 0;
-    $("rewardTitle").textContent = gold ? `${mark === state.correct ? "" : "Schon über "}${mark} richtige Aufgaben! Ein goldenes Bild für dich!` : "Geschafft! Ein neues Bild für deine Sammlung";
+    const cr = CREATURES[card.c], w = worldOf(card), wp = worldProgress(w.id), lp = legendProgress();
+    $("rewardTitle").textContent = gold ? `${mark === state.correct ? "" : "Schon über "}${mark} richtige Aufgaben! Eine Legende erscheint!` : "Geschafft! Ein neues Bild für deine Sammlung";
     $("rewardPic").innerHTML = picHTML(card);
     $("rewardPic").classList.toggle("rare", !!card.g);
+    $("rewardPic").classList.toggle("legend", !!cr.legend);
+    $("reward").classList.toggle("gold", !!card.g);
     $("rewardName").textContent = cardName(card);
     $("rewardNo").textContent = `Bild Nr. ${state.album.length}${card.g ? " · golden" : ""}`;
-    const cr = CREATURES[card.c], w = worldOf(card), wp = worldProgress(w.id);
     $("rewardNew").hidden = !isNew;
-    $("rewardNew").textContent = `Neu entdeckt: ${cr.noun}!`;
-    $("rewardWorld").textContent = `${w.name} · ${wp.found} von ${wp.total} ${w.what} entdeckt`;
+    $("rewardNew").textContent = cr.legend ? `Neue Legende: ${cr.noun}!` : `Neu entdeckt: ${cr.noun}!`;
+    $("rewardWorld").textContent = cr.legend ? `Legenden · ${lp.found} von ${lp.total} entdeckt` : `${w.name} · ${wp.found} von ${wp.total} ${w.what} entdeckt`;
+    // Goldbild: Sternchen fliegen aus dem Bild heraus
+    document.querySelectorAll(".gspark").forEach((x) => x.remove());
+    if (card.g) {
+      const sheet = $("reward").querySelector(".sheet");
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2, d = 130 + Math.random() * 60, sp = document.createElement("i");
+        sp.className = "gspark";
+        sp.style.cssText = `--dx:${Math.round(Math.cos(a) * d)}px;--dy:${Math.round(Math.sin(a) * d)}px;animation-delay:${900 + Math.round(Math.random() * 400)}ms`;
+        sheet.appendChild(sp);
+      }
+    }
     $("reward").hidden = false;
     $("rewardClose").focus();
-    const art = /^Goldene /.test(cr.golden + " ") ? "eine" : "ein";
-    if (card.g) { setTimeout(() => SFX.gold(), 350); speak(`Ein goldenes Bild! Das hast du dir verdient${state.cfg.name ? ", " + state.cfg.name : ""}!`); }
+    const art = /^Goldene /.test((cr.golden || "") + " ") ? "eine" : "ein";
+    if (card.g) { setTimeout(() => SFX.gold(), 900); speak(`Ein goldenes Bild! ${isNew && cr.legend ? `Eine neue Legende: ${cr.noun}!` : "Das hast du dir verdient"}${state.cfg.name ? ", " + state.cfg.name : ""}!`); }
     else if (isNew) speak(`Neu entdeckt: ${art} ${cr.noun}!`);
     else speak("Hier ist dein neues Bild!");
     renderProgress();
@@ -3113,11 +3824,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("tabMarks").setAttribute("aria-selected", String(!pics));
     $("panelPics").hidden = !pics;
     $("panelMarks").hidden = pics;
-    if (!pics) renderMarks();
+    if (!pics) { renderMarks(); logEv("O", "Zunftzeichen"); }
   }
-  const worldOf = (card) => WORLDS.find((w) => w.id === (SCENES[card.n] || SCENES[0]).world) || WORLDS[0];
+  const worldOf = (card) => WORLDS.find((w) => w.id === sceneOf(card).world) || WORLDS[0];
+  function legendProgress() {
+    const all = CREATURES.map((c, i) => i).filter((i) => CREATURES[i].legend), seen = new Set(state.album.map((k) => k.c));
+    return { found: all.filter((i) => seen.has(i)).length, total: all.length };
+  }
   function worldProgress(wid) {
-    const all = CREATURES.map((c, i) => i).filter((i) => CREATURES[i].world === wid), seen = new Set(state.album.map((k) => k.c));
+    const all = CREATURES.map((c, i) => i).filter((i) => CREATURES[i].world === wid && !CREATURES[i].legend), seen = new Set(state.album.map((k) => k.c));
     return { found: all.filter((i) => seen.has(i)).length, total: all.length };
   }
   function renderMarks() {
@@ -3150,6 +3865,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       story += `<p class="ws-next">${!nx ? "Alle acht Kapitel erlebt. Deine Werkstatt ist vollständig!" : nx.grade ? `Das nächste Kapitel beginnt, wenn du ${gradeName(nx.grade)} wirst.` : `Noch ${nx.tasks} ${nx.tasks === 1 ? "Aufgabe" : "Aufgaben"} dieser Art ohne Hilfe bis zum nächsten Kapitel.`}</p>`;
     }
     $("mvStory").innerHTML = story;
+    logEv("O", "Werkstatt " + id);
     $("mvNext").textContent = g === 0 ? "Löse ein paar dieser Aufgaben ohne Hilfe, dann wirst du Lehrling."
       : g === 1 ? `Nächster Schritt: ${gradeName(2)}. Dafür diese Aufgaben ein paarmal hintereinander ohne Hilfe lösen.`
       : g === 2 ? `Nächster Schritt: ${gradeName(3)}. Dafür an einem anderen Tag noch einmal so sicher sein.`
@@ -3167,13 +3883,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("albumInfo").textContent = n === 0
       ? `Noch leer. Rechne ${state.cfg.rewardEvery} Aufgaben richtig, dann kommt dein erstes Bild.`
       : `${n} ${n === 1 ? "Bild" : "Bilder"} gesammelt${gold ? `, davon ${gold} golden` : ""}. Jedes ist ein Unikat.`;
-    $("albumWorlds").innerHTML = WORLDS.map((w) => { const p = worldProgress(w.id); return `<span class="wchip${p.found === p.total ? " full" : ""}">${w.name} <b>${p.found}/${p.total}</b></span>`; }).join("");
+    const lp = legendProgress();
+    $("albumWorlds").innerHTML = WORLDS.map((w) => { const p = worldProgress(w.id); return `<span class="wchip${p.found === p.total ? " full" : ""}">${w.name} <b>${p.found}/${p.total}</b></span>`; }).join("") +
+      (lp.found ? `<span class="wchip legend">Legenden <b>${lp.found}/${lp.total}</b></span>` : "");
     $("albumGrid").innerHTML = state.album.map((k, i) => i).reverse().map((i) => {
       const k = state.album[i];
       return `<button class="album-item" type="button" data-i="${i}"><span class="pic${k.g ? " rare" : ""}" data-i="${i}"></span>` +
         `<span class="album-name">${cardName(k)}</span><span class="album-no">Nr. ${i + 1}${k.g ? " · golden" : ""}</span></button>`;
     }).join("");
     setTab("pics");
+    logEv("O", "Sammlung");
     $("album").hidden = false;
     const thumbs = [...$("albumGrid").querySelectorAll(".pic")];
     if (albumObserver) albumObserver.disconnect();
@@ -3195,6 +3914,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const k = state.album[i];
     if (!k) return;
     viewerReturn = document.activeElement;
+    logEv("O", "Bild Nr. " + (i + 1));
     $("viewerPic").innerHTML = picHTML(k);
     $("viewerPic").classList.toggle("rare", !!k.g);
     $("viewerName").textContent = cardName(k);
@@ -3220,6 +3940,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (!$("viewer").hidden) { closeViewer(); return; }
     if (!$("parents").hidden) { closeParents(); return; }
     const wasReward = !$("reward").hidden;
+    if (wasReward) logEv("BZ"); else if (!$("album").hidden) logEv("OZ", "Sammlung");
     $("reward").hidden = true;
     $("album").hidden = true;
     if (albumObserver) albumObserver.disconnect();
@@ -3376,6 +4097,22 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         </div>
         <div class="reset-row" id="resetRow"><button class="link-btn" id="resetBtn" type="button">Alles zurücksetzen (Fortschritt, Sammlung, Lernstand)</button></div>
       </details>
+      <details class="pg" id="pgLog"><summary>Protokoll für Claude</summary>
+        <p class="note">Die App schreibt mit, wie gespielt wird: Aufgaben, Antworten mit Zeit, Hilfen, Pausen, Bilder und geänderte Einstellungen. Das bleibt auf diesem Gerät. Wenn du es mit Claude teilst, kann Claude sehen, wo es hakt, und die App gezielt verbessern. Der Name deines Kindes ist nicht enthalten.</p>
+        <div class="p-field"><label class="tog"><input type="checkbox" id="logOn"><span>Protokoll aufzeichnen</span></label></div>
+        <p class="note" id="logInfo"></p>
+        <div class="save-actions">
+          <button class="small-btn primary" id="logShare" type="button">Letzte 14 Tage teilen</button>
+          <button class="small-btn" id="logShareAll" type="button">Alles teilen</button>
+          <button class="small-btn" id="logShow" type="button">Anzeigen</button>
+        </div>
+        <p class="note" id="logMsg" role="status"></p>
+        <div class="code-box" id="logBox" hidden>
+          <textarea id="logOut" rows="8" readonly></textarea>
+          <div class="code-row"><button class="small-btn" id="logCopy" type="button">Kopieren</button><span class="note" id="logCopyMsg" role="status"></span></div>
+        </div>
+        <div class="reset-row" id="logReset"><button class="link-btn" type="button" data-lg="ask">Protokoll löschen</button></div>
+      </details>
       <p class="note version">Rechenreise · Version ${VERSION}</p>`;
   }
 
@@ -3402,6 +4139,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("pgAuto").querySelectorAll("input").forEach((i) => { i.disabled = manual; });
     $("pgAuto").querySelector("summary").textContent = manual ? "Auto-Modus (gerade aus)" : "Auto-Modus";
     renderSaveStatus();
+    renderLogInfo();
+  }
+  function renderLogInfo() {
+    const ev = LOG.ev, n = ev.filter((e) => e[1] === "A").length, ses = ev.filter((e) => e[1] === "S").length;
+    $("logOn").checked = LOG.on;
+    $("logInfo").textContent = ev.length
+      ? `${ses} ${ses === 1 ? "Sitzung" : "Sitzungen"} mit ${n} Aufgaben seit ${dayOf(ev[0][0])} · Älteres als ${LOG_DAYS} Tage wird gelöscht.`
+      : LOG.on ? "Noch nichts aufgezeichnet." : "Aufzeichnung ist aus.";
   }
   function renderLernstand() {
     const today = todayKey(), [n, ok] = state.days[today] || [0, 0];
@@ -3422,6 +4167,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
 
   function afterChange(path) {
+    // Schieberegler: nur den letzten Wert behalten
+    const lastEv = LOG.ev[LOG.ev.length - 1];
+    if (lastEv && lastEv[1] === "E" && lastEv[2] === path && Date.now() - lastEv[0] < 5000) LOG.ev.pop();
+    logEv("E", path, JSON.stringify(getP(path)));
     if (path === "pad") applyPad();
     if (path === "sound") syncSettings();
     if (path === "cfg.rewardEvery" || path === "cfg.goldEvery") renderProgress();
@@ -3481,6 +4230,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (v === (DEFAULT_SK[id] ?? 1)) delete state.cfg.sk[id]; else state.cfg.sk[id] = v;
   }
   function openParents() {
+    logEv("O", "Eltern-Menü");
     parentsSync();
     if ($("pgLern").open) renderLernstand();
     $("parents").hidden = false;
@@ -3620,11 +4370,50 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     });
   }
 
+  function wireLogUI() {
+    const msg = $("logMsg");
+    $("logOn").addEventListener("change", (e) => { logSet(e.target.checked); renderLogInfo(); });
+    // Teilen als Textdatei (iPhone: zum Beispiel direkt in die Claude-App), sonst als Text, sonst kopieren
+    const share = async (days) => {
+      logFlush();
+      const text = logText(days), d = new Date(), file = `rechenreise-protokoll-${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}.txt`;
+      try {
+        const f = typeof File === "function" ? new File([text], file, { type: "text/plain" }) : null;
+        if (f && navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: "Rechenreise Protokoll" }); msg.textContent = "Geteilt. In Claude einfach die Datei anhängen und fragen, was auffällt."; return; }
+        if (navigator.share) { await navigator.share({ title: "Rechenreise Protokoll", text }); msg.textContent = "Geteilt."; return; }
+      } catch (e) {
+        if (e && e.name === "AbortError") { msg.textContent = "Abgebrochen."; return; }
+      }
+      try { await navigator.clipboard.writeText(text); msg.textContent = "Kopiert. Jetzt in den Chat mit Claude einfügen."; }
+      catch (e) { show(days); msg.textContent = "Kopiere den Text unten."; }
+    };
+    const show = (days) => { $("logOut").value = logText(days); $("logCopyMsg").textContent = ""; $("logBox").hidden = false; };
+    $("logShare").addEventListener("click", () => share(14));
+    $("logShareAll").addEventListener("click", () => share(0));
+    $("logShow").addEventListener("click", () => show(14));
+    $("logCopy").addEventListener("click", () => {
+      const fallback = () => { $("logOut").select(); $("logCopyMsg").textContent = "Markiert. Jetzt kopieren."; };
+      try { navigator.clipboard.writeText($("logOut").value).then(() => { $("logCopyMsg").textContent = "Kopiert."; }, fallback); } catch (e) { fallback(); }
+    });
+    $("logReset").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-lg]"), box = $("logReset");
+      if (!b) return;
+      if (b.dataset.lg === "ask") box.innerHTML = `<span class="note">Protokoll wirklich löschen? Spielstand und Bilder bleiben.</span><button class="link-btn danger" type="button" data-lg="yes">Ja, löschen</button><button class="link-btn" type="button" data-lg="no">Abbrechen</button>`;
+      else {
+        if (b.dataset.lg === "yes") { logClear(); $("logBox").hidden = true; msg.textContent = "Protokoll gelöscht."; }
+        box.innerHTML = `<button class="link-btn" type="button" data-lg="ask">Protokoll löschen</button>`;
+        renderLogInfo();
+      }
+    });
+  }
+
   // ---------- Start ----------
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* kein Problem */ }
   buildParents();
   wireParents();
   wireSaveUI();
+  wireLogUI();
+  logLoad();
   load();
   syncSettings();
   applyPad();
