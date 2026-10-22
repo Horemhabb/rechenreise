@@ -519,6 +519,38 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .choice.tried { opacity: .38; box-shadow: none; }
 .choice.right { border-color: var(--green); background: var(--green-soft); box-shadow: 0 3px 0 var(--green); }
 .choice.right b { color: var(--green); }
+
+/* Rechenweg zum Mitrechnen (ab 1.10) */
+.equation.guide { font-size: clamp(1.9rem, 9vw, 2.8rem); }
+.equation.guide #numA, .equation.guide #numB, .equation.guide #opSign { color: var(--plum); }
+.guide-list { margin: 4px 0 0; padding-left: 1.4em; display: grid; gap: 6px; font-size: 0.95rem; text-align: left; }
+.guide-list li { color: var(--muted); }
+.guide-list li.now { color: var(--ink); font-weight: 700; }
+.guide-list li.done { color: var(--green); }
+.guide-list li.done .nb { font-weight: 700; }
+
+/* Rätselwort (ab 1.10): Namensschild und Buchstaben-Tabelle wie im Schulbuch */
+.rz { display: grid; gap: 12px; justify-items: center; width: 100%; }
+.rz-plate { display: flex; gap: 5px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 2px solid #8a6a4a; box-shadow: 0 3px 0 rgba(59, 47, 69, .15); }
+.rz-l {
+  width: 34px; height: 42px; border-radius: 6px; display: grid; place-items: center; border-bottom: 3px solid #c9b48a;
+  font-family: var(--font-num); font-weight: 600; font-size: 1.6rem; color: var(--plum); background: #fbf6ea;
+}
+.rz-l.now { background: #fff3c4; border-bottom-color: var(--gold-dark); }
+.rz-l.got { animation: pop .4s ease-out; }
+.rz-table { display: grid; grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); width: 100%; max-width: 380px; border: 2px solid #6f9a5a; border-radius: 10px; overflow: hidden; }
+.rz-cell {
+  display: grid; gap: 2px; padding: 4px 0 6px; border: 0; border-right: 1px solid #b8d4a8; background: #fff; font: inherit; color: var(--ink); cursor: pointer;
+}
+.rz-cell b { background: #d4e8c4; font-family: var(--font-num); font-weight: 600; font-size: 1.05rem; padding: 2px 0; }
+.rz-cell span { font-family: var(--font-num); font-weight: 600; font-size: 1.1rem; }
+.rz-cell:disabled { cursor: default; color: var(--ink); }
+.rz-cell:not(:disabled):hover b { background: #ffe08a; }
+.rz-cell.no { animation: shake .4s; }
+.rz.solved .rz-plate { border-color: var(--gold-dark); box-shadow: 0 0 0 4px var(--gold-soft), 0 3px 0 rgba(59, 47, 69, .15); }
+.rz.solved .rz-l { background: #fff3c4; }
+.rz-animal { width: 120px; height: 110px; animation: pop .6s ease-out; }
+.note.warn { color: #8a4a12; background: #fff3dc; border: 1.5px solid var(--gold-dark); border-radius: 8px; padding: 6px 10px; }
 </style>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#7a4bb0">
@@ -2288,6 +2320,81 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mk("s1", "schaetzen", "Mengen schätzen", "10 sind eingekreist", 0, false, "Krämer", () => mengeT(25, 65)),
     mk("s2", "schaetzen", "Große Mengen schätzen", "bis 150", 0, true, "Eichmeister", () => mengeT(66, 150)),
   );
+  // Welche Plus- oder Minus-Fähigkeit passt zu einer Aufgabe? (für Aufgaben, die mit einem festen Ergebnis gebaut werden)
+  function classify(a, op, b) {
+    if (op === "+") {
+      const r = a + b, cross = (a % 10) + (b % 10) >= 10;
+      if (r <= 10) return "p1";
+      if (a % 10 === 0 && b % 10 === 0) return "p3";
+      if (b % 10 === 0) return "p4";
+      if (!cross && b < 10) return "p2";
+      if (r <= 20) return "p5";
+      if (b < 10) return "p6";
+      return "p7";
+    }
+    const cross = a % 10 < b % 10;
+    if (a <= 10) return "m1";
+    if (a % 10 === 0 && b % 10 === 0) return "m3";
+    if (b % 10 === 0) return "m4";
+    if (b < 10 && !cross) return "m2";
+    if (a <= 20 && b < 10) return "m5";
+    if (b < 10) return "m6";
+    return "m7";
+  }
+
+  // ---------- Rätselwort (ab 1.10, wie im Schulbuch) ----------
+  // Ein Name wird gesucht. Jede Aufgabe ergibt eine Zahl, die Tabelle verrät den Buchstaben dazu.
+  const RZ_NAMES = ["LOTTA", "KEKS", "FLOCKE", "PIPPA", "MIMI", "LUNA", "FRIDA", "BRUNO", "OSKAR", "KIRA", "WIND", "SAUSE", "NELLI", "MOKKA", "PEPE", "KARLO", "HILDA", "GRETE", "TONI", "ELSA", "BELLA", "FINE", "PAULA", "EMIL", "KRUEMEL", "WOLKE", "BLITZ", "SUSI", "HANNI", "MAJA"];
+  const RZ_EXTRA = "ABDEFGHIKLMNOPRSTUW";
+  // Aufgabe mit festem Ergebnis r, passend zum Zahlenraum; die Fähigkeit wird danach bestimmt
+  function taskWithResult(r, N, preferMinus) {
+    for (let k = 0; k < 30; k++) {
+      let t;
+      // kleine zweite Zahl (2 bis 9): so entstehen Aufgaben wie 43 − 6 oder 37 + 5, nie unerwartet schwere
+      if (preferMinus || Math.random() < 0.5) { const b = rand(2, 9); if (r + b > N) continue; t = minus(r + b, b); }
+      else { if (r < 4) continue; const b = rand(2, Math.min(9, r - 1)); t = plus(r - b, b); }
+      const id = classify(t.a, t.op, t.b);
+      if (SKILL_BY_ID[id].min <= N) return Object.assign(t, { skill: id, group: SKILL_BY_ID[id].group, hard: SKILL_BY_ID[id].hard });
+    }
+    const t = r >= 3 ? plus(1, r - 1) : minus(r + 1, 1), id = classify(t.a, t.op, t.b);
+    return Object.assign(t, { skill: id, group: SKILL_BY_ID[id].group, hard: SKILL_BY_ID[id].hard });
+  }
+  // Baut ein Rätsel aus den gerade eingeschalteten Plus-, Minus- und Mal-Fähigkeiten
+  function makePuzzle(skills, N) {
+    const pool = skills.filter((s) => s.group === "plus" || s.group === "minus" || s.group === "mal");
+    const use = pool.length ? pool : [SKILL_BY_ID.p2, SKILL_BY_ID.m2];
+    const names = RZ_NAMES.filter((w) => w.length <= 6), word = pick(names), code = {}, used = new Set(), items = [];
+    for (const ch of word) {
+      let t = null;
+      if (code[ch] === undefined) {
+        // zweistellige Codes wie im Schulbuch (bei „bis 10“ geht es nicht anders)
+        const lo = N >= 20 ? 10 : 1;
+        for (let k = 0; k < 80 && !t; k++) { const s = pick(use), c = makeFor(s); if (!used.has(c.result) && c.result >= lo && !c.pic && !c.kind) t = c; }
+        if (!t) { let r; do { r = rand(10, N >= 100 ? 99 : N); } while (used.has(r)); t = taskWithResult(r, N); }
+        code[ch] = t.result; used.add(t.result);
+      } else t = taskWithResult(code[ch], code[ch] > 20 ? 100 : Math.max(20, N));
+      t.rz = ch; items.push(t);
+    }
+    // ein paar Buchstaben mehr in der Tabelle, damit man wirklich suchen muss
+    const extra = [...RZ_EXTRA].filter((c) => code[c] === undefined).sort(() => Math.random() - 0.5).slice(0, 3);
+    extra.forEach((c) => { let r; do { r = rand(10, N >= 100 ? 99 : N); } while (used.has(r)); code[c] = r; used.add(r); });
+    const table = Object.keys(code).sort().map((l) => ({ l, n: code[l] }));
+    return { word, table, items, i: 0, found: [] };
+  }
+
+  // ---------- Rechenweg zum Mitrechnen (ab 1.10) ----------
+  // Zerlegt Plus und Minus mit Zehnern oder Übergang in zwei kleine Schritte; null, wenn es nichts zu zerlegen gibt
+  function guideSteps(t) {
+    if (t.gap || t.kind || t.pic || (t.op !== "+" && t.op !== "−")) return null;
+    const { a, b } = t, up = t.op === "+", f = (x, o, y) => ({ a: x, op: o, b: y, result: o === "+" ? x + y : x - y });
+    const e = a % 10;
+    if (b % 10 === 0 && b >= 10 && e) { const z = a - e, m = up ? z + b : z - b; return m >= 0 ? [Object.assign(f(z, t.op, b), { say: "Erst die Zehner" }), Object.assign(f(m, "+", e), { say: "Dann die Einer dazu" })] : null; }
+    if (b >= 10 && b % 10) { const z = b - (b % 10), m = up ? a + z : a - z; return [Object.assign(f(a, t.op, z), { say: "Erst die Zehner" }), Object.assign(f(m, t.op, b % 10), { say: "Dann die Einer" })]; }
+    if (b < 10 && up && e + b > 10) { const k = 10 - e; return [Object.assign(f(a, "+", k), { say: "Erst bis zum vollen Zehner" }), Object.assign(f(a + k, "+", b - k), { say: "Dann den Rest dazu" })]; }
+    if (b < 10 && !up && b > e && e) return [Object.assign(f(a, "−", e), { say: "Erst zurück bis zum Zehner" }), Object.assign(f(a - e, "−", b - e), { say: "Dann den Rest weg" })];
+    return null;
+  }
+
   // In welcher Reihenfolge die Teilen-Zünfte dazukommen (Einstellung „Schritt für Schritt“): erst Lehrling werden, dann geht es weiter
   const TEILEN_NEEDS = { d3: ["d1", "d2"], d4: ["d3"], d5: ["d4"] };
   const SKILL_BY_ID = Object.fromEntries(SKILLS.map((s) => [s.id, s]));
@@ -2301,7 +2408,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const DEFAULT_SK = { x6: 2, x8: 2 };   // Schwerpunkt-Reihen, 0 = aus, 1 = normal, 2 = öfter
   const CFG_DEF = {
     mode: "auto", anteil: 40, sicher: "4in5", steigern: "mittel", erfolg: true, retry: true, uebTag: true,
-    helpAfter: 2, detektiv: true, frustN: 3, hilfe: "auto", teilenStufen: "schritt",
+    helpAfter: 2, detektiv: true, frustN: 3, hilfe: "auto", teilenStufen: "schritt", mitrechnen: true,
     fx: true, vol: "mittel", speech: true, speechMode: "lob", readTask: false, name: "", titel: "f",
     rewardEvery: 5, goldEvery: 100,
   };
@@ -2312,7 +2419,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   };
   const DATA_GEN = 2;
   // Rechenarten ab 1.9: bleiben aus, bis die Eltern sie einschalten (auch bei alten Spielständen)
-  const NEW_OPS = ["tricks", "mauer", "dreieck", "folgen", "schaetzen"];
+  const NEW_OPS = ["tricks", "mauer", "dreieck", "folgen", "schaetzen", "raetsel"];
   const NEW_OPS_OFF = Object.fromEntries(NEW_OPS.map((k) => [k, false]));   // Spielstände ab Version 1.1; ältere beginnen einmalig bei null
 
   const freshState = () => ({
@@ -2437,7 +2544,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   };
 
   // ---------- Auswahl: kurzes Gedächtnis dieser Sitzung ----------
-  const mem = { recent: [], skills: [], ops: [], hard: [], codes: [], miss: 0, streak: 0, retry: [], cool: 0, easy: 0, last: "" };
+  const mem = { recent: [], skills: [], ops: [], hard: [], codes: [], miss: 0, streak: 0, retry: [], cool: 0, easy: 0, last: "", sincePuzzle: 9 };
   const taskKey = (t) => (t.key ? t.key : t.op === ":" ? `${t.pic || ""}${t.a}:${t.b}` : t.gap ? `${t.gap}:${t.a}${t.op}${t.b}` : t.op === "−" ? `${t.a}−${t.b}` : `${t.op}${Math.min(t.a, t.b)}_${Math.max(t.a, t.b)}`);
 
   const unlocked = (s) => {
@@ -2630,6 +2737,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (sv.length === sr.length && sv.length >= 2 && [...sv].reverse().join("") === sr) return { kind: "dig", text: "Fast: Die Ziffern stehen vertauscht. Erst die Zehner, dann die Einer." };
     if (t.op === "·" && (Math.abs(d) === a || Math.abs(d) === b)) return { kind: "row", text: "Eine Reihe zu viel oder zu wenig? Rechne die Reihe noch einmal von vorn." };
     if (Math.abs(d) === 10 && t.op !== "·") return { kind: "ten", text: "Fast! Die Zehnerstelle stimmt noch nicht. Denk an den Zehnerübergang." };
+    // Beim Rückwärtszählen über den Zehner wird oft die Startzahl mitgezählt: Ergebnis um eins zu klein
+    if (t.op === "−" && d === -1 && b < 10 && b > a % 10) return { kind: "one", text: "Ganz knapp! Beim Rückwärtszählen zählt die Startzahl nicht mit. Tipp: Erst bis zur Zehn, dann weiter." };
     if (Math.abs(d) === 1) return { kind: "one", text: "Ganz knapp! Rechne den letzten Schritt noch einmal." };
     return null;
   }
@@ -2757,7 +2866,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const LOG_WHAT = {
     S: "Start", A: "Aufgabe", R: "Antwort", H: "Hilfe", L: "Lösung gezeigt", F: "Angebot „leichter“", FA: "Angebot beantwortet",
     B: "Bild bekommen", BZ: "Bild geschlossen", G: "Zunftgrad", W: "Werkstatt-Kapitel", O: "geöffnet", OZ: "geschlossen",
-    E: "Einstellung", P: "App verlassen", Z: "App wieder da", X: "Fehler im Programm",
+    E: "Einstellung", P: "App verlassen", Z: "App wieder da", X: "Fehler im Programm", RS: "Rechenweg-Schritt", RZ: "Rätselwort",
   };
   function logLine(e) {
     const [t, k, ...d] = e;
@@ -2766,6 +2875,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     else if (k === "B") x = [d[0] ? "GOLD" : "normal", d[1] ? "neu entdeckt" : "", d[2], d[3]];
     else if (k === "FA") x = [d[0] ? "ja, leichter" : "nein, weiter so"];
     else if (k === "S") x = ["Version " + d[0], d[1], d[2]];
+    else if (k === "RS") x = [`Schritt ${d[0]}`, d[1], d[2] ? "richtig" : "falsch"];
     return `${timeOf(t)}  ${LOG_WHAT[k] || k}  ${x.filter((v) => v !== "" && v !== undefined).join("  ")}`.trimEnd();
   }
   // Sitzungen: von einem Start bis zum nächsten
@@ -2775,10 +2885,19 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return out;
   }
   function logSummary(ev) {
-    const L = [], ses = logSessions(ev);
-    const dur = ses.map((s) => s[s.length - 1][0] - s[0][0]);
-    const tasksPer = ses.map((s) => s.filter((e) => e[1] === "A").length);
-    L.push(`Sitzungen: ${ses.length} · Dauer im Mittel (Median) ${mins(median(dur))}, kürzeste ${mins(Math.min(...dur))}, längste ${mins(Math.max(...dur))} · Aufgaben je Sitzung im Mittel ${median(tasksPer)}`);
+    const L = [], all = logSessions(ev);
+    // Rechen-Sitzungen: mit mindestens einer Antwort. Kurze Besuche ohne Antwort sind oft die Eltern (Menü, Sammlung)
+    const ses = all.filter((s) => s.some((e) => e[1] === "R")), visits = all.length - ses.length;
+    if (!ses.length) { L.push(`Noch keine Sitzung mit Antworten (${all.length} kurze Besuche).`); return L; }
+    // aktive Dauer: Pausen im Hintergrund abziehen
+    const activeDur = (s) => {
+      let t = 0, from = s[0][0];
+      for (const e of s) { if (e[1] === "P") { if (from !== null) t += e[0] - from; from = null; } else if (from === null) from = e[0]; }
+      return from !== null ? t + s[s.length - 1][0] - from : t;
+    };
+    const dur = ses.map(activeDur);
+    const tasksPer = ses.map((s) => s.filter((e) => e[1] === "R" && e[3]).length);
+    L.push(`Rechen-Sitzungen: ${ses.length} (dazu ${visits} kurze Besuche ohne Antwort, oft Eltern-Menü) · aktive Dauer im Mittel (Median) ${mins(median(dur))}, längste ${mins(Math.max(...dur))} · gelöste Aufgaben je Sitzung im Mittel ${median(tasksPer)}`);
     // Spielzeit je Tag
     const days = {};
     ses.forEach((s, i) => { const d = dayOf(s[0][0]); days[d] = days[d] || [0, 0, 0]; days[d][0] += dur[i]; days[d][1] += tasksPer[i]; days[d][2] += 1; });
@@ -2815,6 +2934,26 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       ends[why] = (ends[why] || 0) + 1;
     });
     L.push("Sitzungsende: " + Object.entries(ends).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n}× ${w}`).join(" · "));
+    // Muster beim Antworten: schnelles Raten bis zur Lösung, um eins daneben beim Minus, Rechenweg zum Mitrechnen
+    let quick = 0, wrongs = 0, rush = 0, offOne = 0, lastR = null, curT = null, runFast = 0;
+    ev.forEach((e) => {
+      if (e[1] === "A") { curT = e[3] || ""; lastR = null; runFast = 0; }
+      if (e[1] === "R" && !e[3]) {
+        wrongs++;
+        if (lastR && e[0] - lastR < 3000) { quick++; runFast++; }
+        if (e[6] === "one" && /−/.test(curT)) offOne++;
+        lastR = e[0];
+      } else if (e[1] === "R") lastR = null;
+      if (e[1] === "L" && runFast >= 2) rush++;
+    });
+    if (wrongs) L.push(`Fehlversuche: ${wrongs}, davon ${quick} weniger als 3 s nach dem vorigen (schnelles Raten) · ${rush}× bis zur gezeigten Lösung durchgeklickt · ${offOne}× beim Minus genau um eins daneben`);
+    const steps = ev.filter((e) => e[1] === "RS");
+    if (steps.length) L.push(`Rechenweg zum Mitrechnen: ${steps.length} Schritte, davon ${steps.filter((e) => e[4]).length} richtig`);
+    const rzs = ev.filter((e) => e[1] === "RZ");
+    if (rzs.length) L.push(`Rätselwort: ${rzs.filter((e) => e[2] === "Start").length}× begonnen, ${rzs.filter((e) => e[2] === "gelöst").length}× gelöst, ${rzs.filter((e) => e[2] === "falscher Buchstabe").length}× falscher Buchstabe angetippt`);
+    // Was zieht sie an? Werkstatt nach einem neuen Kapitel
+    const wk = ev.filter((e) => e[1] === "W").length, wkLook = ev.filter((e, i) => e[1] === "W" && ev.slice(i + 1, i + 6).some((x) => x[1] === "O" && /^Werkstatt/.test(x[2]))).length;
+    if (wk) L.push(`Neue Werkstatt-Kapitel: ${wk}, danach gleich die Werkstatt angeschaut: ${wkLook}×`);
     const pics = ev.filter((e) => e[1] === "B"), look = [];
     ev.forEach((e, i) => { if (e[1] === "B") { const z = ev.slice(i + 1).find((x) => x[1] === "BZ"); if (z && z[0] - e[0] < 600e3) look.push(z[0] - e[0]); } });
     const opens = {};
@@ -2840,6 +2979,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     L.push("", "## Einstellungen und Lernstand", "");
     const { name, ...cfg } = state.cfg;
     L.push(`Einstellungen: ${JSON.stringify({ max: state.max, ops: state.ops, ...cfg })}`);
+    const often = Object.entries(state.cfg.sk).filter(([, v]) => v === 2).map(([k]) => k);
+    if (often.length > 4) L.push(`Achtung: ${often.length} Aufgabenarten stehen auf „öfter“ (${often.join(", ")}). Das macht die Mischung sehr schwer.`);
     L.push(`Gesamt: ${state.correct} richtige Aufgaben, ${state.album.length} Bilder, Fehlerarten ${JSON.stringify(state.err)}`);
     if (typeof SKILLS !== "undefined") L.push("Lernstand: " + SKILLS.filter((s) => state.stats[s.id]).map((s) => `${s.id} ${statusOf(s.id)}${state.stats[s.id].g ? " Grad " + state.stats[s.id].g : ""}`).join(" · "));
     L.push("", "## Verlauf", "");
@@ -3085,12 +3226,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.9";
+  const VERSION = "1.10";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
   let input = "", tries = 0, revealed = false, locked = false, localOk = true;
   let shownAt = 0, firstMs = null, away = false, offerOpen = false, dirtyTask = false;
+  let hiddenAt = 0, pausedMs = 0;   // Zeit im Hintergrund zählt nicht als Rechenzeit
+  let guide = null;                 // Rechenweg zum Mitrechnen: { steps, i, help }
+  let rz = null;                    // laufendes Rätselwort: { word, table, items, i, found, story, animal, wait }
+  const activeMs = () => Math.round(performance.now() - shownAt - pausedMs);
 
   const stored = () => ({ ...state, gen: DATA_GEN, album: state.album.map((k) => (k.v ? [k.s, k.n, k.c, k.g, k.v] : [k.s, k.n, k.c, k.g])) });
 
@@ -3160,8 +3305,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
   }
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") { away = true; clearTimeout(cloud.timer); flushCloud(); logEv("P"); logFlush(); }
-    else logEv("Z");
+    if (document.visibilityState === "hidden") { away = true; hiddenAt = performance.now(); clearTimeout(cloud.timer); flushCloud(); logEv("P"); logFlush(); }
+    else {
+      const gone = hiddenAt ? performance.now() - hiddenAt : 0, longGap = LOG.last && Date.now() - LOG.last > LOG_GAP;
+      pausedMs += gone; hiddenAt = 0;
+      logEv("Z");
+      // neue Sitzung: die offene Aufgabe gehört jetzt dazu
+      if (longGap && task && !locked) logEv("A", task.skill, logTask(task) + " (nach Pause weiter)");
+    }
   });
   window.addEventListener("pagehide", logFlush);
   window.addEventListener("error", (e) => logEv("X", String((e && e.message) || "?").slice(0, 160)));
@@ -3273,11 +3424,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
     eq.classList.toggle("gap", !!g);
     eq.classList.toggle("solo", solo);
+    eq.classList.toggle("guide", !!guide);
     eq.hidden = choiceTask(task);
     renderChoices();
-    $("numA").textContent = task.a ?? "";
-    $("opSign").textContent = task.op;
-    $("numB").textContent = task.b ?? "";
+    const shown = guide ? guide.steps[guide.i] : task;
+    $("numA").textContent = shown.a ?? "";
+    $("opSign").textContent = shown.op;
+    $("numB").textContent = shown.b ?? "";
     $("numC").textContent = g ? task.c : "";
     answerEl.value = input;
     answerEl.readOnly = locked;
@@ -3516,7 +3669,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return total;
   }
   function renderPic(mode = "") {
-    const t = task, on = !!t.pic || !!t.kind;
+    const t = task;
+    if (t.rz && rz) { renderPuzzle(false); $("divNote").hidden = true; return; }
+    const on = !!t.pic || !!t.kind;
     $("picTask").hidden = !on;
     $("picTask").classList.toggle("kind", !!t.kind);
     $("divNote").hidden = !(t.op === ":" && (on || !((state.stats[t.skill] || {}).g >= 2)));
@@ -4072,9 +4227,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Aufgaben stellen ----------
   function newTask() {
     if (offerOpen) return;
-    task = nextTask();
+    if (rz && !state.ops.raetsel) rz = null;
+    if (!rz && state.ops.raetsel && mem.sincePuzzle >= 12) startPuzzle();
+    if (rz && rz.i < rz.items.length) { task = rz.items[rz.i]; task.pool = "raetsel"; commit(task); }
+    else { rz = null; task = nextTask(); mem.sincePuzzle++; }
     input = ""; tries = 0; revealed = false; locked = false; tried = [];
-    shownAt = performance.now(); firstMs = null; away = false;
+    shownAt = performance.now(); firstMs = null; away = false; pausedMs = 0; guide = null;
     renderPic(); renderTask(""); renderTags(); applyPad();
     logEv("A", task.skill, logTask(task));
     hintEl.hidden = true;
@@ -4108,6 +4266,126 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   $("offerYes").addEventListener("click", () => closeOffer(true));
   $("offerNo").addEventListener("click", () => closeOffer(false));
+
+  // ---------- Rechenweg zum Mitrechnen ----------
+  // Statt nur zu lesen, rechnet sie die zwei kleinen Schritte selbst. Danach gilt die Aufgabe als „mit Hilfe“ gelöst.
+  function startGuide() {
+    guide = { steps: guideSteps(task), i: 0, wrong: 0, help: false };
+    setFeedback("Wir rechnen zusammen, Schritt für Schritt:", "try");
+    logEv("H", "mitrechnen");
+    renderGuide(); renderTask("");
+    if (state.cfg.speechMode === "mut") speak("Wir rechnen zusammen, Schritt für Schritt.");
+  }
+  function renderGuide() {
+    const st = guide.steps, sign = (x) => `${x.a} ${x.op} ${x.b}`;
+    hintEl.className = "hint";
+    // Zahlenstrahl dazu, wenn seine Sprünge genau die Schritte sind (bei 36 + 20 wird anders zerlegt: 30 + 20, dann + 6)
+    const line = st[0].a === task.a && state.cfg.hilfe !== "punkte" ? numberLineSVG(task).svg : "";
+    hintEl.innerHTML = `${line}<p class="steps caption">${sign(task)} in zwei Schritten:</p><ol class="guide-list">${st.map((x, k) =>
+      `<li class="${k < guide.i ? "done" : k === guide.i ? "now" : ""}"><span>${x.say}:</span> <span class="nb">${sign(x)} = ${k < guide.i ? x.result + " ✓" : "?"}</span></li>`).join("")}</ol>`;
+    hintEl.removeAttribute("aria-label");
+    hintEl.hidden = false;
+  }
+  function guideCheck(val) {
+    const st = guide.steps[guide.i];
+    input = "";
+    // Wer das Endergebnis direkt weiß, ist fertig (auch mitten im Rechenweg)
+    if (val === task.result && val !== st.result) {
+      logEv("RS", guide.i + 1, val, 1);
+      if (guide.help) revealed = true;
+      guide = null; input = String(val);
+      renderGuide2Done(); solved();
+      return;
+    }
+    logEv("RS", guide.i + 1, val, val === st.result ? 1 : 0);
+    if (val === st.result) {
+      guide.i++; guide.wrong = 0;
+      if (guide.i < guide.steps.length) {
+        SFX.again();
+        setFeedback(`Genau! ${guide.steps[guide.i].say}:`, "good");
+        renderGuide(); renderTask("");
+        return;
+      }
+      // alle Schritte geschafft: die eigentliche Aufgabe ist gelöst (mit Hilfe)
+      if (guide.help) revealed = true;
+      guide = null;
+      input = String(task.result);
+      renderGuide2Done();
+      solved();
+      return;
+    }
+    guide.wrong++;
+    SFX.soft();
+    if (guide.wrong >= 2) { guide.help = true; setFeedback(`${st.a} ${st.op} ${st.b} ist ${st.result}. Tipp es ein!`, "try"); }
+    else setFeedback(`Noch nicht. ${st.say}: ${st.a} ${st.op} ${st.b} = ?`, "try");
+    renderTask("wrong");
+  }
+  function renderGuide2Done() {
+    const items = hintEl.querySelectorAll(".guide-list li");
+    items.forEach((li) => { li.className = "done"; });
+    const last = items[items.length - 1];
+    if (last) last.querySelector(".nb").textContent = last.querySelector(".nb").textContent.replace("?", `${task.result} ✓`);
+  }
+
+  // ---------- Rätselwort ----------
+  // Wie im Schulbuch: Aufgaben lösen, zum Ergebnis den Buchstaben in der Tabelle suchen, am Ende steht ein Name.
+  const RZ_ANIMALS = [
+    { id: "kueken", one: "ein Küken", who: "das Küken", story: (w) => `Auf dem Hof hinter ${w} ist ein Küken geschlüpft. Wie heißt es?` },
+    { id: "katze", one: "ein Kätzchen", who: "das Kätzchen", story: (w) => `Die Werkstattkatze in ${w} hat ein Junges bekommen. Wie heißt das Kätzchen?` },
+  ];
+  function startPuzzle() {
+    rz = makePuzzle(enabledSkills(), state.max);
+    mem.sincePuzzle = 0;
+    const own = SKILLS.filter((s) => ((state.stats[s.id] || {}).g || 0) >= 1 && GUILD[s.id]), s = own.length ? pick(own) : SKILL_BY_ID.x2, G = GUILD[s.id] || GUILD.x2;
+    rz.animal = pick(RZ_ANIMALS);
+    rz.where = own.length ? `deiner ${G.o}` : `der ${G.o}`;
+    rz.place = s.id;
+    logEv("RZ", "Start", rz.word, rz.table.map((x) => x.l + "=" + x.n).join(" "));
+  }
+  const ANIMAL_SVG = {
+    kueken: `<svg viewBox="0 0 120 110" class="rz-animal" aria-hidden="true"><ellipse cx="60" cy="102" rx="34" ry="5" fill="#000" opacity=".12"/><path d="M30 78C30 60 42 52 60 52S90 60 90 78C90 94 78 102 60 102S30 94 30 78Z" fill="#ffd54a" stroke="#c99a1a" stroke-width="2.5"/><path d="M34 70Q22 74 30 86Q36 80 38 74Z" fill="#ffc72e" stroke="#c99a1a" stroke-width="2"/><circle cx="60" cy="40" r="22" fill="#ffd54a" stroke="#c99a1a" stroke-width="2.5"/><path d="M56 22Q60 10 64 22" fill="#ffd54a" stroke="#c99a1a" stroke-width="2"/><ellipse cx="52" cy="38" rx="3.6" ry="4.2" fill="#2a2030"/><ellipse cx="68" cy="38" rx="3.6" ry="4.2" fill="#2a2030"/><circle cx="53.3" cy="36.4" r="1.4" fill="#fff"/><circle cx="69.3" cy="36.4" r="1.4" fill="#fff"/><path d="M55 46L60 53L65 46Z" fill="#f08a2a" stroke="#b05a12" stroke-width="1.4"/><ellipse cx="46" cy="48" rx="4.5" ry="2.6" fill="#ff8a7a" opacity=".5"/><ellipse cx="74" cy="48" rx="4.5" ry="2.6" fill="#ff8a7a" opacity=".5"/><path d="M50 100L46 108M50 100L52 108M70 100L68 108M70 100L74 108" stroke="#f08a2a" stroke-width="3" stroke-linecap="round"/><path d="M14 104L22 88L30 98L38 86L44 104Z" fill="#fbf6ea" stroke="#c9b48a" stroke-width="2"/></svg>`,
+    katze: `<svg viewBox="0 0 120 110" class="rz-animal" aria-hidden="true"><ellipse cx="60" cy="102" rx="34" ry="5" fill="#000" opacity=".12"/><path d="M88 92C108 92 112 72 100 66" fill="none" stroke="#e8954a" stroke-width="8" stroke-linecap="round"/><path d="M36 100C30 80 38 62 60 62S90 80 84 100Z" fill="#f2a65a" stroke="#a8642a" stroke-width="2.5"/><path d="M48 96C48 84 54 76 60 76S72 84 72 96" fill="#fff3e4"/><path d="M34 34L38 10L54 24Z" fill="#f2a65a" stroke="#a8642a" stroke-width="2.5"/><path d="M86 34L82 10L66 24Z" fill="#f2a65a" stroke="#a8642a" stroke-width="2.5"/><circle cx="60" cy="42" r="26" fill="#f2a65a" stroke="#a8642a" stroke-width="2.5"/><path d="M50 22L54 30M60 18V28M70 22L66 30" stroke="#c4762e" stroke-width="3" stroke-linecap="round"/><ellipse cx="50" cy="42" rx="4" ry="5" fill="#2a2030"/><ellipse cx="70" cy="42" rx="4" ry="5" fill="#2a2030"/><circle cx="51.5" cy="40" r="1.6" fill="#fff"/><circle cx="71.5" cy="40" r="1.6" fill="#fff"/><path d="M57 50H63L60 53Z" fill="#e86a7a"/><path d="M60 53Q56 58 52 55M60 53Q64 58 68 55" fill="none" stroke="#a8642a" stroke-width="1.6" stroke-linecap="round"/><path d="M40 50H28M40 54L29 58M80 50H92M80 54L91 58" stroke="#a8642a" stroke-width="1.2"/><ellipse cx="44" cy="54" rx="4.5" ry="2.6" fill="#ff8a7a" opacity=".45"/><ellipse cx="76" cy="54" rx="4.5" ry="2.6" fill="#ff8a7a" opacity=".45"/></svg>`,
+  };
+  function puzzleHTML(done) {
+    const plate = [...rz.word].map((ch, k) => `<span class="rz-l${k < rz.found.length ? " got" : k === rz.i ? " now" : ""}">${k < rz.found.length ? ch : ""}</span>`).join("");
+    const table = rz.table.map((x) => `<button type="button" class="rz-cell" data-l="${x.l}"${rz.wait ? "" : " disabled"}><b>${x.l}</b><span>${x.n}</span></button>`).join("");
+    return `<div class="rz${done ? " solved" : ""}">${done ? ANIMAL_SVG[rz.animal.id] : ""}<div class="rz-plate" aria-label="Name: ${rz.found.join("")}">${plate}</div>` +
+      `<div class="rz-table" role="group" aria-label="Buchstaben-Tabelle">${table}</div></div>`;
+  }
+  function renderPuzzle(done) {
+    $("picTask").hidden = false;
+    $("picTask").classList.add("kind");
+    $("picQ").textContent = done ? `${rz.animal.who[0].toUpperCase() + rz.animal.who.slice(1)} heißt ${rz.word[0] + rz.word.slice(1).toLowerCase()}!` : `Rätsel: ${rz.animal.story(rz.where)} Löse die Aufgaben. Die Tabelle verrät dir zu jedem Ergebnis den Buchstaben.`;
+    $("picArt").innerHTML = puzzleHTML(done);
+  }
+  function puzzleAskLetter(go, praiseText) {
+    rz.wait = { go, n: task.result, l: task.rz };
+    setFeedback(`${praiseText} Welcher Buchstabe gehört zur ${task.result}? Tippe ihn in der Tabelle an.`, "good");
+    renderPuzzle(false);
+  }
+  $("picArt").addEventListener("click", (e) => {
+    const b = e.target.closest("button.rz-cell");
+    if (!b || !rz || !rz.wait) return;
+    const w = rz.wait, cell = rz.table.find((x) => x.l === b.dataset.l);
+    if (!cell || cell.n !== w.n) {
+      b.classList.remove("no"); void b.offsetWidth; b.classList.add("no");
+      setFeedback(`Schau genau: Bei welchem Buchstaben steht die ${w.n}?`, "try");
+      logEv("RZ", "falscher Buchstabe", b.dataset.l);
+      return;
+    }
+    rz.found.push(rz.word[rz.found.length]);
+    rz.i++; rz.wait = null;
+    SFX.again();
+    if (rz.i >= rz.items.length) {
+      renderPuzzle(true);
+      setFeedback("Rätsel gelöst!", "good");
+      SFX.mark();
+      speak(`${rz.animal.who[0].toUpperCase() + rz.animal.who.slice(1)} heißt ${rz.word.toLowerCase()}!`);
+      logEv("RZ", "gelöst", rz.word);
+      rz = null;
+      setTimeout(w.go, 3200);
+    } else { renderPuzzle(false); setTimeout(w.go, 700); }
+  });
 
   // ---------- Eingabe ----------
   const coarse = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
@@ -4147,12 +4425,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (locked || input === "") return;
     const val = parseInt(input, 10);
     if (firstMs === null && !away) firstMs = performance.now() - shownAt;
+    if (guide) { guideCheck(val); return; }
     if (val === task.result) solved(); else wrong(val);
   }
 
   function solved() {
     locked = true;
-    logEv("R", task.result, 1, Math.round(performance.now() - shownAt), tries + 1, "");
+    logEv("R", task.result, 1, activeMs(), tries + 1, "");
     renderTask("right");
     const h = state.cfg.helpAfter;
     const code = revealed ? 0 : tries === 0 ? 3 : tries < h ? 2 : 1;
@@ -4185,7 +4464,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     else if (ws1 > ws0) setTimeout(() => announceChapter(task.skill, ws1), 500);
     // Bei Bildaufgaben erst zuschauen, wie verteilt wird
     const shareMs = task.pic ? animateShare(true) + 900 : task.kind === "menge" ? 2400 : task.kind ? 1500 : 0;
-    setTimeout(reward ? showReward : () => (certQueue ? showCert() : afterTask()), Math.max(shareMs, reward ? 900 : code === 0 ? 1300 : 1000));
+    const go = reward ? showReward : () => (certQueue ? showCert() : afterTask());
+    if (task.rz && rz) { puzzleAskLetter(go, text); return; }
+    setTimeout(go, Math.max(shareMs, reward ? 900 : code === 0 ? 1300 : 1000));
   }
 
   function wrong(val) {
@@ -4201,10 +4482,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       const kind = detective ? detective.kind : "other";
       state.err[kind] = (state.err[kind] || 0) + 1;
     }
-    logEv("R", val, 0, Math.round(performance.now() - shownAt), tries, detective ? detective.kind : "");
+    logEv("R", val, 0, activeMs(), tries, detective ? detective.kind : "");
     if (tries < h) {
       setFeedback(detective ? detective.text : phrase(PHRASES.nudge1), "try");
       if (state.cfg.speechMode === "mut") speak(phrase(PHRASES.mut1));
+    } else if (tries === h && state.cfg.mitrechnen && guideSteps(task)) {
+      startGuide();
     } else if (tries === h) {
       const type = hintType(task);
       setFeedback(detective ? detective.text : type === "kind" ? (task.kind === "menge" ? "Schau, so sieht es in Zehnergruppen aus:" : "Hier ist ein Tipp für dich:") : type === "pic" ? "Schau, wie es verteilt wird:" : type === "line" ? (task.gap ? "Schau auf den Zahlenstrahl:" : "Spring auf dem Zahlenstrahl mit:") : type === "field" ? (task.op === ":" ? "Zähl die Reihen!" : "Zähl die Punkte. In Fünferschritten geht's schneller!")
@@ -4441,7 +4724,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Eltern-Menü ----------
   // Jede Einstellung hat einen Pfad im Zustand ("max", "ops.plus", "cfg.anteil" …). Bauen, Anzeigen und Speichern laufen darüber.
   const NUM_PATHS = new Set(["max", "cfg.anteil", "cfg.helpAfter", "cfg.frustN", "cfg.rewardEvery", "cfg.goldEvery"]);
-  const QUIET_PATHS = /^(pad|sound|cfg\.(fx|vol|speech|speechMode|readTask|name|titel|uebTag|rewardEvery|goldEvery|detektiv|helpAfter|hilfe))$/;
+  const QUIET_PATHS = /^(pad|sound|cfg\.(fx|vol|speech|speechMode|readTask|name|titel|uebTag|rewardEvery|goldEvery|detektiv|helpAfter|hilfe|mitrechnen))$/;
   const getP = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), state);
   function setP(path, v) {
     const ks = path.split("."), last = ks.pop();
@@ -4492,7 +4775,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
           <label class="opt"><input type="checkbox" data-p="ops.dreieck" id="opDreieck"><span>Rechendreiecke</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.folgen" id="opFolgen"><span>Zahlenfolgen</span></label>
           <label class="opt"><input type="checkbox" data-p="ops.schaetzen" id="opSchaetzen"><span>Mengen schätzen</span></label>
-        </div>${note("Alle sind zunächst aus. Schalte eine ein, wenn du findest, dass sie so weit ist. <b>Rechentricks</b>: schwere Einmaleins-Aufgaben aus leichten ableiten (aus 5 · 7 = 35 wird 6 · 7, Verdoppeln, von der 10 aus), mit Punktefeld. <b>Zahlenmauern</b> und <b>Rechendreiecke</b>: Plus und Minus mit Bild, auch rückwärts. <b>Zahlenfolgen</b>: Regeln an einer Perlenkette entdecken. <b>Mengen schätzen</b>: Dinge in einer Werkstatt, 10 sind eingekreist, drei Antworten zur Auswahl.")}</fieldset>
+          <label class="opt"><input type="checkbox" data-p="ops.raetsel" id="opRaetsel"><span>Rätselwort</span></label>
+        </div>${note("Alle sind zunächst aus. Schalte eine ein, wenn du findest, dass sie so weit ist. <b>Rechentricks</b>: schwere Einmaleins-Aufgaben aus leichten ableiten (aus 5 · 7 = 35 wird 6 · 7, Verdoppeln, von der 10 aus), mit Punktefeld. <b>Zahlenmauern</b> und <b>Rechendreiecke</b>: Plus und Minus mit Bild, auch rückwärts. <b>Zahlenfolgen</b>: Regeln an einer Perlenkette entdecken. <b>Mengen schätzen</b>: Dinge in einer Werkstatt, 10 sind eingekreist, drei Antworten zur Auswahl. <b>Rätselwort</b>: wie im Schulbuch, etwa alle 12 Aufgaben eine Runde: Aufgaben lösen, zum Ergebnis den Buchstaben in der Tabelle suchen, am Ende steht der Name eines Kükens oder Kätzchens. Es nimmt ihre eingeschalteten Plus-, Minus- und Mal-Aufgaben.")}</fieldset>
         ${seg("cfg.teilenStufen", "Teilen einführen", [["schritt", "Schritt für Schritt"], ["alle", "alles gleich"]],
           "Schritt für Schritt: erst Verteilen und Aufteilen mit Bildern. Wenn sie dort Lehrling ist, kommt Teilen durch 2, 5 und 10 dazu, danach durch 3, 4 und 6, zuletzt durch 7, 8 und 9.")}
         ${seg("max", "Zahlenraum für Plus und Minus", [[10, "bis 10"], [20, "bis 20"], [100, "bis 100"]], "Bis 1000 kommt in einer späteren Version.", { 10: "max10", 20: "max20", 100: "max100" })}
@@ -4500,6 +4784,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
           <div class="chips" id="rowChips">${rows.map((s) => `<button type="button" class="rchip" data-chip="${s.id}"></button>`).join("")}</div>
           ${note("Tippen wechselt: <b>normal</b> → <b>★ öfter üben</b> → <b>aus</b>. Öfter geübte Reihen zählen im Auto-Modus von Anfang an als Schwerpunkt.")}
         </fieldset>
+        <p class="note warn" id="skWarn" hidden></p>
         <details class="pg-in"><summary>Alle Aufgabenarten im Detail</summary>
           <div class="sk-list">${pm.map((s) => `<div class="sk-row"><div class="sk-name">${s.label}<small>${s.ex}${s.hard ? " · Knobelaufgabe" : ""}</small></div>
             <div class="seg seg-sm">${[[0, "Aus"], [1, "Normal"], [2, "Öfter"]].map(([v, l]) =>
@@ -4529,6 +4814,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
           "Einen Versuch später wird die Lösung gezeigt. Diese Aufgabe zählt dann nicht als Stern.")}
         ${seg("cfg.hilfe", "Art der Hilfe", [["auto", "automatisch"], ["strahl", "immer Zahlenstrahl"], ["punkte", "Punkte und Rechenweg"]],
           "Automatisch: Zwanzigerfeld bis 20, Punktefeld beim Einmaleins, darüber der Zahlenstrahl mit Sprüngen über den Zehner. Lückenaufgaben zeigen immer den Zahlenstrahl.")}
+        ${tog("cfg.mitrechnen", "Rechenweg zum Mitrechnen", "Bei Plus und Minus mit Zehnern oder Übergang rechnet sie nach dem zweiten Fehlversuch zwei kleine Schritte selbst (39 + 60: erst 30 + 60, dann 90 + 9), statt nur eine Hilfe zu lesen. Danach zählt die Aufgabe als „mit Hilfe“ gelöst.")}
         ${tog("cfg.detektiv", "Fehler-Detektiv", "Erkennt typische Flüchtigkeitsfehler (Rechenzeichen oder Ziffern vertauscht, Zehnerstelle, eine Reihe zu viel) und gibt einen gezielten Hinweis, ohne die Lösung zu verraten.")}
         ${seg("cfg.frustN", "Leichtere Aufgabe anbieten nach", [[0, "nie"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]],
           "…nicht gelösten Aufgaben hintereinander. Sie entscheidet selbst, ob sie das Angebot annimmt.")}
@@ -4614,6 +4900,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const STATUS_TXT = { neu: "noch neu", uebend: "übt noch", sicher: "sicher", wackelig: "wackelt" };
   function parentsSync() {
     const body = $("parentsBody");
+    // Zu viele Schwerpunkte auf einmal machen das Üben zäh: dann kommen fast nur noch schwere Aufgaben
+    const often = SKILLS.filter((s) => skLevel(s.id) === 2 && enabledSkills().includes(s));
+    $("skWarn").hidden = often.length <= 4;
+    $("skWarn").textContent = `Gerade stehen ${often.length} Aufgabenarten auf „öfter“ (${often.map((s) => s.id === s.label ? s.id : s.label).slice(0, 8).join(", ")}${often.length > 8 ? " …" : ""}). Mehr als drei oder vier gleichzeitig machen das Üben zäh: Es kommen dann fast nur noch schwere Aufgaben, und Erfolgserlebnisse werden selten. Tipp: zwei, drei Schwerpunkte wählen und den Rest auf „normal“ stellen. Der Auto-Modus findet die Schwächen auch selbst.`;
     body.querySelectorAll("[data-p]").forEach((inp) => {
       const v = getP(inp.dataset.p);
       if (inp.type === "radio") inp.checked = String(v) === inp.dataset.v;
