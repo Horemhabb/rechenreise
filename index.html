@@ -2307,6 +2307,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   ];
   const EI_FARBE = { weiss: ["#fbf8f1", "#d9cfbd", "weiß"], creme: ["#f3e2c0", "#cdb48a", "cremefarben"], braun: ["#c98d5a", "#8f5a30", "braun"] };
   const HOF_SCHLUEPFEN = 10, HOF_WACHSEN = 25;   // richtige Aufgaben bis zum Schlüpfen, dann bis zur großen Henne
+  const HAHN_ANTEIL = 0.3;                       // etwa jedes dritte Küken ist ein Hahn (verrät sich beim Schlüpfen)
+  const HAHN_NAMEN = ["Gockel", "Kasimir", "Hugo", "Fridolin", "Kalle", "Benno", "Theo", "Ruprecht", "Anton", "Konrad", "Gustav", "Kuno",
+    "Rudi", "Willi", "Fritz", "Jakob", "Ferdi", "Pepe", "Bruno", "Oskar", "Karlo", "Emil", "Toni", "Pfeffer", "Krümel", "Keks", "Wolke", "Flocke", "Blitz", "Zimt"];
+  // Namen aus dem Rätselwort: diese passen zu Hähnen und Hennen, die Jungennamen aus HAHN_NAMEN nur zu Hähnen
+  const BEIDE_NAMEN = ["Keks", "Flocke", "Wind", "Sause", "Wolke", "Blitz", "Mokka", "Kruemel", "Krümel", "Zimt", "Pfeffer"];
   const HUHN_NAMEN = ["Flocke", "Krümel", "Henriette", "Gackerline", "Lotta", "Kiki", "Frieda", "Pünktchen", "Wolke", "Hilde", "Emma", "Rosa",
     "Fanny", "Paula", "Erna", "Schnuffel", "Honig", "Zimt", "Keks", "Butterblume", "Mimi", "Tilda", "Nelli", "Polly", "Daisy", "Möhre",
     "Lilli", "Pippa", "Greta", "Luzie", "Sternchen", "Wuschel", "Knopf", "Mausi", "Sonne", "Pepper", "Biene", "Bohne", "Smilla", "Toffee"];
@@ -2601,9 +2606,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (!raw || typeof raw !== "object") return out;
     const animal = (x, named) => {
       if (!x || typeof x !== "object" || int(x.r, 0, RASSEN.length - 1) === null || int(x.t, 0, 1e7) === null) return null;
-      if (!named) return { r: x.r, g: x.g ? 1 : 0, t: x.t };
+      if (!named) return x.m === 0 || x.m === 1 ? { r: x.r, g: x.g ? 1 : 0, m: x.m, t: x.t } : { r: x.r, g: x.g ? 1 : 0, t: x.t };
       if (typeof x.n !== "string" || !NAME_RE.test(x.n)) return null;
-      return { r: x.r, g: x.g ? 1 : 0, n: x.n, t: x.t };   // gleiche Reihenfolge wie beim Schlüpfen
+      return { r: x.r, g: x.g ? 1 : 0, m: x.m ? 1 : 0, n: x.n, t: x.t };   // gleiche Reihenfolge wie beim Schlüpfen; m: 1 = Hahn
     };
     if (Array.isArray(raw.eier)) out.eier = raw.eier.map((x) => animal(x, false)).filter(Boolean).slice(0, 12);
     if (Array.isArray(raw.kueken)) out.kueken = raw.kueken.map((x) => animal(x, true)).filter(Boolean).slice(0, 60);
@@ -2850,10 +2855,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (chick) return { kind: "wachsen", chick };
     return null;
   }
+  // Hahn oder Henne? Wird einmal beim Schlüpfen entschieden und am Ei gemerkt, damit die Namen passen
+  const chickSex = (egg) => (egg.m !== undefined ? egg.m : (egg.m = Math.random() < HAHN_ANTEIL ? 1 : 0));
   function hatch(egg, name) {
     const hof = state.hof;
     hof.eier.splice(hof.eier.indexOf(egg), 1);
-    const chick = { r: egg.r, g: egg.g, n: name, t: state.correct };
+    const chick = { r: egg.r, g: egg.g, m: chickSex(egg), n: name, t: state.correct };
     hof.kueken.push(chick);
     hof.namen = hof.namen.filter((x) => x !== name);
     return chick;
@@ -2861,15 +2868,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   function grow(chick) {
     const hof = state.hof;
     hof.kueken.splice(hof.kueken.indexOf(chick), 1);
-    const hen = { r: chick.r, g: chick.g, n: chick.n, t: state.correct };
+    const hen = { r: chick.r, g: chick.g, m: chick.m ? 1 : 0, n: chick.n, t: state.correct };
     hof.huehner.push(hen);
     return hen;
   }
-  // Drei Namen zur Auswahl; ein Name aus dem Rätselwort kommt zuerst
-  function nameChoices() {
+  // Drei Namen zur Auswahl, passend zu Hahn (m = 1) oder Henne; ein passender Name aus dem Rätselwort kommt zuerst
+  function nameChoices(m) {
     const used = new Set([...state.hof.kueken, ...state.hof.huehner].map((x) => x.n));
-    const own = state.hof.namen.filter((n) => !used.has(n)).slice(0, 1);
-    const rest = HUHN_NAMEN.filter((n) => !used.has(n) && !own.includes(n)).sort(() => Math.random() - 0.5);
+    const fits = (n) => BEIDE_NAMEN.includes(n) || (m ? HAHN_NAMEN.includes(n) : !HAHN_NAMEN.includes(n));
+    const own = state.hof.namen.filter((n) => !used.has(n) && fits(n)).slice(0, 1);
+    const rest = (m ? HAHN_NAMEN : HUHN_NAMEN).filter((n) => !used.has(n) && !own.includes(n)).sort(() => Math.random() - 0.5);
     return own.concat(rest).slice(0, 3);
   }
 
@@ -3428,7 +3436,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const KUEKEN_FARBE = { gelb: ["#ffd54a", "#c99a1a"], schwarz: ["#4a4650", "#26222c"], grau: ["#b8bcc8", "#6a7080"], weiss: ["#fbf8f1", "#bdb3a0"] };
   function chickSVG(x, cls = "hof-chick") {
     const [b, s] = KUEKEN_FARBE[rasse(x).k] || KUEKEN_FARBE.gelb, fluffy = rasse(x).k === "weiss";
-    const crest = fluffy ? `<g fill="${b}" stroke="${s}" stroke-width="1.6"><circle cx="54" cy="20" r="7"/><circle cx="62" cy="16" r="8"/><circle cx="70" cy="21" r="7"/></g>` : `<path d="M56 22Q60 10 64 22" fill="${b}" stroke="${s}" stroke-width="2"/>`;
+    // kleiner Hahn: ein roter Kamm auf dem Kopf, damit man es sofort sieht
+    const crest = x.m ? `<path d="M50 22C50 12 56 12 57 18C58 8 64 8 64 17C66 9 72 11 70 22Z" fill="#e5383c" stroke="#9a1a1e" stroke-width="1.6"/>` : fluffy ? `<g fill="${b}" stroke="${s}" stroke-width="1.6"><circle cx="54" cy="20" r="7"/><circle cx="62" cy="16" r="8"/><circle cx="70" cy="21" r="7"/></g>` : `<path d="M56 22Q60 10 64 22" fill="${b}" stroke="${s}" stroke-width="2"/>`;
     return `<svg viewBox="0 0 120 112" class="${cls}" aria-hidden="true"><ellipse cx="60" cy="104" rx="34" ry="5" fill="#000" opacity=".12"/>` +
       `<path d="M30 78C30 60 42 52 60 52S90 60 90 78C90 94 78 102 60 102S30 94 30 78Z" fill="${b}" stroke="${s}" stroke-width="2.5"/><path d="M34 70Q22 74 30 86Q36 80 38 74Z" fill="${b}" stroke="${s}" stroke-width="2"/>` +
       `<circle cx="60" cy="40" r="22" fill="${b}" stroke="${s}" stroke-width="2.5"/>${crest}` +
@@ -3476,27 +3485,27 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     box.classList.toggle("gold", !!(due.egg || due.chick).g);
     $("hofClose").hidden = false;
     if (due.kind === "schluepfen") {
-      const r = rasse(due.egg), choices = nameChoices();
-      $("hofTitle").textContent = "Knack! Ein Küken ist geschlüpft!";
-      $("hofArt").innerHTML = `<div class="hatch">${chickSVG(due.egg, "hof-chick big")}<svg viewBox="-60 -40 120 60" class="shell" aria-hidden="true">${goldDefs("sh")}<path d="M-34 0L-24 -14L-14 -4L-4 -16L6 -4L16 -14L26 -2L34 -10V14C34 26 18 34 0 34S-34 26-34 14Z" fill="${due.egg.g ? "url(#shgold)" : EI_FARBE[r.ei][0]}" stroke="${due.egg.g ? "#a87a12" : EI_FARBE[r.ei][1]}" stroke-width="2.5"/></svg></div>`;
-      $("hofName").textContent = `Ein Küken der Rasse ${r.n}!`;
-      $("hofText").textContent = "Wie soll es heißen?";
+      const r = rasse(due.egg), m = chickSex(due.egg), choices = nameChoices(m);
+      $("hofTitle").textContent = m ? "Knack! Ein kleiner Hahn ist geschlüpft!" : "Knack! Ein Küken ist geschlüpft!";
+      $("hofArt").innerHTML = `<div class="hatch">${chickSVG({ r: due.egg.r, m }, "hof-chick big")}<svg viewBox="-60 -40 120 60" class="shell" aria-hidden="true">${goldDefs("sh")}<path d="M-34 0L-24 -14L-14 -4L-4 -16L6 -4L16 -14L26 -2L34 -10V14C34 26 18 34 0 34S-34 26-34 14Z" fill="${due.egg.g ? "url(#shgold)" : EI_FARBE[r.ei][0]}" stroke="${due.egg.g ? "#a87a12" : EI_FARBE[r.ei][1]}" stroke-width="2.5"/></svg></div>`;
+      $("hofName").textContent = m ? `Ein Hähnchen der Rasse ${r.n}! Siehst du den roten Kamm?` : `Ein Küken der Rasse ${r.n}!`;
+      $("hofText").textContent = m ? "Wie soll er heißen?" : "Wie soll es heißen?";
       $("hofNames").hidden = false;
       $("hofNames").innerHTML = choices.map((n) => `<button type="button" class="name-btn" data-n="${n}">${n}</button>`).join("");
       $("hofClose").hidden = true;   // erst einen Namen aussuchen
       SFX.pic();
-      speak(`Knack! Ein Küken ist geschlüpft, Rasse ${r.n}. Wie soll es heißen?`);
+      speak(m ? `Knack! Ein kleiner Hahn ist geschlüpft, Rasse ${r.n}. Wie soll er heißen?` : `Knack! Ein Küken ist geschlüpft, Rasse ${r.n}. Wie soll es heißen?`);
     } else {
       const hen = grow(due.chick), r = rasse(hen);
       save();
       logEv("HW", r.n, hen.n);
-      $("hofTitle").textContent = `${hen.n} ist groß geworden!`;
+      $("hofTitle").textContent = hen.m ? `${hen.n} ist ein stolzer Hahn geworden!` : `${hen.n} ist groß geworden!`;
       $("hofArt").innerHTML = `<div class="plate-frame${hen.g ? " rare" : ""}">${plateIMG(hen)}</div>`;
-      $("hofName").textContent = `Rasse: ${r.n}`;
-      $("hofText").textContent = `${r.f} Sie legt ${EI_FARBE[r.ei][2]}e Eier.`;
+      $("hofName").textContent = `Rasse: ${r.n}${hen.m ? " · Hahn" : ""}`;
+      $("hofText").textContent = hen.m ? `${r.f} Einen Hahn erkennst du meist am größeren Kamm und an den prächtigeren Schwanzfedern. Seine Hennen legen ${EI_FARBE[r.ei][2]}e Eier.` : `${r.f} Sie legt ${EI_FARBE[r.ei][2]}e Eier.`;
       $("hofNames").hidden = true;
       SFX.mark();
-      speak(`${hen.n} ist groß geworden! Rasse ${r.n}.`);
+      speak(hen.m ? `Kikeriki! ${hen.n} ist ein stolzer Hahn geworden!` : `${hen.n} ist groß geworden! Rasse ${r.n}.`);
       renderProgress();
     }
     box.hidden = false;
@@ -3508,10 +3517,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (!hofEvent || hofEvent.kind !== "schluepfen") return;
     const chick = hatch(hofEvent.egg, name), r = rasse(chick);
     save();
-    logEv("SL", r.n, name);
+    logEv("SL", r.n, name, chick.m ? "Hahn" : "Henne");
     $("hofNames").hidden = true;
     $("hofTitle").textContent = `Willkommen, ${name}!`;
-    $("hofText").textContent = `${name} wohnt jetzt in deinem Hühnerhof. In ${HOF_WACHSEN} Aufgaben ist ${name} eine große Henne.`;
+    $("hofText").textContent = `${name} wohnt jetzt in deinem Hühnerhof. In ${HOF_WACHSEN} Aufgaben ist ${name} ${chick.m ? "ein stolzer Hahn" : "eine große Henne"}.`;
     $("hofClose").hidden = false;
     $("hofClose").focus();
     SFX.again();
@@ -3530,15 +3539,17 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   function renderHof() {
     const hof = state.hof, found = new Set(hof.huehner.map((x) => x.r));
     const left = (e, n) => Math.max(1, e.t + n - state.correct);
-    let h = `<p>${hof.huehner.length ? `${hof.huehner.length} ${hof.huehner.length === 1 ? "Henne" : "Hühner"}, ${found.size} von ${RASSEN.length} Rassen entdeckt.` : "Dein Hühnerhof wartet auf die ersten Hühner. Rechne, dann kommt ein Ei in den Brutkasten!"}</p>`;
+    const cocks = hof.huehner.filter((x) => x.m).length, hens = hof.huehner.length - cocks;
+    const who = [hens ? `${hens} ${hens === 1 ? "Henne" : "Hennen"}` : "", cocks ? `${cocks} ${cocks === 1 ? "Hahn" : "Hähne"}` : ""].filter(Boolean).join(" und ");
+    let h = `<p>${hof.huehner.length ? `${who}, ${found.size} von ${RASSEN.length} Rassen entdeckt.` : "Dein Hühnerhof wartet auf die ersten Hühner. Rechne, dann kommt ein Ei in den Brutkasten!"}</p>`;
     h += `<h3 class="hof-h">Brutkasten</h3>`;
     h += hof.eier.length ? `<div class="hof-box">${brutkastenSVG(hof.eier, "pk")}</div><p class="note">${hof.eier.map((e) => `noch ${left(e, HOF_SCHLUEPFEN)}`).join(" · ")} Aufgaben bis zum Schlüpfen</p>` : `<p class="note">Noch leer. Das nächste Ei kommt mit dem nächsten Stern-Bild.</p>`;
     if (hof.kueken.length) {
-      h += `<h3 class="hof-h">Küken</h3><div class="hof-grid">${hof.kueken.map((k) => `<div class="hof-item">${chickSVG(k)}<b>${k.n}</b><small>${rasse(k).n}<br>groß in ${left(k, HOF_WACHSEN)}</small></div>`).join("")}</div>`;
+      h += `<h3 class="hof-h">Küken</h3><div class="hof-grid">${hof.kueken.map((k) => `<div class="hof-item">${chickSVG(k)}<b>${k.n}</b><small>${rasse(k).n}${k.m ? " · Hähnchen" : ""}<br>groß in ${left(k, HOF_WACHSEN)}</small></div>`).join("")}</div>`;
     }
     if (hof.huehner.length) {
       h += `<h3 class="hof-h">Hühner</h3><div class="hof-grid hens">${hof.huehner.map((x, i) => i).reverse().map((i) => { const x = hof.huehner[i];
-        return `<button type="button" class="hof-item hen${x.g ? " rare" : ""}" data-hen="${i}">${plateIMG(x, "thumb")}<b>${x.n}</b><small>${rasse(x).n}</small></button>`; }).join("")}</div>`;
+        return `<button type="button" class="hof-item hen${x.g ? " rare" : ""}" data-hen="${i}">${plateIMG(x, "thumb")}<b>${x.n}${x.m ? " 🐓" : ""}</b><small>${rasse(x).n}${x.m ? " · Hahn" : ""}</small></button>`; }).join("")}</div>`;
     }
     h += `<p class="note credit">Bilder: Jean Bungartz, „Geflügel-Album“ (1885), Badische Landesbibliothek Karlsruhe, gemeinfrei, über Wikimedia Commons.</p>`;
     $("panelHof").innerHTML = h;
@@ -3549,8 +3560,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const r = rasse(x);
     $("henPlate").innerHTML = plateIMG(x);
     $("henPlate").classList.toggle("rare", !!x.g);
-    $("henName").textContent = `${x.n} · ${r.n}`;
-    $("henFacts").innerHTML = `<p>${r.f}</p><p>Eier: ${EI_FARBE[r.ei][2]}${r.s ? " · seltene Rasse" : ""}</p><p class="note">Gemalt 1885 von Jean Bungartz. Auf dem Bild sind ein Hahn und eine Henne dieser Rasse.</p>`;
+    $("henName").textContent = `${x.n} · ${r.n}${x.m ? " · Hahn" : ""}`;
+    $("henFacts").innerHTML = `<p>${r.f}</p><p>${x.m ? "Seine Hennen legen" : "Eier:"} ${EI_FARBE[r.ei][2]}${x.m ? "e Eier" : ""}${r.s ? " · seltene Rasse" : ""}</p><p class="note">Gemalt 1885 von Jean Bungartz. Auf dem Bild sind ein Hahn und eine Henne dieser Rasse${x.m ? ". Den Hahn erkennst du meist am größeren Kamm" : ""}.</p>`;
     logEv("O", "Henne " + x.n);
     $("henView").hidden = false;
     $("henView").scrollTop = 0;
@@ -3566,7 +3577,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.11";
+  const VERSION = "1.11.1";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
