@@ -625,6 +625,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .kind-svg .kv-sign { font-size: 26px; fill: #8a5f08; } .kind-svg .kv-sign.ok { fill: var(--green); }
 .choices.cmp .choice { min-width: 76px; max-width: 110px; font-size: .85rem; }
 .choices.cmp .choice b { font-size: 2.3rem; }
+
+/* Eigener Name fürs Küken (ab 1.12.2) */
+.hof-own { display: grid; gap: 6px; justify-items: center; font-size: .95rem; color: var(--ink-soft, #6b5a78); }
+.hof-own-row { display: flex; gap: 8px; }
+.hof-own input { width: 11rem; padding: 8px 12px; border: 2px solid var(--plum-dark); border-radius: 12px; font: inherit; font-size: 1.1rem; color: var(--ink); background: #fff; }
+.nl-qline { stroke: var(--plum); stroke-width: 1.2; stroke-dasharray: 2 2; }
 </style>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#7a4bb0">
@@ -726,6 +732,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     <p class="pic-name" id="hofName"></p>
     <p class="hof-text" id="hofText"></p>
     <div class="hof-names" id="hofNames" hidden></div>
+    <form class="hof-own" id="hofOwnForm" hidden autocomplete="off">
+      <label for="hofOwn">oder ein eigener Name:</label>
+      <span class="hof-own-row"><input id="hofOwn" type="text" maxlength="16" autocomplete="off" autocapitalize="words" enterkeyhint="done" placeholder="Name"><button class="small-btn" type="submit">OK</button></span>
+    </form>
     <button class="big-btn" id="hofClose" type="button">Weiter rechnen</button>
   </div>
 </div>
@@ -2349,6 +2359,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     "Rudi", "Willi", "Fritz", "Jakob", "Ferdi", "Pepe", "Bruno", "Oskar", "Karlo", "Emil", "Toni", "Pfeffer", "Krümel", "Keks", "Wolke", "Flocke", "Blitz", "Zimt"];
   // Namen aus dem Rätselwort: diese passen zu Hähnen und Hennen, die Jungennamen aus HAHN_NAMEN nur zu Hähnen
   const BEIDE_NAMEN = ["Keks", "Flocke", "Wind", "Sause", "Wolke", "Blitz", "Mokka", "Kruemel", "Krümel", "Zimt", "Pfeffer"];
+  // Weitere Namen ohne eigene Aufnahme der Stimme (dann spricht sie „Willkommen im Hühnerhof!“). Sie kommen erst dran, wenn die ersten vergeben sind.
+  const HUHN_NAMEN_MEHR = ["Amalie", "Berta", "Cilli", "Dora", "Elfi", "Fiene", "Gerda", "Hedi", "Ida", "Jule", "Klara", "Lene", "Marta", "Nele", "Olga",
+    "Pia", "Rike", "Sophie", "Tilli", "Uschi", "Vroni", "Wilma", "Yvi", "Zora", "Ännchen", "Bienchen", "Blümchen", "Dotti", "Eulalia", "Fridolina",
+    "Gretel", "Hanna", "Ines", "Jolanda", "Kathi", "Liesl", "Minka", "Nora", "Ottilie", "Pelle", "Quitte", "Rosalie", "Sabine", "Thea", "Ulla",
+    "Vanilla", "Waltraud", "Xenia", "Zimtstern", "Ahorn", "Brösel", "Clementine", "Dolly", "Erdbeere", "Feder", "Haselnuss", "Johanna", "Kirsche", "Lakritz"];
+  const HAHN_NAMEN_MEHR = ["Alfred", "Balduin", "Clemens", "Dieter", "Egon", "Felix", "Gregor", "Heinz", "Ignaz", "Jörg", "Karlchen", "Leopold", "Max",
+    "Norbert", "Otto", "Paul", "Quirin", "Rolf", "Sepp", "Tim", "Udo", "Viktor", "Waldemar", "Xaver", "Zeno", "Adolar", "Bertram", "Cäsar", "Eberhard",
+    "Florian", "Gottfried", "Hannes", "Isidor", "Josef", "Kunibert", "Ludwig", "Moritz", "Napoleon", "Oswald", "Pirat", "Rüdiger", "Sultan", "Theodor",
+    "Ulrich", "Vinzenz", "Wotan", "Zorro"];
+  const HAHN_ALLE = HAHN_NAMEN.concat(HAHN_NAMEN_MEHR);   // alle Hahnennamen, damit Rätselwort-Namen richtig zugeordnet werden
   const HUHN_NAMEN = ["Flocke", "Krümel", "Henriette", "Gackerline", "Lotta", "Kiki", "Frieda", "Pünktchen", "Wolke", "Hilde", "Emma", "Rosa",
     "Fanny", "Paula", "Erna", "Schnuffel", "Honig", "Zimt", "Keks", "Butterblume", "Mimi", "Tilda", "Nelli", "Polly", "Daisy", "Möhre",
     "Lilli", "Pippa", "Greta", "Luzie", "Sternchen", "Wuschel", "Knopf", "Mausi", "Sonne", "Pepper", "Biene", "Bohne", "Smilla", "Toffee"];
@@ -2956,12 +2976,23 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return hen;
   }
   // Drei Namen zur Auswahl, passend zu Hahn (m = 1) oder Henne; ein passender Name aus dem Rätselwort kommt zuerst
+  // Es gibt immer drei Namen: erst die aufgenommenen, dann die weiteren, zuletzt vergebene Namen mit Zahl dahinter („Flocke II“).
+  // (Bis 1.12.1 war nach 40 Hennen oder 30 Hähnen kein Name mehr übrig, und das Schlüpf-Fenster hatte keinen Ausweg.)
+  const ROEMISCH = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
   function nameChoices(m) {
     const used = new Set([...state.hof.kueken, ...state.hof.huehner].map((x) => x.n));
-    const fits = (n) => BEIDE_NAMEN.includes(n) || (m ? HAHN_NAMEN.includes(n) : !HAHN_NAMEN.includes(n));
+    const fits = (n) => BEIDE_NAMEN.includes(n) || (m ? HAHN_ALLE.includes(n) : !HAHN_ALLE.includes(n));
     const own = state.hof.namen.filter((n) => !used.has(n) && fits(n)).slice(0, 1);
-    const rest = (m ? HAHN_NAMEN : HUHN_NAMEN).filter((n) => !used.has(n) && !own.includes(n)).sort(() => Math.random() - 0.5);
-    return own.concat(rest).slice(0, 3);
+    const free = (list) => list.filter((n) => !used.has(n) && !own.includes(n)).sort(() => Math.random() - 0.5);
+    const base = m ? HAHN_NAMEN : HUHN_NAMEN, more = m ? HAHN_NAMEN_MEHR : HUHN_NAMEN_MEHR;
+    const out = own.concat(free(base), free(more));
+    for (let k = 0; out.length < 3 && k < ROEMISCH.length; k++)
+      for (const n of base.concat(more).sort(() => Math.random() - 0.5)) {
+        const c = `${n} ${ROEMISCH[k]}`;
+        if (out.length < 3 && c.length <= 16 && !used.has(c) && !out.includes(c)) out.push(c);
+      }
+    for (const c of ["Federchen", "Piepsi", "Hühnchen"]) if (out.length < 3 && !out.includes(c)) out.push(c);
+    return out.slice(0, 3);
   }
 
   // Frustschutz: Angebot nach mehreren nicht gelösten Aufgaben in Folge
@@ -3396,7 +3427,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ----- Mengen schätzen: Dinge in einer Werkstattkiste -----
   // Jede Sorte gehört zu einer Werkstatt; wer dort schon Lehrling ist, schätzt „in deiner …“
   const MENGE = [
-    { g: "x2", n: "Brezeln", v: "liegen", d: '<path d="M-5 5C-2 1 0-1 3-3C5-5 7-3 6 0C5 4 2 6 0 6S-6 4-6 0C-7-3-5-5-3-3C0-1 2 1 5 5" fill="none" stroke="#a8642a" stroke-width="2.6" stroke-linecap="round"/>' },
+    { g: "x2", n: "Brezeln", v: "liegen", d: '<g fill="none" stroke="#a8642a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M-7 5C-9 -1 -6 -7 -2.5 -6C0 -5.5 0 -2 0 0C0 -2 0 -5.5 2.5 -6C6 -7 9 -1 7 5C5 8 -4 8 -7 5Z"/><path d="M-5 -3C-2 0 2 2 5 5M5 -3C2 0 -2 2 -5 5"/></g><g fill="#fff6dc"><circle cx="-6.2" cy="-1.5" r=".8"/><circle cx="6.2" cy="-1.5" r=".8"/><circle cx="-3.2" cy="6.2" r=".8"/><circle cx="3.2" cy="6.2" r=".8"/></g>' },
     { g: "x6", n: "Hufeisen", v: "liegen", d: '<path d="M-5 6V-1A5 5 0 0 1 5-1V6" fill="none" stroke="#6f747c" stroke-width="3.2" stroke-linecap="round"/><circle cx="-5" cy="1" r=".8" fill="#d8dce2"/><circle cx="5" cy="1" r=".8" fill="#d8dce2"/>' },
     { g: "l1", n: "Knöpfe", v: "liegen", d: '<circle r="6" fill="#4f7fd6" stroke="#2f4f96" stroke-width="1"/><g fill="#2f4f96"><circle cx="-2" cy="-2" r="1"/><circle cx="2" cy="-2" r="1"/><circle cx="-2" cy="2" r="1"/><circle cx="2" cy="2" r="1"/></g>' },
     { g: "l3", n: "Bienen", v: "summen", d: '<ellipse cx="-2" cy="-5" rx="3" ry="2.4" fill="#e8f6ff" stroke="#9cc" stroke-width=".6"/><ellipse cx="2" cy="-5" rx="3" ry="2.4" fill="#e8f6ff" stroke="#9cc" stroke-width=".6"/><ellipse rx="6" ry="4.2" fill="#ffc83a" stroke="#7a5a12" stroke-width=".8"/><path d="M-2-4V4M1.5-4V4" stroke="#3a2a12" stroke-width="1.6"/>' },
@@ -3415,12 +3446,35 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     t.place = { m, mine: own.length > 0, where: own.length ? `In deiner ${G.o}` : `In der ${G.o} von ${G.m}` };
     return t.place;
   }
-  // Lage der Dinge: gestreutes Raster (stabil durch den Samen), dazu die 10 nächsten um einen zufälligen Ankerpunkt
+  // Lage der Dinge: gestreutes Raster (stabil durch den Samen). Die eingekreisten 10 liegen als Zehnerfeld (5 × 2 Plätze am Stück)
+  // zusammen, und kein anderes Ding liegt in diesen Plätzen: so sind es sicher genau 10 und die Umrandung läuft zwischen den Dingen.
+  // (Bis 1.12.1 waren es die 10 nächsten um einen Punkt, mit einer Hüllkurve darum: sie schnitt die Ecken, und Dinge lagen auf der Linie.)
   function mengeLayout(t) {
     if (t.layout) return t.layout;
     const rnd = mulberry32(t.seed), W = 272, H = 136, ox = 24, oy = 22;
     let cell = Math.sqrt((W * H) / t.n) * 0.97, cols, rows;
     for (;;) { cols = Math.floor(W / cell); rows = Math.floor(H / cell); if (cols * rows >= t.n * 1.12) break; cell *= 0.96; }
+    const cw = W / cols, ch = H / rows, scale = Math.min(1.25, (0.8 * Math.min(cw, ch)) / 16);   // dicht gepackt: kleinere Dinge, damit sie sich nicht überlappen
+    const canWide = cols >= 5 && rows >= 2, canTall = cols >= 2 && rows >= 5;
+    if (!canWide && !canTall) return mengeLayoutNah(t, rnd, cols, rows, cell);
+    const wide = canWide && (!canTall || rnd() < 0.75), bw = wide ? 5 : 2, bh = wide ? 2 : 5;
+    const c0 = Math.floor(rnd() * (cols - bw + 1)), r0 = Math.floor(rnd() * (rows - bh + 1));
+    const inBlock = (c, r) => c >= c0 && c < c0 + bw && r >= r0 && r < r0 + bh;
+    const free = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (!inBlock(c, r)) free.push([c, r]);
+    for (let i = free.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
+    const place = ([c, r], jit) => ({ x: ox + (c + 0.5) * cw + (rnd() - 0.5) * cw * jit, y: oy + (r + 0.5) * ch + (rnd() - 0.5) * ch * jit, row: r, col: c, rot: Math.round((rnd() - 0.5) * 60) });
+    const ten = [];
+    for (let r = r0; r < r0 + bh; r++) for (let c = c0; c < c0 + bw; c++) ten.push(place([c, r], 0.16));
+    // Dinge direkt neben dem Zehnerfeld liegen ordentlicher (weniger Streuung), damit keins die Linie berührt
+    const near = ([c, r]) => c >= c0 - 1 && c <= c0 + bw && r >= r0 - 1 && r <= r0 + bh;
+    const pts = ten.concat(free.slice(0, t.n - 10).map((cr) => place(cr, near(cr) ? 0.1 : 0.3)));
+    t.layout = { pts, ten, cell, scale, box: { x: ox + c0 * cw, y: oy + r0 * ch, w: bw * cw, h: bh * ch } };
+    return t.layout;
+  }
+  // Notlösung für sehr enge Kisten: die 10 nächsten um einen zufälligen Punkt, mit Hüllkurve
+  function mengeLayoutNah(t, rnd, cols, rows, cell) {
+    const W = 272, H = 136, ox = 24, oy = 22;
     const cells = Array.from({ length: cols * rows }, (_, i) => i);
     for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
     const pts = cells.slice(0, t.n).map((c) => {
@@ -3446,6 +3500,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     e.forEach((q, i) => { const nx = m(q, e[(i + 1) % e.length]); d += `Q${KF(q[0])} ${KF(q[1])} ${KF(nx[0])} ${KF(nx[1])}`; });
     return d + "Z";
   }
+  // Umrandung der 10: das Zehnerfeld als abgerundetes Rechteck (genau um seine Plätze), sonst die Hüllkurve
+  function tenShape(L, cls) {
+    if (!L.box) return `<path d="${hullPath(L.ten, L.cell * 0.5)}" class="${cls}"/>`;
+    const b = L.box, i = 1.2;
+    return `<rect x="${KF(b.x + i)}" y="${KF(b.y + i)}" width="${KF(b.w - 2 * i)}" height="${KF(b.h - 2 * i)}" rx="${KF(Math.min(b.w, b.h) * 0.16)}" class="${cls}"/>`;
+  }
   function mengeSVG(t, mode) {
     const { m } = mengeSort(t), L = mengeLayout(t);
     let s = `<rect x="8" y="8" width="304" height="164" rx="10" class="ks-crate"/><rect x="16" y="16" width="288" height="148" rx="6" class="ks-in"/>`;
@@ -3455,11 +3515,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       // Hilfe: alle Dinge in Zehnergruppen, Reihe für Reihe in Schlangenlinie, jede Gruppe in eigener Farbe
       const order = L.pts.slice().sort((a, b) => a.row - b.row || (a.row % 2 ? b.col - a.col : a.col - b.col));
       order.forEach((p, i) => { s += `<circle cx="${KF(p.x)}" cy="${KF(p.y)}" r="${KF(L.cell * 0.46)}" class="ks-dot g${Math.floor(i / 10) % 5}"/>`; });
-    } else s += `<path d="${hullPath(L.ten, L.cell * 0.5)}" class="ks-tenfill"/>`;
+    } else s += tenShape(L, "ks-tenfill");
     L.pts.forEach((p) => { s += `<g transform="translate(${KF(p.x)} ${KF(p.y)}) rotate(${p.rot}) scale(${KF(L.scale)})">${m.d}</g>`; });
     if (!groups) {
-      const hp = hullPath(L.ten, L.cell * 0.5), top = L.ten.reduce((a, b) => (a.y < b.y ? a : b));
-      s += `<path d="${hp}" class="ks-ten"/><g transform="translate(${KF(Math.min(286, Math.max(34, top.x)))} ${KF(Math.max(15, top.y - L.cell * 0.95))})"><rect x="-15" y="-11" width="30" height="20" rx="10" class="ks-tag"/><text y="4" class="ks-tt">10</text></g>`;
+      const top = L.ten.reduce((a, b) => (a.y < b.y ? a : b)), tx = L.box ? L.box.x + L.box.w / 2 : top.x, ty = L.box ? L.box.y : top.y - L.cell * 0.95;
+      s += `${tenShape(L, "ks-ten")}<g transform="translate(${KF(Math.min(286, Math.max(34, tx)))} ${KF(Math.max(15, ty))})"><rect x="-15" y="-11" width="30" height="20" rx="10" class="ks-tag"/><text y="4" class="ks-tt">10</text></g>`;
     } else {
       const full = Math.floor(t.n / 10), rest = t.n % 10;
       s += `<text x="160" y="194" class="ks-sum">${full} Zehnergruppen${rest ? ` und ${rest} einzelne` : ""}</text>`;
@@ -3604,6 +3664,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Warme Stimme (ab 1.12): welche Aufnahmen eine Ansage braucht ----------
   // Schlüssel sind die Sätze selbst, „#47“ für Zahlen, „@Lotta“ für Namen (Liste: stimme-katalog.js → src/stimme/katalog.json).
   // Zahlen über 100 werden zusammengesetzt: „#300“ + „#47“.
+  // Schlüssel der Aufnahme für einen Namen; „Flocke II“ klingt wie „Flocke“
+  const voiceName = (n) => "@" + String(n).replace(/\s+[IVX]+$/, "");
   function numParts(n) {
     if (!Number.isInteger(n) || n < 0 || n > 999) return null;
     if (n <= 100) return ["#" + n];
@@ -3705,13 +3767,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("hofClose").hidden = false;
     if (due.kind === "schluepfen") {
       const r = rasse(due.egg), m = chickSex(due.egg), choices = nameChoices(m);
+      save();   // das Geschlecht steht jetzt fest und bleibt es auch nach einem Neustart
       $("hofTitle").textContent = m ? "Knack! Ein kleiner Hahn ist geschlüpft!" : "Knack! Ein Küken ist geschlüpft!";
       $("hofArt").innerHTML = `<div class="hatch">${chickSVG({ r: due.egg.r, m }, "hof-chick big")}<svg viewBox="-60 -40 120 60" class="shell" aria-hidden="true">${goldDefs("sh")}<path d="M-34 0L-24 -14L-14 -4L-4 -16L6 -4L16 -14L26 -2L34 -10V14C34 26 18 34 0 34S-34 26-34 14Z" fill="${due.egg.g ? "url(#shgold)" : EI_FARBE[r.ei][0]}" stroke="${due.egg.g ? "#a87a12" : EI_FARBE[r.ei][1]}" stroke-width="2.5"/></svg></div>`;
       $("hofName").textContent = m ? `Ein Hähnchen der Rasse ${r.n}! Siehst du den roten Kamm?` : `Ein Küken der Rasse ${r.n}!`;
       $("hofText").textContent = m ? "Wie soll er heißen?" : "Wie soll es heißen?";
       $("hofNames").hidden = false;
       $("hofNames").innerHTML = choices.map((n) => `<button type="button" class="name-btn" data-n="${n}">${n}</button>`).join("");
-      $("hofClose").hidden = true;   // erst einen Namen aussuchen
+      $("hofOwnForm").hidden = false; $("hofOwn").value = "";
+      $("hofClose").hidden = true;   // erst einen Namen aussuchen (es gibt immer drei Namen und ein Feld für einen eigenen)
       SFX.pic();
       speak(m ? `Knack! Ein kleiner Hahn ist geschlüpft, Rasse ${r.n}. Wie soll er heißen?` : `Knack! Ein Küken ist geschlüpft, Rasse ${r.n}. Wie soll es heißen?`, false,
         [m ? "Knack! Ein kleiner Hahn ist geschlüpft!" : "Knack! Ein Küken ist geschlüpft!", "Rasse " + r.n, m ? "Wie soll er heißen?" : "Wie soll es heißen?"]);
@@ -3723,10 +3787,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       $("hofArt").innerHTML = `<div class="plate-frame${hen.g ? " rare" : ""}">${plateIMG(hen)}</div>`;
       $("hofName").textContent = `Rasse: ${r.n}${hen.m ? " · Hahn" : ""}`;
       $("hofText").textContent = hen.m ? `${r.f} Einen Hahn erkennst du meist am größeren Kamm und an den prächtigeren Schwanzfedern. Seine Hennen legen ${EI_FARBE[r.ei][2]}e Eier.` : `${r.f} Sie legt ${EI_FARBE[r.ei][2]}e Eier.`;
-      $("hofNames").hidden = true;
+      $("hofNames").hidden = true; $("hofOwnForm").hidden = true;
       SFX.mark();
       speak(hen.m ? `Kikeriki! ${hen.n} ist ein stolzer Hahn geworden!` : `${hen.n} ist groß geworden! Rasse ${r.n}.`, false,
-        hen.m ? ["Kikeriki!", "@" + hen.n, "ist ein stolzer Hahn geworden!"] : ["@" + hen.n, "ist groß geworden!", "Rasse " + r.n],
+        hen.m ? ["Kikeriki!", voiceName(hen.n), "ist ein stolzer Hahn geworden!"] : [voiceName(hen.n), "ist groß geworden!", "Rasse " + r.n],
         hen.m ? ["Kikeriki!", "Dein Küken ist groß geworden!"] : ["Dein Küken ist groß geworden!", "Rasse " + r.n]);
       renderProgress();
     }
@@ -3735,18 +3799,23 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     try { (($("hofNames").hidden ? $("hofClose") : $("hofNames").querySelector("button")) || $("hofClose")).focus({ preventScroll: true }); } catch (e) { /* egal */ }
     return true;
   }
+  // Eigener Name: nur Buchstaben, Leerzeichen, Bindestrich und Hochkomma, höchstens 16 Zeichen, vorn groß
+  const cleanTypedName = (v) => {
+    const s = String(v || "").replace(/[^\p{L}\p{M} '’-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 16).trim();
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+  };
   function chooseName(name) {
     if (!hofEvent || hofEvent.kind !== "schluepfen") return;
     const chick = hatch(hofEvent.egg, name), r = rasse(chick);
     save();
     logEv("SL", r.n, name, chick.m ? "Hahn" : "Henne");
-    $("hofNames").hidden = true;
+    $("hofNames").hidden = true; $("hofOwnForm").hidden = true;
     $("hofTitle").textContent = `Willkommen, ${name}!`;
     $("hofText").textContent = `${name} wohnt jetzt in deinem Hühnerhof. In ${HOF_WACHSEN} Aufgaben ist ${name} ${chick.m ? "ein stolzer Hahn" : "eine große Henne"}.`;
     $("hofClose").hidden = false;
     $("hofClose").focus();
     SFX.again();
-    speak(`Willkommen, ${name}!`, false, ["Willkommen,", "@" + name], ["Willkommen im Hühnerhof!"]);
+    speak(`Willkommen, ${name}!`, false, ["Willkommen,", voiceName(name)], ["Willkommen im Hühnerhof!"]);
     renderProgress();
   }
   function closeHof() {
@@ -3791,6 +3860,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function wireHof() {
     $("hofNames").addEventListener("click", (e) => { const b = e.target.closest("button[data-n]"); if (b) chooseName(b.dataset.n); });
+    $("hofOwnForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = cleanTypedName($("hofOwn").value);
+      if (name) { try { $("hofOwn").blur(); } catch (err) { /* egal */ } chooseName(name); }
+    });
     $("hofClose").addEventListener("click", closeHof);
     $("panelHof").addEventListener("click", (e) => { const b = e.target.closest("button[data-hen]"); if (b) showHen(Number(b.dataset.hen)); });
     $("henClose").addEventListener("click", () => { $("henView").hidden = true; });
@@ -3799,7 +3873,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.12.1";
+  const VERSION = "1.12.2";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -3808,7 +3882,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   let hiddenAt = 0, pausedMs = 0;   // Zeit im Hintergrund zählt nicht als Rechenzeit
   let guide = null;                 // Rechenweg zum Mitrechnen: { steps, i, help }
   let rz = null;                    // laufendes Rätselwort: { word, table, items, i, found, story, animal, wait }
-  const activeMs = () => Math.round(performance.now() - shownAt - pausedMs);
+  // Herzschlag: Hält das Gerät die Seite an, ohne dass „hidden“ gemeldet wird (am 31.10. dauerte eine Aufgabe laut Protokoll 1025 s),
+  // fehlt beim nächsten Schlag plötzlich Zeit. Die zählt dann als Pause. Im Hintergrund schlägt er nicht mit, das erledigt visibilitychange.
+  let beatAt = Date.now();
+  const beat = () => {
+    const now = Date.now(), gap = now - beatAt;
+    if (document.visibilityState === "visible" && !hiddenAt && gap > 4000) pausedMs += gap - 1000;
+    beatAt = now;
+  };
+  setInterval(beat, 1000);
+  const activeMs = () => { beat(); return Math.round(performance.now() - shownAt - pausedMs); };
 
   const stored = () => ({ ...state, gen: DATA_GEN, album: state.album.map((k) => (k.v ? [k.s, k.n, k.c, k.g, k.v] : [k.s, k.n, k.c, k.g])) });
 
@@ -3882,6 +3965,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     else {
       const gone = hiddenAt ? performance.now() - hiddenAt : 0, longGap = LOG.last && Date.now() - LOG.last > LOG_GAP;
       pausedMs += gone; hiddenAt = 0;
+      if (!gone) { const gap = Date.now() - beatAt; if (gap > 4000) pausedMs += gap - 1000; }   // „hidden“ kam nicht an, der Herzschlag fehlt trotzdem
+      beatAt = Date.now();
       logEv("Z");
       // neue Sitzung: die offene Aufgabe gehört jetzt dazu
       if (longGap && task && !locked) logEv("A", task.skill, logTask(task) + " (nach Pause weiter)");
@@ -4199,8 +4284,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       text: up ? `Rechne rückwärts: ${t.c} − ${t.b} = ?` : `Rechne rückwärts: ${t.c} + ${t.b} = ?` };
   }
 
-  function numberLineSVG(t) {
+  // guide (nur beim Rechenweg): der Strahl reicht bis zum aktuellen Schritt, das „?“ steht dort, wo die Gleichung oben hinführt.
+  // (Bis 1.12.1 zeigte er immer den ganzen Weg der Ausgangsaufgabe samt Zwischenergebnis und das „?“ am Ende, passend zur Aufgabe, aber nicht zur Gleichung.)
+  function numberLineSVG(t, guide) {
     const sp = lineSpec(t), W = 300, H = sp.hops ? 84 : 96, base = H - 30, L = 14, R = W - 14;
+    if (guide) {
+      const st = guide.steps, stops = [st[0].a, ...st.map((x) => x.result)].slice(0, guide.i + 2), sign = t.op === "+" ? "+" : "−";
+      Object.assign(sp, { stops, labels: stops.slice(0, -1), unknown: stops[stops.length - 1], jump: (k) => `${sign}${Math.abs(stops[k + 1] - stops[k])}` });
+    }
     let lo = Math.min(...sp.stops), hi = Math.max(...sp.stops);
     lo = sp.hops ? 0 : Math.floor(lo / 10) * 10; hi = Math.ceil(hi / 10) * 10;
     if (hi - lo < 10) hi = lo + 10;
@@ -4223,8 +4314,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
     sp.stops.forEach((v) => { s += `<circle cx="${X(v).toFixed(1)}" cy="${base}" r="${sp.hops ? 2.6 : 3.6}" class="nl-stop"/>`; });
     sp.labels.forEach((v) => { if (v !== sp.unknown) s += `<text x="${X(v).toFixed(1)}" y="${base + 21}" class="nl-num">${v}</text>`; });
-    if (sp.unknown !== null) s += `<rect x="${(X(sp.unknown) - 10).toFixed(1)}" y="${base + 8}" width="20" height="18" rx="5" class="nl-q"/><text x="${X(sp.unknown).toFixed(1)}" y="${base + 21.5}" class="nl-qt">?</text>`;
-    return { svg: `<svg class="numline" viewBox="0 0 ${W} ${H}" aria-hidden="true">${s}</svg>`, text: sp.text };
+    // Liegt das „?“ dicht an einer Zahl (z. B. 66 neben 68), rutscht es eine Zeile tiefer, damit nichts übereinander steht
+    const near = sp.unknown !== null && sp.labels.some((l) => l !== sp.unknown && Math.abs(X(l) - X(sp.unknown)) < 26), qy = base + (near ? 32 : 8);
+    if (sp.unknown !== null) s += (near ? `<line x1="${X(sp.unknown).toFixed(1)}" y1="${base + 4}" x2="${X(sp.unknown).toFixed(1)}" y2="${qy}" class="nl-qline"/>` : "")
+      + `<rect x="${(X(sp.unknown) - 10).toFixed(1)}" y="${qy}" width="20" height="18" rx="5" class="nl-q"/><text x="${X(sp.unknown).toFixed(1)}" y="${qy + 13.5}" class="nl-qt">?</text>`;
+    return { svg: `<svg class="numline" viewBox="0 0 ${W} ${H + (near ? 24 : 0)}" aria-hidden="true">${s}</svg>`, text: sp.text };
   }
 
   // ---------- Teilen mit Bildern ----------
@@ -4907,7 +5001,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   // Nach einer gelösten Aufgabe: entweder Angebot für etwas Leichteres oder gleich die nächste
   function afterTask() {
-    if (showHofEvent()) return;
+    // Geht beim Hof-Fenster etwas schief, darf das Spiel nicht stehen bleiben
+    let shown = false;
+    try { shown = showHofEvent(); } catch (e) { logEv("X", "Hof: " + String((e && e.message) || "?").slice(0, 120)); hofEvent = null; $("hof").hidden = true; }
+    if (shown) return;
     if (needOffer()) showOffer(); else newTask();
   }
   function showOffer() {
@@ -4947,9 +5044,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const st = guide.steps, sign = (x) => `${x.a} ${x.op} ${x.b}`;
     hintEl.className = "hint";
     // Zahlenstrahl dazu, wenn seine Sprünge genau die Schritte sind (bei 36 + 20 wird anders zerlegt: 30 + 20, dann + 6)
-    const line = st[0].a === task.a && state.cfg.hilfe !== "punkte" ? numberLineSVG(task).svg : "";
-    hintEl.innerHTML = `${line}<p class="steps caption">${sign(task)} in zwei Schritten:</p><ol class="guide-list">${st.map((x, k) =>
-      `<li class="${k < guide.i ? "done" : k === guide.i ? "now" : ""}"><span>${x.say}:</span> <span class="nb">${sign(x)} = ${k < guide.i ? x.result + " ✓" : "?"}</span></li>`).join("")}</ol>`;
+    const line = st[0].a === task.a && state.cfg.hilfe !== "punkte" ? numberLineSVG(task, guide).svg : "";
+    // Spätere Schritte zeigen das Ergebnis des Schritts davor noch nicht („▢ − 2“), sonst wäre der erste Schritt schon verraten
+    const shown = (x, k) => (k > guide.i ? `▢ ${x.op} ${x.b}` : sign(x));
+    hintEl.innerHTML = `${line}<p class="steps caption">Deine Aufgabe: <b>${sign(task)}</b>. Das geht in zwei Schritten:</p><ol class="guide-list">${st.map((x, k) =>
+      `<li class="${k < guide.i ? "done" : k === guide.i ? "now" : ""}"><span>${x.say}:</span> <span class="nb">${shown(x, k)} = ${k < guide.i ? x.result + " ✓" : "?"}</span></li>`).join("")}</ol>`;
     hintEl.removeAttribute("aria-label");
     hintEl.hidden = false;
   }
