@@ -67,7 +67,7 @@ button:focus-visible, summary:focus-visible, .opt input:focus-visible + span, .t
 }
 
 /* Karten: Papier mit feiner Kontur und leicht versetztem Schatten */
-.progress, .task, .sheet, .settings {
+.progress, .task, .sheet {
   background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; box-shadow: 3px 3px 0 rgba(59, 47, 69, .12);
 }
 
@@ -112,7 +112,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 }
 .answer {
   /* Innenabstand oben/unten nachgemessen, damit "?" und Ziffern in der Zahlenschrift optisch mittig sitzen */
-  width: 2.3em; min-width: 0; margin: 0; padding: .08em .1em .16em; line-height: 1.1; text-align: center;
+  width: 2.3em; min-width: 0; margin: 0; padding: .08em .1em .16em; text-align: center;
   font: inherit; color: var(--plum); background: #fff; caret-color: var(--plum);
   border: 2px dashed #b9a6c9; border-radius: 10px; outline: none; appearance: none;
 }
@@ -344,9 +344,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .mv-head { display: flex; align-items: center; gap: 10px; text-align: left; width: 100%; }
 .mv-head .mark-big svg { width: 74px; height: 87px; }
 .mv-head h2 { font-size: 1.3rem; }
-.ws-pic { width: 100%; border-radius: 10px; overflow: hidden; border: 1.5px solid var(--line); }
-.ws-pic svg { display: block; width: 100%; height: auto; }
-.ws-story { text-align: left; width: 100%; display: grid; gap: 6px; }
+.ws-pic { width: 100%; overflow: hidden; border-radius: 6px; padding: 5px; background: linear-gradient(135deg, #5a3a20, #3b2414 55%, #5a3a20); box-shadow: 0 3px 0 rgba(40, 24, 10, .35), inset 0 0 0 1px #c9a050; }
+.ws-pic svg { display: block; width: 100%; height: auto; border-radius: 3px; }
+.ws-story { text-align: left; width: 100%; display: grid; gap: 6px; background: #fbf3df; border-radius: 6px; padding: 12px 14px; box-shadow: inset 0 0 0 1px #dcc493, inset 0 0 18px rgba(170, 125, 50, .14); }
 .ws-story p { margin: 0; }
 .ws-title { font-family: var(--font-title); font-weight: 700; color: var(--plum-dark); font-size: 1.05rem; }
 .ws-more summary { cursor: pointer; font-weight: 700; color: var(--muted); }
@@ -405,8 +405,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   word-break: break-all;
 }
 .code-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.settings fieldset > .note, .save-actions { width: 100%; }
-.version { font-size: 0.75rem; }
+.save-actions { width: 100%; }
 
 @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); } }
 @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
@@ -635,7 +634,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .choices.cmp .choice b { font-size: 2.3rem; }
 
 /* Eigener Name fürs Küken (ab 1.12.2) */
-.hof-own { display: grid; gap: 6px; justify-items: center; font-size: .95rem; color: var(--ink-soft, #6b5a78); }
+.hof-own { display: grid; gap: 6px; justify-items: center; font-size: .95rem; color: var(--muted); }
 .hof-own-row { display: flex; gap: 8px; }
 .hof-own input { width: 11rem; padding: 8px 12px; border: 2px solid var(--plum-dark); border-radius: 12px; font: inherit; font-size: 1.1rem; color: var(--ink); background: #fff; }
 .nl-qline { stroke: var(--plum); stroke-width: 1.2; stroke-dasharray: 2 2; }
@@ -646,14 +645,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .think-bar.run i { animation: thinkRun var(--ms, 4s) linear forwards; }
 @keyframes thinkRun { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 .pad.thinking { opacity: .45; pointer-events: none; }
-.tipp-row { display: flex; justify-content: center; min-height: 0; }
-.tipp-btn { border: 2px solid var(--gold-dark, #b07a12); background: #fff8dc; color: #6b4a08; border-radius: 999px; padding: 6px 16px; font: inherit; font-weight: 800; font-size: .95rem; cursor: pointer; box-shadow: 0 2px 0 var(--gold-dark, #b07a12); }
-.tipp-btn[hidden] { display: none; }
+.tipp-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; min-height: 0; }
+.tipp-btn { border: 2px solid var(--gold-dark); background: #fff8dc; color: #6b4a08; border-radius: 999px; padding: 6px 16px; font: inherit; font-weight: 800; font-size: .95rem; cursor: pointer; box-shadow: 0 2px 0 var(--gold-dark); }
 .tipp-btn:active { transform: translateY(2px); box-shadow: none; }
 .tipp-btn:disabled { opacity: .45; cursor: default; box-shadow: none; }
 .tipp-btn.pulse { animation: tippPulse 1.4s ease-in-out infinite; }
-@keyframes tippPulse { 0%, 100% { transform: scale(1); box-shadow: 0 2px 0 var(--gold-dark, #b07a12), 0 0 0 0 rgba(240, 190, 60, .6); } 50% { transform: scale(1.07); box-shadow: 0 2px 0 var(--gold-dark, #b07a12), 0 0 0 8px rgba(240, 190, 60, 0); } }
-@media (prefers-reduced-motion: reduce) { .tipp-btn.pulse { animation: none; outline: 3px solid #f0be3c; } .think-bar.run i { animation-duration: 0.01s; } }
+@keyframes tippPulse { 0%, 100% { transform: scale(1); box-shadow: 0 2px 0 var(--gold-dark), 0 0 0 0 rgba(240, 190, 60, .6); } 50% { transform: scale(1.07); box-shadow: 0 2px 0 var(--gold-dark), 0 0 0 8px rgba(240, 190, 60, 0); } }
+@media (prefers-reduced-motion: reduce) { .tipp-btn.pulse { animation: none; outline: 3px solid #f0be3c; } }
 
 /* ab 1.15: Zehnerbrücke, leere Plätze, Sprünge nacheinander */
 .dot.b.bridge { background: #f0c860; box-shadow: 0 0 0 2px #fff6d8 inset; }
@@ -678,9 +676,6 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 }
 .ws-sheet h2 { color: #5a3410; }
 .ws-sheet .note { color: #7a6247; }
-.ws-pic { border: 0; border-radius: 6px; padding: 5px; background: linear-gradient(135deg, #5a3a20, #3b2414 55%, #5a3a20); box-shadow: 0 3px 0 rgba(40, 24, 10, .35), inset 0 0 0 1px #c9a050; }
-.ws-pic svg { border-radius: 3px; }
-.ws-story { background: #fbf3df; border-radius: 6px; padding: 12px 14px; box-shadow: inset 0 0 0 1px #dcc493, inset 0 0 18px rgba(170, 125, 50, .14); }
 .ws-sheet .ws-title { color: #7a2a1f; }
 .ws-text::first-letter { font-family: var(--font-title); font-weight: 800; float: left; font-size: 2.9em; line-height: .82; margin: 5px 7px 0 0; color: #8e2a24; text-shadow: 1px 1px 0 #e6c26a; }
 .ws-sheet .ws-next { color: #7a6247; }
@@ -690,18 +685,17 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .ws-sheet .mv-next { background: #efdfb8; color: #5a3410; box-shadow: inset 0 0 0 1px #d2b277; }
 .ws-plakat { width: 100%; background: #fbf3df; border-radius: 6px; padding: 12px 12px 14px; box-shadow: inset 0 0 0 1px #dcc493, inset 0 0 18px rgba(170, 125, 50, .14); display: grid; gap: 8px; justify-items: center; }
 .pk-title { font-family: var(--font-title); font-weight: 800; font-size: 1.2rem; color: #7a2a1f; }
-.pk-list { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-template-rows: repeat(5, auto); gap: 4px 18px; }
-.pk-list li { display: flex; justify-content: space-between; gap: 8px; min-width: 112px; padding: 3px 9px; border-radius: 7px; font-family: var(--font-num); font-size: 1.02rem; transition: background .2s, transform .2s; }
+.pk-list { list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-template-rows: repeat(5, auto); gap: 4px 14px; }
+.pk-list li { display: flex; justify-content: space-between; gap: 8px; min-width: 0; padding: 3px 9px; border-radius: 7px; font-family: var(--font-num); font-size: 1.02rem; transition: background .2s, transform .2s; }
 .pk-list li span { color: #6b5a44; }
 .pk-list li b { font-weight: 600; color: #3b2a14; }
 .pk-list li.core { background: #f6e1a6; box-shadow: inset 0 0 0 1.5px #d6a83c; }
-.pk-list li.now { background: #7a4bb0; transform: scale(1.06); }
+.pk-list li.now { background: var(--plum); transform: scale(1.06); }
 .pk-list li.now span, .pk-list li.now b { color: #fff; }
 .pk-tip { font-size: 0.9rem; color: #6b5a44; text-wrap: balance; }
 .pk-play { justify-self: center; }
 
 /* ab 1.14: Erklär-Karten und „So geht's“ */
-.tipp-row { gap: 10px; flex-wrap: wrap; }
 .how-btn { border: 2px solid #9a7438; background: #fbf3df; color: #5a3410; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 800; font-size: .95rem; cursor: pointer; box-shadow: 0 2px 0 #9a7438; }
 .how-btn:active { transform: translateY(2px); box-shadow: none; }
 #explain { z-index: 13; }
@@ -726,6 +720,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .p-sub { border: 1.5px solid #e6dccb; border-radius: 10px; padding: 6px 10px 2px; margin-bottom: 12px; background: #fff; }
 .p-subhead { font-weight: 800; color: var(--ink); margin: 2px 0 6px !important; }
 #pgAuto.off > :not(.p-subhead) { opacity: .55; }
+#pgAuto.off .opt input:disabled + span, #pgAuto.off .tog input:disabled + span { opacity: 1; }
 </style>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#7a4bb0">
@@ -783,7 +778,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     <p class="keys-hint">Zahl tippen, <kbd>Enter</kbd> prüft, <kbd>Rücktaste</kbd> löscht</p>
   </main>
 
-  <div class="pad" id="pad" aria-label="Zahlen eingeben"></div>
+  <div class="pad" id="pad" role="group" aria-label="Zahlen eingeben"></div>
 
   <button class="parents-btn" id="parentsBtn" type="button" aria-label="Für Eltern: zum Öffnen zwei Sekunden gedrückt halten"><span class="pb-label">Für Eltern</span></button>
 </div>
@@ -2430,7 +2425,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     { t: "08", n: "Orpington", ei: "braun", k: "gelb", f: "Aus England, benannt nach dem Ort Orpington. Weich, rund und gemütlich." },
     { t: "09", n: "Java", ei: "braun", k: "schwarz", f: "Trotz des Namens eine der ältesten Hühnerrassen aus Amerika." },
     { t: "14", n: "Yokohama", ei: "creme", k: "gelb", s: 1, f: "Aus Japan. Der Hahn trägt einen besonders langen, weißen Schwanz." },
-    { t: "15", n: "Phönix", ei: "creme", k: "gelb", s: 1, f: "Aus Japan. Die Schwanzfedern mancher Hähne wachsen jahrelang weiter und werden länger als ein Erwachsener groß ist." },
+    { t: "15", n: "Phönix", ei: "creme", k: "gelb", s: 1, f: "Aus Japan. Die Schwanzfedern mancher Hähne wachsen jahrelang weiter und werden länger, als ein Erwachsener groß ist." },
     { t: "16", n: "Crèvecœur", ei: "weiss", k: "schwarz", f: "Aus Frankreich, mit Federhaube und Bart. Meistens ist sie ganz schwarz." },
     { t: "17", n: "La Flèche", ei: "weiss", k: "schwarz", f: "Aus Frankreich. Ihr Kamm sieht aus wie zwei kleine Hörner." },
     { t: "18", n: "Le Mans", ei: "weiss", k: "schwarz", f: "Aus der Stadt Le Mans in Frankreich, schwarz und glänzend." },
@@ -2542,7 +2537,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mk("d5", "teilen", "Teilen durch 7, 8 und 9", "56 : 8", 0, true, "Glockengießer", () => divT(pick([7, 8, 9]), rand(2, 10))),
   );
   // ---------- Neue Rechenarten ab 1.9 (Standard aus, die Eltern schalten sie frei) ----------
-  // Jede Aufgabe trägt kind (trick, mauer, dreieck, folge, menge), ein Bild dazu und key für die Abwechslung.
+  // Jede Aufgabe trägt kind (trick, mauer, dreieck, folge, menge; ab 1.12 auch stelle, vergleich), ein Bild dazu und key für die Abwechslung.
   // Rechentricks: aus einer bekannten Kernaufgabe (2·, 5·, 10·) die schwere ableiten. Am liebsten mit den Reihen, die geübt werden sollen.
   const trickRow = () => { const on = [3, 4, 6, 7, 8, 9].filter((r) => skLevel("x" + r) !== 0); return wpick(on.length ? on : [3, 4, 6, 7, 8, 9], (r) => (skLevel("x" + r) === 2 ? 3 : 1)); };
   const trickT = (k, a, n, how) => ({ kind: "trick", a, b: n, op: "·", result: a * n, known: { k, p: k * n }, how, key: `T${k}>${a}x${n}`, text: `${a}·${n} (aus ${k}·${n} = ${k * n})` });
@@ -2689,21 +2684,28 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   function makePuzzle(skills, N) {
     const pool = skills.filter((s) => s.group === "plus" || s.group === "minus" || s.group === "mal");
     const use = pool.length ? pool : [SKILL_BY_ID.p2, SKILL_BY_ID.m2];
-    const names = RZ_NAMES.filter((w) => w.length <= 6), word = pick(names), code = {}, used = new Set(), items = [];
+    const names = RZ_NAMES.filter((w) => w.length <= 6), word = pick(names), code = {}, first = {}, used = new Set(), items = [];
+    // zweistellige Codes wie im Schulbuch (bei „bis 10“ geht es nicht anders)
+    const lo = N >= 20 ? 10 : 1;
+    // freie Zahl zwischen lo und hi. Bis 1.16.1 wurde hier gewürfelt, bis eine freie kam: Bei „bis 10“ gab es nur die 10, die Seite fror ein.
+    const freeCode = (hi) => { const f = []; for (let r = lo; r <= hi; r++) if (!used.has(r)) f.push(r); return f.length ? pick(f) : null; };
     for (const ch of word) {
       let t = null;
       if (code[ch] === undefined) {
-        // zweistellige Codes wie im Schulbuch (bei „bis 10“ geht es nicht anders)
-        const lo = N >= 20 ? 10 : 1;
         for (let k = 0; k < 80 && !t; k++) { const s = pick(use), c = makeFor(s); if (!used.has(c.result) && c.result >= lo && !c.pic && !c.kind) t = c; }
-        if (!t) { let r; do { r = rand(10, N >= 100 ? 99 : N); } while (used.has(r)); t = taskWithResult(r, N); }
-        code[ch] = t.result; used.add(t.result);
-      } else t = taskWithResult(code[ch], code[ch] > 20 ? 100 : Math.max(20, N));
+        if (!t) t = taskWithResult(freeCode(N >= 100 ? 99 : N) ?? rand(lo, N >= 100 ? 99 : N), N);
+        code[ch] = t.result; first[ch] = t; used.add(t.result);
+      } else {
+        // derselbe Buchstabe noch einmal: Mal-Aufgabe als Tauschaufgabe, sonst Plus/Minus im eingestellten Zahlenraum.
+        // (Bis 1.16.1 wurde aus einem Mal-Ergebnis wie 72 auch bei „bis 20“ eine Plus/Minus-Aufgabe bis 100.)
+        const f = first[ch];
+        t = f.op === "·" ? Object.assign(mal(f.b, f.a), { skill: f.skill, group: f.group, hard: f.hard }) : taskWithResult(code[ch], Math.max(N, code[ch]));
+      }
       t.rz = ch; items.push(t);
     }
-    // ein paar Buchstaben mehr in der Tabelle, damit man wirklich suchen muss
+    // ein paar Buchstaben mehr in der Tabelle, damit man wirklich suchen muss (Zahlen bis 20 auch bei „bis 10“: es sind nur Ablenker)
     const extra = [...RZ_EXTRA].filter((c) => code[c] === undefined).sort(() => Math.random() - 0.5).slice(0, 3);
-    extra.forEach((c) => { let r; do { r = rand(10, N >= 100 ? 99 : N); } while (used.has(r)); code[c] = r; used.add(r); });
+    extra.forEach((c) => { const r = freeCode(N >= 100 ? 99 : Math.max(N, 20)); if (r !== null) { code[c] = r; used.add(r); } });
     const table = Object.keys(code).sort().map((l) => ({ l, n: code[l] }));
     return { word, table, items, i: 0, found: [] };
   }
@@ -2744,13 +2746,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     helpAfter: [1, 2, 3], frustN: [0, 2, 3, 4, 5], vol: ["leise", "mittel", "laut"], speechMode: ["lob", "mut"],
     titel: ["f", "m"], hilfe: ["auto", "strahl", "punkte"], teilenStufen: ["schritt", "alle"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200], belohnung: ["hof", "bilder"], stimme: ["warm", "geraet"],
   };
-  const DATA_GEN = 2;
+  const DATA_GEN = 2;   // Spielstände ab Version 1.1; ältere beginnen einmalig bei null (Einstellungen bleiben)
   // Einmalige Anpassungen alter Spielstände. mig 1 (1.13): Rechendreiecke aus. Im Protokoll waren 1 von 32 beim ersten Versuch richtig,
   // sie versteht das Prinzip noch nicht. Die Eltern können sie im Menü wieder einschalten (das gilt dann für immer).
   const MIGRATION = 1;
   // Rechenarten ab 1.9: bleiben aus, bis die Eltern sie einschalten (auch bei alten Spielständen)
   const NEW_OPS = ["tricks", "mauer", "dreieck", "folgen", "schaetzen", "raetsel", "stelle", "vergleich"];
-  const NEW_OPS_OFF = Object.fromEntries(NEW_OPS.map((k) => [k, false]));   // Spielstände ab Version 1.1; ältere beginnen einmalig bei null
+  const NEW_OPS_OFF = Object.fromEntries(NEW_OPS.map((k) => [k, false]));
 
   const freshState = () => ({
     max: 100, ops: { plus: true, minus: true, mal: true, luecke: true, teilen: true, ...NEW_OPS_OFF }, level: "mix", pad: "auto", sound: true,
@@ -2761,6 +2763,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   let state = freshState();
 
   const int = (v, lo, hi) => (Number.isInteger(v) && v >= lo && v <= hi ? v : null);
+  // nur eigene Schlüssel: Ein Spielstand-Code mit „constructor“ soll nicht als Fähigkeit oder Karte durchgehen
+  const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
   // Karte: [Samen, Landschaft, Wesen, golden, Zeichnung]. Ohne Zeichnung = erste Generation, bleibt für immer so
   const toCard = (k) => {
     const [s, n, c, g, v] = Array.isArray(k) ? k : k && typeof k === "object" ? [k.s, k.n, k.c, k.g, k.v] : [];
@@ -2778,7 +2782,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       else if (k === "anteil") { if (Number.isFinite(v)) c[k] = Math.max(10, Math.min(60, Math.round(v / 5) * 5)); }
       else if (CFG_RULE[k] && CFG_RULE[k].includes(v)) c[k] = v;
     }
-    if (raw.sk && typeof raw.sk === "object") for (const id of Object.keys(raw.sk)) if (SKILL_BY_ID[id] && [0, 1, 2].includes(raw.sk[id])) c.sk[id] = raw.sk[id];
+    if (raw.sk && typeof raw.sk === "object") for (const id of Object.keys(raw.sk)) if (has(SKILL_BY_ID, id) && [0, 1, 2].includes(raw.sk[id])) c.sk[id] = raw.sk[id];
     return c;
   }
   const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -2787,7 +2791,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (!raw || typeof raw !== "object") return out;
     for (const id of Object.keys(raw)) {
       const e = raw[id];
-      if (!SKILL_BY_ID[id] || !e || typeof e !== "object") continue;
+      if (!has(SKILL_BY_ID, id) || !e || typeof e !== "object") continue;
       out[id] = {
         h: typeof e.h === "string" && /^[0-3]*$/.test(e.h) ? e.h.slice(-10) : "",
         n: int(e.n, 0, 1e6) ?? 0, c: int(e.c, 0, 1e6) ?? 0, l: int(e.l, 0, 1e9) ?? 0,
@@ -2858,7 +2862,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     out.stats = cleanStats(raw.stats); out.days = cleanDays(raw.days); out.err = cleanErr(raw.err);
     out.hof = cleanHof(raw.hof);
     out.seq = int(raw.seq, 0, 1e9) ?? 0;
-    if (Array.isArray(raw.seen)) out.seen = [...new Set(raw.seen.filter((k) => typeof k === "string" && KARTEN[k]))];
+    if (Array.isArray(raw.seen)) out.seen = [...new Set(raw.seen.filter((k) => typeof k === "string" && has(KARTEN, k)))];
     out.savedAt = typeof raw.savedAt === "number" && raw.savedAt > 0 ? raw.savedAt : 0;
     return out;
   }
@@ -3028,7 +3032,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return t;
   }
 
-  // Ergebnis eines gelösten Aufgabe festhalten. code: 3 = 1. Versuch, 2 = vor der Hilfe, 1 = mit Hilfe, 0 = Lösung gezeigt
+  // Ergebnis einer gelösten Aufgabe festhalten. code: 3 = 1. Versuch, 2 = vor der Hilfe, 1 = mit Hilfe, 0 = Lösung gezeigt
   function recordResult(t, code, ms) {
     const id = t.skill;
     const st = state.stats[id] || (state.stats[id] = { h: "", n: 0, c: 0, l: 0, w: 0, g: 0, sd: [], ms: [] });
@@ -3115,9 +3119,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // Im Protokoll waren 177 von 578 Fehlversuchen weniger als 3 s nach dem vorigen, viele davon „9“, „99“, „66“, „659“, und 45× wurde bis zur Lösung durchgeklickt.
   // since: Millisekunden seit dem letzten gezählten Versuch (oder seit die Aufgabe erschien). first: noch kein Versuch bei dieser Aufgabe bzw. diesem Schritt.
   const GUESS_FIRST_MS = 1500, GUESS_GAP_MS = 3500;
-  function looksLikeGuess(val, result, since, first, choice) {
+  // known (ab 1.16.2): Der Fehler-Detektiv kennt diesen Fehler (z. B. 314 für 3 Stangen und 14 Würfel). Dann ist es ein echter Versuch,
+  // nur die Zeitregel gilt weiter. Vorher bremste die Längenregel genau diese typischen Fehler, und ihr Hinweis kam nie.
+  function looksLikeGuess(val, result, since, first, choice, known) {
     if (since < (first ? GUESS_FIRST_MS : GUESS_GAP_MS)) return true;
-    if (choice) return false;
+    if (choice || known) return false;
     const s = String(val);
     if (s.length >= 2 && /^(\d)\1+$/.test(s) && Math.abs(val - result) > 2 && since < 10000) return true;   // 66, 99, 999 (11 für 10 ist ein echter Fast-Treffer)
     if (s.length >= 3 && s.length > String(result).length && since < 10000) return true;                     // 659, 966: mehr Stellen, als das Ergebnis haben kann
@@ -3179,9 +3185,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const sv = String(val), sr = String(r);
     if (sv.length === sr.length && sv.length >= 2 && [...sv].reverse().join("") === sr) return { kind: "dig", text: "Fast: Die Ziffern stehen vertauscht. Erst die Zehner, dann die Einer." };
     if (t.op === "·" && (Math.abs(d) === a || Math.abs(d) === b)) return { kind: "row", text: "Eine Reihe zu viel oder zu wenig? Rechne die Reihe noch einmal von vorn." };
-    if (Math.abs(d) === 10 && t.op !== "·") return { kind: "ten", text: "Fast! Die Zehnerstelle stimmt noch nicht. Denk an den Zehnerübergang." };
-    // Beim Rückwärtszählen über den Zehner wird oft die Startzahl mitgezählt: Ergebnis um eins zu klein
-    if (t.op === "−" && d === -1 && b < 10 && b > a % 10) return { kind: "one", text: "Ganz knapp! Beim Rückwärtszählen zählt die Startzahl nicht mit. Tipp: Erst bis zur Zehn, dann weiter." };
+    const cross = t.op === "+" ? (a % 10) + (b % 10) >= 10 : a % 10 < b % 10;
+    if (Math.abs(d) === 10 && t.op !== "·") return { kind: "ten", text: "Fast! Die Zehnerstelle stimmt noch nicht." + (cross ? " Denk an den Zehnerübergang." : " Rechne die Zehner noch einmal.") };
+    // Beim Rückwärtszählen wird oft die Startzahl mitgezählt: 12 − 5 als „12, 11, 10, 9, 8“ ergibt 8, also eins zu viel.
+    // (Bis 1.16.1 hing dieser Hinweis an „eins zu wenig“, das war die falsche Richtung.)
+    if (t.op === "−" && d === 1 && b < 10 && b > a % 10) return { kind: "one", text: "Ganz knapp! Beim Rückwärtszählen zählt die Startzahl nicht mit. Tipp: Erst bis zur Zehn, dann weiter." };
     if (Math.abs(d) === 1) return { kind: "one", text: "Ganz knapp! Rechne den letzten Schritt noch einmal." };
     return null;
   }
@@ -3193,7 +3201,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (t.kind === "vergleich") {
       const l = t.lv, rr = t.rv, ls = String(l), rs = String(rr);
       if (val === 1) return { kind: "other", text: "Sind beide Seiten wirklich gleich? Schau noch einmal genau hin." };
-      if (t.result === 1) return { kind: "other", text: "Rechne beide Seiten aus. Kommt vielleicht dasselbe heraus?" };
+      if (t.result === 1) return { kind: "other", text: typeof t.l === "number" && typeof t.r === "number" ? "Vergleiche Ziffer für Ziffer: erst die Zehner, dann die Einer." : "Rechne beide Seiten aus. Kommt vielleicht dasselbe heraus?" };
       if (typeof t.l !== "number" || typeof t.r !== "number") return { kind: "op", text: "Rechne zuerst die Aufgabe aus. Dann vergleiche die beiden Zahlen." };
       if (ls.length === 2 && rs.length === 2 && ls[0] === rs[1] && ls[1] === rs[0]) return { kind: "dig", text: "Schau zuerst auf die Zehner. Ein Zehner ist mehr wert als viele Einer." };
       if (ls.length === 2 && rs.length === 2 && ls[0] === rs[0]) return { kind: "one", text: "Die Zehner sind gleich. Dann entscheiden die Einer." };
@@ -3201,7 +3209,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
     if (t.kind === "stelle") {
       if (t.how === "zerlegen") return val === (t.ask === "z" ? t.e : t.z) ? { kind: "dig", text: `Die Zehner stehen vorn, die Einer hinten. Gesucht sind die ${t.ask === "z" ? "Zehner" : "Einer"}.` } : null;
-      if (t.how === "zehner" && val === (t.op === "+" ? t.a + t.k : t.a - t.k)) return { kind: "ten", text: `Hier ${t.op === "+" ? "kommen" : "gehen"} ganze Zehner ${t.op === "+" ? "dazu" : "weg"}: ${t.b} sind ${t.k} Zehnerstangen. Die Einer bleiben gleich.` };
+      if (t.how === "zehner" && val === (t.op === "+" ? t.a + t.k : t.a - t.k)) return { kind: "ten", text: `Hier ${t.op === "+" ? "kommen" : "gehen"} ganze Zehner ${t.op === "+" ? "dazu" : "weg"}: ${t.b} ${t.k === 1 ? "ist 1 Zehnerstange" : `sind ${t.k} Zehnerstangen`}. Die Einer bleiben gleich.` };
       if (t.how !== "zehner" && val === t.z + t.e) return { kind: "ten", text: t.how === "geld" ? "Eine goldene Münze ist 10 Cent wert, nicht 1 Cent. Zähl in Zehnerschritten." : "Eine Stange sind 10 Würfel. Zähl die Stangen in Zehnerschritten: 10, 20, 30 …" };
       if (t.how === "buendeln" && val === 10 * t.z + (t.e % 10)) return { kind: "ten", text: "Aus 10 einzelnen Würfeln wird eine neue Stange. Bündle zuerst!" };
       if (t.how === "buendeln" && val === 100 * t.z + t.e) return { kind: "ten", text: "Mehr als 9 Einer passen nicht auf die Einerstelle. Mach aus 10 Würfeln eine Stange." };
@@ -3222,7 +3230,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         const sums = [];
         if (t.kind === "mauer") { const [i, j] = t.ask, row = t.rows[i], up = t.rows[i + 1]; if (j > 0) sums.push(up[j - 1] + row[j - 1]); if (j < row.length - 1) sums.push(up[j] + row[j + 1]); }
         else { const k = t.ask[1], o = t.outer, n = t.inner; const pairs = { 0: [[0, 1], [1, 2]], 1: [[0, 0], [2, 2]], 2: [[1, 0], [2, 1]] }[k]; pairs.forEach(([oi, ni]) => sums.push(o[oi] + n[ni])); }
-        if (sums.includes(val)) return { kind: "op", text: "Andersherum: Die Zahl darüber ist schon das Ergebnis. Was fehlt noch bis dahin?" };
+        if (sums.includes(val)) return { kind: "op", text: `Andersherum: Die Zahl ${t.kind === "dreieck" ? "außen" : "darüber"} ist schon das Ergebnis. Was fehlt noch bis dahin?` };
       }
     }
     if (t.kind === "folge") {
@@ -3255,7 +3263,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     vergleich: { t: "Die Waage", x: "Die größere Zahl ist schwerer, ihre Seite sinkt nach unten. Die Spitze des Zeichens zeigt immer zur kleineren Zahl." },
   };
   // Welche Karte gehört zu einer Aufgabe? null = keine (Plus, Minus, Mal, Teilen, Lücken kennt sie aus der Schule)
-  const cardKey = (t) => (!t || !t.kind ? null : t.kind === "stelle" ? (t.how === "geld" ? "geld" : t.how === "buendeln" ? "buendeln" : "stelle") : KARTEN[t.kind] ? t.kind : null);
+  // Die Perlenketten-Karte sagt „springt immer gleich weit“: nur für solche Ketten (knifflige wie ·2 oder +5, −1 bekommen keine Karte)
+  const cardKey = (t) => (!t || !t.kind ? null : t.kind === "stelle" ? (t.how === "geld" ? "geld" : t.how === "buendeln" ? "buendeln" : "stelle")
+    : t.kind === "folge" ? (t.steps.every((x) => x === t.steps[0]) ? "folge" : null) : has(KARTEN, t.kind) ? t.kind : null);
 
   // Lob und Ermutigung
   const PHRASES = {
@@ -3276,7 +3286,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function withName(t) {
     const n = state.cfg.name;
-    return n && /[!.]$/.test(t) && Math.random() < 0.35 ? t.replace(/[!.]$/, `, ${n}!`) : t;
+    // Satzzeichen bleiben: „lohnt sich, Lena.“ Sonst passt der Satz ohne Namen nicht mehr zur Aufnahme (bis 1.16.1 wurde aus „.“ ein „!“)
+    return n && /[!.]$/.test(t) && Math.random() < 0.35 ? t.replace(/([!.])$/, `, ${n}$1`) : t;
   }
   function praise(code, hard) {
     if (code >= 2 && STREAK[mem.streak]) { mem.last = STREAK[mem.streak]; return withName(STREAK[mem.streak]); }
@@ -3347,7 +3358,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const LOG_WHAT = {
     S: "Start", A: "Aufgabe", R: "Antwort", H: "Hilfe", L: "Lösung gezeigt", F: "Angebot „leichter“", FA: "Angebot beantwortet",
     B: "Bild bekommen", BZ: "Bild geschlossen", G: "Zunftgrad", W: "Werkstatt-Kapitel", O: "geöffnet", OZ: "geschlossen",
-    E: "Einstellung", P: "App verlassen", Z: "App wieder da", X: "Fehler im Programm", RS: "Rechenweg-Schritt", RZ: "Rätselwort", RT: "Ratebremse (zu schnell geraten, zählt nicht)", U: "Neue Version gefunden", K: "Erklär-Karte",
+    E: "Einstellung", P: "App verlassen", Z: "App wieder da", X: "Fehler im Programm", RS: "Rechenweg-Schritt", RZ: "Rätselwort", RT: "Ratebremse (zu schnell geraten, zählt nicht)", U: "Neue Version gefunden", K: "Erklär-Karte", SL: "Küken geschlüpft", HW: "Küken groß geworden",
   };
   function logLine(e) {
     const [t, k, ...d] = e;
@@ -3378,7 +3389,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     };
     const dur = ses.map(activeDur);
     const tasksPer = ses.map((s) => s.filter((e) => e[1] === "R" && e[3]).length);
-    L.push(`Rechen-Sitzungen: ${ses.length} (dazu ${visits} kurze Besuche ohne Antwort, oft Eltern-Menü) · aktive Dauer im Mittel (Median) ${mins(median(dur))}, längste ${mins(Math.max(...dur))} · gelöste Aufgaben je Sitzung im Mittel ${median(tasksPer)}`);
+    L.push(`Rechen-Sitzungen: ${ses.length} (dazu ${visits} kurze Besuche ohne Antwort, oft Eltern-Menü) · aktive Dauer im Mittel (Median) ${mins(median(dur))}, längste ${mins(Math.max(...dur))} · gelöste Aufgaben je Sitzung im Mittel ${String(median(tasksPer)).replace(".", ",")}`);
     // Spielzeit je Tag
     const days = {};
     ses.forEach((s, i) => { const d = dayOf(s[0][0]); days[d] = days[d] || [0, 0, 0]; days[d][0] += dur[i]; days[d][1] += tasksPer[i]; days[d][2] += 1; });
@@ -3387,15 +3398,18 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const per = {}, hard = {};
     let cur = null;
     ev.forEach((e) => {
+      // „(nach Pause weiter)“ ist dieselbe Aufgabe in einer neuen Sitzung: nicht doppelt zählen (bis 1.16.1 zählte sie zweimal)
+      const resumed = e[1] === "A" && / \(nach Pause weiter\)$/.test(e[3] || "");
+      if (resumed && cur && cur.skill === e[2]) return;
       if (e[1] === "A") { cur = { skill: e[2], text: e[3], first: null, ms: null, help: false, tries: 0 }; (per[e[2]] = per[e[2]] || []).push(cur); }
       else if (cur && e[1] === "R") { cur.tries += 1; if (cur.first === null) { cur.first = !!e[3]; cur.ms = e[4]; } if (!e[3]) { const h = (hard[cur.text] = hard[cur.text] || [0, 0]); h[0] += 1; } }
       else if (cur && (e[1] === "H" || e[1] === "L")) cur.help = true;
-      if (e[1] === "A") { const h = (hard[e[3]] = hard[e[3]] || [0, 0]); h[1] += 1; }
+      if (e[1] === "A") { const h = (hard[e[3]] = hard[e[3]] || [0, 0]); h[1] += 1; }   // (eine fortgesetzte Aufgabe kam oben schon zurück)
     });
     const label = (id) => (typeof SKILL_BY_ID !== "undefined" && SKILL_BY_ID[id] ? SKILL_BY_ID[id].label : id);
     const rows = Object.entries(per).filter(([, a]) => a.some((x) => x.first !== null)).map(([id, a]) => {
       const done = a.filter((x) => x.first !== null), ok = done.filter((x) => x.first).length, ms = done.filter((x) => x.first && x.ms > 0 && x.ms < 120e3).map((x) => x.ms);
-      return `- ${label(id)} (${id}): ${done.length} Aufgaben, beim 1. Versuch richtig ${pct(ok, done.length)}, mit Hilfe ${done.filter((x) => x.help).length}, Zeit bis zur richtigen 1. Antwort im Mittel ${ms.length ? sec(median(ms)) : "–"}`;
+      return `- ${label(id)} (${id}): ${done.length} ${done.length === 1 ? "Aufgabe" : "Aufgaben"}, beim 1. Versuch richtig ${pct(ok, done.length)}, mit Hilfe ${done.filter((x) => x.help).length}, Zeit bis zur richtigen 1. Antwort im Mittel ${ms.length ? sec(median(ms)) : "–"}`;
     });
     if (rows.length) L.push("Je Aufgabenart:", ...rows);
     const worst = Object.entries(hard).filter(([, [f]]) => f > 0).sort((a, b) => b[1][0] - a[1][0] || b[1][1] - a[1][1]).slice(0, 10);
@@ -3824,7 +3838,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       if (t.how === "geld") return "Eine goldene Münze ist 10 Cent wert, eine kupferne 1 Cent. Erst die goldenen in Zehnerschritten zählen, dann die kupfernen dazu.";
       if (t.how === "buendeln") return `Aus 10 Würfeln wird eine neue Stange. Dann sind es ${t.z + 1} Stangen und ${t.e - 10} Würfel.`;
       if (t.how === "zerlegen") return "Die erste Ziffer zählt die Zehner, die zweite die Einer. Schau aufs Bild: Stangen sind Zehner, Würfel sind Einer.";
-      if (t.how === "zehner") return `${t.a} sind ${t.z} Zehner und ${t.e} Einer. ${t.op === "+" ? "Dazu kommen" : "Weg gehen"} ${t.k} Zehner. Die ${t.e} Einer bleiben, wie sie sind.`;
+      if (t.how === "zehner") return `${t.a} sind ${t.z} Zehner und ${t.e} Einer. ${t.op === "+" ? (t.k === 1 ? "Dazu kommt" : "Dazu kommen") : t.k === 1 ? "Weg geht" : "Weg gehen"} ${t.k} Zehner. Die ${t.e} Einer bleiben, wie sie sind.`;
       return "Zähl die Stangen in Zehnerschritten: 10, 20, 30 … Dann zähl die Würfel einzeln dazu.";
     }
     if (t.kind === "vergleich") {
@@ -4045,7 +4059,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.16.1";
+  const VERSION = "1.16.2";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -4119,20 +4133,21 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   async function flushCloud() {
     if (!cloud.ref || cloud.busy || !cloud.dirty) return;
     cloud.busy = true; cloud.dirty = false;
+    let again = false;
     try {
       await cloud.ref.set(stored());
       cloud.status = "on"; cloud.retried = false;
     } catch (e) {
       if (e && e.code === "unavailable" && !cloud.retried) {
-        cloud.retried = true; cloud.dirty = true;
-        setTimeout(flushCloud, 1500 + Math.random() * 2000);
+        cloud.retried = true; cloud.dirty = true; again = true;
+        clearTimeout(cloud.timer); cloud.timer = setTimeout(flushCloud, 1500 + Math.random() * 2000);
       } else {
         cloud.status = "error";
       }
     } finally {
       cloud.busy = false;
       renderSaveStatus();
-      if (cloud.dirty && cloud.status === "on") cloud.timer = setTimeout(flushCloud, 600);
+      if (!again && cloud.dirty && cloud.status === "on") cloud.timer = setTimeout(flushCloud, 600);
     }
   }
   document.addEventListener("visibilitychange", () => {
@@ -4159,14 +4174,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     updateAt = Date.now();
     fetch("sw.js", { cache: "no-store" }).then((r) => (r.ok ? r.text() : "")).then((txt) => {
       const m = /const CACHE = "rechenreise-([0-9.]+)";/.exec(txt);
-      if (!m || m[1] === VERSION) return;
+      // nur eine wirklich neuere Nummer zählt (eine ältere sw.js aus einem Zwischenspeicher soll kein „Update“ auf alt melden)
+      if (!m || !newer(m[1], VERSION)) return;
       if (newVersion !== m[1]) logEv("U", m[1]);
       newVersion = m[1];
-      const busy = !$("hof").hidden || !$("parents").hidden;
+      const busy = overlayOpen() || offerOpen || locked;   // nie mitten in Belohnung, Brief, Karte oder Sammlung
       if (longAway && !busy) { reloadNow(); return; }
       renderVersion();
     }).catch(() => { /* ohne Netz: später noch einmal */ });
   }
+  const newer = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0; } return false; };
   function reloadNow() { save(); logFlush(); location.reload(); }
   function renderVersion() {
     const el = $("versionLine");
@@ -4301,7 +4318,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     }
     if (!hasSpeech) return;
     try {
-      stopClips();
+      clipRun++; stopClips();
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "de-DE"; if (voice) u.voice = voice;
@@ -4372,7 +4389,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   function renderChoices() {
     const box = $("choices"), on = choiceTask(task);
     box.hidden = !on;
-    if (!on) { box.innerHTML = ""; return; }
+    if (!on) { box.innerHTML = ""; box.dataset.sig = ""; return; }   // sonst blieb eine neue Waage-Aufgabe ohne Knöpfe (bis 1.16.1)
     const sig = task.choices.join(",") + "|" + tried.join(",") + "|" + locked + "|" + thinking;
     if (box.dataset.sig === sig) return;
     box.dataset.sig = sig;
@@ -4470,7 +4487,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       return { stops, unknown: null, labels: [0, t.a], jump: (k) => (k === 0 ? `+${t.b}` : ""), hops: true,
         text: `Wie oft passt die ${t.b} in die ${t.a}? Spring in ${t.b}er-Sprüngen von 0 bis ${t.a} und zähl die Sprünge.` };
     }
-    const tenUp = (x) => Math.ceil((x + 1) / 10) * 10, tenDown = (x) => Math.floor((x - 1) / 10) * 10;
+    const tenUp = (x) => Math.ceil((x + 1) / 10) * 10;
     if (t.op === "·") {
       const step = t.gap ? (t.gap === "a" ? t.b : t.a) : t.b, n = t.gap ? t.result : t.a;
       const stops = Array.from({ length: n + 1 }, (_, k) => k * step);
@@ -4630,7 +4647,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
 
   // Bildunterschrift: Gleichungen nie umbrechen, jeder Satz eine Zeile
-  const capHTML = (txt) => txt.replace(/\d+ [+−·] \d+ = (\d+ · \d+|\d+|\?)/g, (m) => `<span class="nb">${m}</span>`).replace(/\. /g, ".<br>");
+  const capHTML = (txt) => txt.replace(/\d+ [+−·] (\d+|\?) = (\d+ · \d+|\d+|\?)/g, (m) => `<span class="nb">${m}</span>`).replace(/\. /g, ".<br>");
   // Kernaufgaben (ab 1.16): 6 bis 9 Reihen = 5 Reihen + Rest, 3 oder 4 Reihen = 2 Reihen + Rest; 1, 2, 5, 10 sind selbst Kernaufgaben
   const kernSplit = (t) => (Math.max(t.a, t.b) < 6 ? 0 : t.a >= 6 && t.a <= 9 ? 5 : t.a === 3 || t.a === 4 ? 2 : 0);
   function kernText(t) {
@@ -4649,6 +4666,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       hintEl.removeAttribute("aria-label");
       hintEl.hidden = false;
       renderPic("hint");
+      renderTipp();
       return;
     }
     if (type === "pic") {
@@ -4658,6 +4676,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       hintEl.removeAttribute("aria-label");
       hintEl.hidden = false;
       animateShare(false);
+      renderTipp();
       return;
     }
     if (type === "field" && t.op === ":") {
@@ -4665,11 +4684,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       hintEl.innerHTML = dotRows(Array(t.a).fill("a"), t.b) + `<p class="steps caption">${t.a} Punkte, immer ${t.b} in einer Reihe. Wie viele Reihen sind es?<br>Denk an das Einmaleins: <span class="nb">${t.b} · ? = ${t.a}</span></p>`;
       hintEl.setAttribute("aria-label", `${t.a} Punkte in Reihen zu je ${t.b}`);
       hintEl.hidden = false;
+      renderTipp();
       return;
     }
     if (type === "line") {
       const { svg, text } = numberLineSVG(t);
-      const html = text.replace(/\d+ [+−] \d+ = (\d+|\?)/g, (m) => `<span class="nb">${m}</span>`).replace(/\. /g, ".<br>");
+      const html = text.replace(/\d+ [+−] (\d+|\?) = (\d+|\?)/g, (m) => `<span class="nb">${m}</span>`).replace(/\. /g, ".<br>");
       hintEl.innerHTML = svg + `<p class="steps caption">${html}</p>`;
       hintEl.setAttribute("aria-label", "Zahlenstrahl. " + text);
     } else if (type === "field") {
@@ -4677,7 +4697,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       const k = kernSplit(t), dots = Array.from({ length: t.a * t.b }, (_, i) => (k && i >= k * t.b ? "b" : "a"));
       hintEl.classList.add("small");
       hintEl.innerHTML = dotRows(dots, t.b) + `<p class="steps caption">${capHTML(kernText(t))}</p>`;
-      hintEl.setAttribute("aria-label", `${t.a} Reihen mit je ${t.b} Punkten. ${kernText(t)}`);
+      hintEl.setAttribute("aria-label", k ? `${t.a} Reihen mit je ${t.b} Punkten. ${kernText(t)}` : kernText(t));
     } else if (type === "dots") {
       // ab 1.15 mit Zehnerbrücke: Was die 10 voll macht (oder bis zur 10 weggeht), hat eine eigene Farbe
       const dots = [], { a, b } = t;
@@ -5109,7 +5129,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       ["Die Werkbank", `Zusammen mit ${mk} baust du eine Werkbank. „Jedes Handwerk braucht einen festen Platz“, sagt ${er}. Du stellst dich gleich dahinter und probierst alles aus.`],
       ["Das erste Werkzeug", `${mk} schenkt dir ${G.wz}. Du hängst dein Werkzeug an die Wand über der Werkbank, damit du es immer gleich findest.`],
       ["Der Gesellenbrief", `Dein Gesellenbrief hängt jetzt gerahmt an der Wand! Als ${gradeName(2)} darfst du eigene ${G.w} machen. Die ersten stehen schon im Regal.`],
-      [G.h ? "Das Feuer brennt" : "Ein großer Schrank", G.h ? `Heute wird ${G.h} angeheizt. Es wird warm in der ${G.o}, und im Regal stehen immer mehr ${G.w}.` : `Ein großer Schrank kommt dazu, und im Regal stehen immer mehr ${G.w}. ${mk} nickt zufrieden.`],
+      [G.h ? "Das Feuer brennt" : "Ein großer Schrank", G.h ? `Heute wird ${G.h}${G.h.includes(",") ? "," : ""} angeheizt. Es wird warm in der ${G.o}, und im Regal stehen immer mehr ${G.w}.` : `Ein großer Schrank kommt dazu, und im Regal stehen immer mehr ${G.w}. ${mk} nickt zufrieden.`],
       ["Die erste Kundschaft", `Es klopft! ${G.k} braucht ${G.kw}. ${mk} schaut dir über die Schulter, aber du schaffst es ganz allein.`],
       ["Der Meisterbrief", `Du bist ${gradeName(3)}! ${mk} gibt dir den großen Schlüssel: Ab heute ist es deine ${G.o}. Über der Tür hängt dein eigenes Zunftschild.`],
       ["Das Meisterstück", `Dein Meisterstück ist fertig: ${G.ms}. Die halbe Stadt kommt, um es zu bestaunen, und sogar die Werkstattkatze schnurrt stolz.`],
@@ -5144,7 +5164,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       <path d="M26 98V56A28 24 0 0 1 82 56V98Z" fill="none" stroke="#857560" stroke-width="5"/><path d="M54 33V98M26 72H82" stroke="#3a3430" stroke-width="2"/>
       <rect x="18" y="96" width="72" height="7" rx="2" fill="#a5967f" stroke="#6e5c48" stroke-width=".8"/>`);
     // Tür mit Rundbogen aus Steinen: zu, ab Kapitel 6 offen mit Kundschaft
-    o.push(`<g fill="${stone}" stroke="#6e5c48" stroke-width=".8">${Array.from({ length: 9 }, (_, i) => { const a = Math.PI * (1 - i / 8), c = Math.cos(a), sn = Math.sin(a), r1 = 28, r2 = 36, cx = 308, cy = 100, w = 0.17;
+    o.push(`<g fill="${stone}" stroke="#6e5c48" stroke-width=".8">${Array.from({ length: 9 }, (_, i) => { const a = Math.PI * (1 - i / 8), r1 = 28, r2 = 36, cx = 308, cy = 100, w = 0.17;
       const p = (rr, aa) => `${f1(cx + rr * Math.cos(aa))} ${f1(cy - rr * Math.sin(aa) * 0.95)}`; return `<path d="M${p(r1, a - w)}L${p(r2, a - w)}L${p(r2, a + w)}L${p(r1, a + w)}Z"/>`; }).join("")}</g>`);
     if (stage >= 6) {
       o.push(`<path d="M280 176V100A28 26 0 0 1 336 100V176Z" fill="url(#${u}sky)"/><path d="M280 160Q308 150 336 158V176H280Z" fill="#8fb57c"/>`);
@@ -5242,6 +5262,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // Gesellenbrief und Meisterbrief: eine kleine Urkunde, wenn ein höherer Grad erreicht ist
   let certQueue = null;
   function showCert() {
+    closeBrowsing();
     const { s, g, ws: certWs } = certQueue;
     certQueue = null;
     logEv("G", s.id, g);
@@ -5274,7 +5295,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (rz && rz.i < rz.items.length) { task = rz.items[rz.i]; task.pool = "raetsel"; commit(task); }
     else { rz = null; task = nextTask(); mem.sincePuzzle++; }
     input = ""; tries = 0; revealed = false; locked = false; tried = [];
-    shownAt = performance.now(); firstMs = null; away = false; pausedMs = 0; guide = null;
+    shownAt = performance.now(); firstMs = null; away = false; pausedMs = 0; guide = null; dirtyTask = false;
+    if (hiddenAt) hiddenAt = shownAt;   // im Hintergrund gestellt: nur die Zeit ab jetzt ist Pause
     clearTimeout(thinkTimer); thinking = false; $("thinkBar").hidden = true;
     tryAt = 0; tryN = 0; brakeHits = 0; helped = false; tippPulse = false;
     renderPic(); renderTask(""); renderTags(); applyPad();
@@ -5302,11 +5324,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     vergleich: () => ({ kind: "vergleich", l: 34, r: 43, lv: 34, rv: 43, op: "?", result: 0, choices: [0, 1, 2] }),
   };
   const CARD_MODE = { menge: "hint", stelle: "hint", buendeln: "hint" };
-  let cardFirst = false, cardOpen = "";
+  let cardFirst = false, cardOpen = "", cardAt = 0;
   function showCard(key, first) {
     const k = KARTEN[key];
     if (!k) return;
-    cardOpen = key; cardFirst = !!first;
+    cardOpen = key; cardFirst = !!first; cardAt = performance.now();
+    $("toast").hidden = true;
     $("exTitle").textContent = k.t;
     $("exText").innerHTML = k.x.replace(/\d+ [+−·] \d+( = \d+)?/g, (m) => `<span class="nb">${m}</span>`);   // feste Texte aus KARTEN
     let pic = "";
@@ -5317,7 +5340,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("explain").hidden = false;
     $("explain").scrollTop = 0;
     logEv("K", key, first ? "neu" : "nochmal");
-    speak(k.x, false, [k.x]);
+    // Die Gerätestimme liest say (Zahlen als Wörter), die Aufnahme hat den Schlüssel x
+    speak(k.say || k.x, false, [k.x]);
     try { $("exClose").focus({ preventScroll: true }); } catch (e) { $("exClose").focus(); }
   }
   function closeCard() {
@@ -5328,12 +5352,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     stopSpeech();
     $("explain").hidden = true;
     if (first) { shownAt = performance.now(); pausedMs = 0; firstMs = null; tryAt = 0; }
+    else pausedMs += performance.now() - cardAt;   // „So geht's“ mitten in der Aufgabe: Lesezeit ist keine Rechenzeit
     focusAnswer();
     if (first && state.cfg.readTask && task) speak(taskWords(task), false, taskParts(task));
   }
   $("exClose").addEventListener("click", closeCard);
   $("explain").addEventListener("click", (e) => { if (e.target.id === "explain") closeCard(); });
-  $("exAgain").addEventListener("click", () => { const k = KARTEN[cardOpen]; if (k) speak(k.x, true, [k.x]); });
+  $("exAgain").addEventListener("click", () => { const k = KARTEN[cardOpen]; if (k) speak(k.say || k.x, true, [k.x]); });
   $("howBtn").addEventListener("click", () => { const ck = cardKey(task); if (ck) showCard(ck, false); });
   // Nach einer gelösten Aufgabe: entweder Angebot für etwas Leichteres oder gleich die nächste
   function afterTask() {
@@ -5515,7 +5540,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       const same = fbEl.textContent === text;
       endThink();
       if (same) setFeedback("", "");
-      if (brakeHits >= 3 && !locked && !guide && hintEl.hidden) giveTipp();
+      if (brakeHits >= 3 && !locked && !guide && hintEl.hidden && !overlayOpen()) giveTipp();
       else focusAnswer();
     }, ms);
   }
@@ -5640,7 +5665,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
 
   function wrong(val) {
-    if (state.cfg.ratebremse && looksLikeGuess(val, task.result, activeMs() - tryAt, tryN === 0, choiceTask(task))) { slowDown(val); return; }
+    if (state.cfg.ratebremse && looksLikeGuess(val, task.result, activeMs() - tryAt, tryN === 0, choiceTask(task), state.cfg.detektiv && !!diagnose(task, val))) { slowDown(val); return; }
     tryN += 1; tryAt = activeMs();
     tries += 1;
     input = "";
@@ -5663,7 +5688,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     } else if (tries === h) {
       const type = hintType(task);
       setFeedback(detective ? detective.text : type === "kind" ? (task.kind === "menge" ? "Schau, so sieht es in Zehnergruppen aus:" : "Hier ist ein Tipp für dich:") : type === "pic" ? "Schau, wie es verteilt wird:" : type === "line" ? (task.gap ? "Schau auf den Zahlenstrahl:" : "Spring auf dem Zahlenstrahl mit:") : type === "field" ? (task.op === ":" ? "Zähl die Reihen!" : "Zähl die Punkte. In Fünferschritten geht's schneller!")
-        : type === "steps" ? "Hier ist ein Rechenweg für dich:"
+        : type === "steps" ? "Hier ist ein Rechenweg für dich:" : type === "gapdots" ? "Schau auf das Bild:"
         : task.op === "+" ? "Zähl alle Punkte zusammen." : "Zähl die Punkte, die übrig bleiben.", "try");
       renderHint();
       logEv("H", type);
@@ -5711,11 +5736,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     else if (e.key === "Enter" && !(e.target.closest && e.target.closest("button"))) { e.preventDefault(); check(); }
   });
 
-  // ---------- Belohnung, Sammlung, Meistermarken ----------
+  // ---------- Belohnung, Sammlung, Zunftzeichen und Werkstätten ----------
   let uidCounter = 0;
   const picHTML = (card) => cardSVG(card, "p" + (++uidCounter) + "_");
 
+  // Belohnung und Brief kommen nach der gelösten Aufgabe. Hat das Kind in der Wartezeit die Sammlung geöffnet, geht die zu,
+  // sonst lag die Belohnung unsichtbar dahinter (bis 1.16.1)
+  function closeBrowsing() { ["henView", "viewer", "markView", "album"].forEach((id) => { $(id).hidden = true; }); if (albumObserver) albumObserver.disconnect(); }
   function showReward() {
+    closeBrowsing();
     const gold = goldAt(state.correct, state.cfg.rewardEvery, state.cfg.goldEvery);
     $("rewardPic").classList.remove("eggs");
     if (hofOn()) { showEggReward(gold); return; }
@@ -5756,7 +5785,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     renderProgress();
   }
 
-  // Sammlung: Bilder (neueste zuerst, gezeichnet erst im Blickfeld) und Meistermarken (nur Erreichtes)
+  // Sammlung: Hühnerhof, Bilder (neueste zuerst, gezeichnet erst im Blickfeld) und Werkstätten (Zunftzeichen, erreichte und offene)
   let albumObserver = null;
   function drawThumb(el) {
     const card = state.album[Number(el.dataset.i)];
@@ -5831,7 +5860,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     return `<p class="pk-title">Die ${n}er-Reihe</p><ol class="pk-list">${Array.from({ length: 10 }, (_, i) => {
       const k = i + 1;
       return `<li class="${core.includes(k) ? "core" : ""}" data-i="${i}"><span>${k} · ${n} =</span><b>${k * n}</b></li>`;
-    }).join("")}</ol><p class="pk-tip">${tip}</p><button class="small-btn pk-play" type="button" data-row="${n}">🔊 Reihe anhören und mitsprechen</button>`;
+    }).join("")}</ol><p class="pk-tip">${tip}</p><button class="small-btn pk-play" type="button" data-row="${n}"${state.sound ? "" : " hidden"}>🔊 Reihe anhören und mitsprechen</button>`;
   }
   function markRow(i) { $("mvPlakat").querySelectorAll("li").forEach((li) => li.classList.toggle("now", Number(li.dataset.i) === i)); }
   $("mvPlakat").addEventListener("click", (e) => {
@@ -6037,10 +6066,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         ${seg("cfg.helpAfter", "Hilfe zeigen nach", [[1, "1 Fehlversuch"], [2, "2 Fehlversuchen"], [3, "3 Fehlversuchen"]],
           "Einen Versuch später wird die Lösung gezeigt. Diese Aufgabe zählt dann nicht als Stern.")}
         ${seg("cfg.hilfe", "Art der Hilfe", [["auto", "automatisch"], ["strahl", "immer Zahlenstrahl"], ["punkte", "Punkte und Rechenweg"]],
-          "Automatisch: Zwanzigerfeld bis 20, Punktefeld beim Einmaleins, darüber der Zahlenstrahl mit Sprüngen über den Zehner. Lückenaufgaben zeigen immer den Zahlenstrahl.")}
-        ${tog("cfg.mitrechnen", "Rechenweg zum Mitrechnen", "Bei Plus und Minus mit Zehnern oder Übergang rechnet sie nach dem zweiten Fehlversuch zwei kleine Schritte selbst (39 + 60: erst 30 + 60, dann 90 + 9), statt nur eine Hilfe zu lesen. Danach zählt die Aufgabe als „mit Hilfe“ gelöst.")}
+          "Automatisch: Zwanzigerfeld mit Zehnerbrücke bis 20, Punktefeld mit Kernaufgabe beim Einmaleins, darüber der Zahlenstrahl mit Sprüngen über den Zehner. Lücken bis 20 als Punktebild, darüber Ergänzen in Sprüngen auf dem Zahlenstrahl.")}
+        ${tog("cfg.mitrechnen", "Rechenweg zum Mitrechnen", "Bei Plus und Minus mit Zehnern oder Übergang rechnet sie bei der Hilfe (siehe „Hilfe zeigen nach“) zwei kleine Schritte selbst (39 + 60: erst 30 + 60, dann 90 + 9), statt nur eine Hilfe zu lesen. Danach zählt die Aufgabe als „mit Hilfe“ gelöst.")}
         ${tog("cfg.tipp", "Tipp-Knopf", "Ein Knopf „💡 Tipp“ unter der Aufgabe: erst ein Bild oder Hinweis, beim zweiten Tippen der Rechenweg zum Mitrechnen. Die Aufgabe zählt dann als „mit Hilfe“ gelöst, bringt aber trotzdem den Stern. So kommt Hilfe auch ohne falsche Antworten.")}
-        ${tog("cfg.ratebremse", "Ratebremse", "Eine falsche Antwort, die nur schnell getippt wurde (weniger als etwa 3 Sekunden nach der vorigen, oder 99, 66, 659), zählt nicht als Versuch. Es gibt eine kurze Denkpause (4 Sekunden, später 7) und die Stimme sagt: „Lass dir Zeit. Du musst nicht raten.“ Beim dritten Mal kommt der Tipp von selbst. Richtige Antworten werden nie gebremst.")}
+        ${tog("cfg.ratebremse", "Ratebremse", "Eine falsche Antwort, die nur schnell getippt wurde (weniger als 1,5 Sekunden nach dem Erscheinen der Aufgabe oder 3,5 Sekunden nach der vorigen, oder 99, 66, 659; erkennt der Fehler-Detektiv einen typischen Fehler, ist es kein Raten), zählt nicht als Versuch. Es gibt eine kurze Denkpause (4 Sekunden, später 7) und die Stimme sagt: „Lass dir Zeit. Du musst nicht raten.“ Beim dritten Mal kommt der Tipp von selbst. Richtige Antworten werden nie gebremst.")}
         ${tog("cfg.detektiv", "Fehler-Detektiv", "Erkennt typische Flüchtigkeitsfehler (Rechenzeichen oder Ziffern vertauscht, Zehnerstelle, eine Reihe zu viel) und gibt einen gezielten Hinweis, ohne die Lösung zu verraten.")}
         ${seg("cfg.frustN", "Leichtere Aufgabe anbieten nach", [[0, "nie"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]],
           "…nicht gelösten Aufgaben hintereinander. Sie entscheidet selbst, ob sie das Angebot annimmt.")}
@@ -6164,7 +6193,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       const v = state.days[`${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`];
       if (v) { n7 += v[0]; ok7 += v[1]; }
     }
-    $("lernSum").textContent = `Heute ${n} ${n === 1 ? "Aufgabe" : "Aufgaben"}, davon ${ok} ohne Hilfe richtig. Letzte 7 Tage: ${n7} Aufgaben, ${ok7} ohne Hilfe richtig.`;
+    $("lernSum").textContent = `Heute ${n} ${n === 1 ? "Aufgabe" : "Aufgaben"}, davon ${ok} ohne Hilfe richtig. Letzte 7 Tage: ${n7} ${n7 === 1 ? "Aufgabe" : "Aufgaben"}, ${ok7} ohne Hilfe richtig.`;
     const on = new Set(enabledSkills().map((s) => s.id));
     $("lernList").innerHTML = SKILLS.map((s) => {
       const st = state.stats[s.id], status = statusOf(s.id);
@@ -6180,7 +6209,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (lastEv && lastEv[1] === "E" && lastEv[2] === path && Date.now() - lastEv[0] < 5000) LOG.ev.pop();
     logEv("E", path, JSON.stringify(getP(path)));
     if (path === "pad") applyPad();
-    if (path === "sound") syncSettings();
+    if (path === "sound") { syncSettings(); if (!state.sound) stopSpeech(); }
+    if (path === "cfg.tipp") renderTipp();
+    if (path === "cfg.uebTag") renderTags();
     if (path === "cfg.rewardEvery" || path === "cfg.goldEvery" || path === "cfg.belohnung") renderProgress();
     if (!QUIET_PATHS.test(path)) dirtyTask = true;
     save();
@@ -6228,7 +6259,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         const box = $("lernReset");
         if (b.dataset.lr === "ask") box.innerHTML = `<span class="note">Lernstand wirklich löschen? Bilder, Sterne und Einstellungen bleiben.</span><button class="link-btn danger" type="button" data-lr="yes">Ja, löschen</button><button class="link-btn" type="button" data-lr="no">Abbrechen</button>`;
         else {
-          if (b.dataset.lr === "yes") { state.stats = {}; state.days = {}; state.err = {}; state.seq = 0; dirtyTask = true; save(); renderLernstand(); }
+          if (b.dataset.lr === "yes") { state.stats = {}; state.days = {}; state.err = {}; state.seq = 0; mem.retry = []; dirtyTask = true; save(); renderLernstand(); }
           box.innerHTML = `<button class="link-btn" type="button" data-lr="ask">Lernstand zurücksetzen</button>`;
         }
       }
@@ -6250,14 +6281,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
   function closeParents() {
     $("parents").hidden = true;
-    if (dirtyTask && !offerOpen) { dirtyTask = false; setFeedback("", ""); newTask(); } else focusAnswer();
+    if (dirtyTask && !offerOpen && !locked) { dirtyTask = false; setFeedback("", ""); newTask(); } else focusAnswer();
   }
   // Das Eltern-Menü öffnet sich erst nach zwei Sekunden Gedrückthalten, damit Kinder nichts aus Versehen verstellen
   const HOLD_MS = 2000, pb = $("parentsBtn");
-  let holdTimer = 0, holdAt = 0;
+  let holdTimer = 0;
   function holdBegin() {
     if (holdTimer) return;
-    holdAt = Date.now();
     pb.classList.add("holding");
     holdTimer = setTimeout(() => { holdTimer = 0; pb.classList.remove("holding"); openParents(); }, HOLD_MS);
   }
@@ -6276,7 +6306,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   function syncSettings() {
     const btn = $("soundBtn");
-    btn.textContent = state.sound ? "🔊" : "🔇";   // nur das Zeichen: Mit Text wurde der Kopf auf dem iPhone zu breit (1.16)
+    btn.textContent = state.sound ? "🔊" : "🔇";   // nur das Zeichen: Mit Text wurde der Kopf auf dem iPhone zu breit (behoben in 1.16.1)
     btn.setAttribute("aria-label", state.sound ? "Ton an" : "Ton aus");
     btn.title = state.sound ? "Ton an" : "Ton aus";
     btn.setAttribute("aria-pressed", String(state.sound));
@@ -6375,7 +6405,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       else if (id === "resetNo" || id === "resetYes") {
         if (id === "resetYes") {
           const keep = { max: state.max, ops: state.ops, level: state.level, pad: state.pad, sound: state.sound, cfg: state.cfg };
-          state = { ...freshState(), ...keep };
+          state = { ...freshState(), ...keep }; mem.retry = [];
           dirtyTask = true; save(); renderProgress(); renderLernstand();
         }
         box.innerHTML = `<button class="link-btn" id="resetBtn" type="button">Alles zurücksetzen (Fortschritt, Sammlung, Lernstand)</button>`;
