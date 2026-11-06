@@ -721,6 +721,14 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .p-subhead { font-weight: 800; color: var(--ink); margin: 2px 0 6px !important; }
 #pgAuto.off > :not(.p-subhead) { opacity: .55; }
 #pgAuto.off .opt input:disabled + span, #pgAuto.off .tog input:disabled + span { opacity: 1; }
+
+/* ab 1.17: Waage – Merksatz unter den Knöpfen (die Knöpfe stehen jetzt > = <) */
+.choices .cmp-note { flex-basis: 100%; margin: 2px 0 0; text-align: center; font-size: .85rem; color: var(--muted); }
+/* ab 1.17: Tipp nach Nachdenkzeit – ein goldener Strich füllt sich, dann wacht der Knopf auf */
+.tipp-btn.waking { position: relative; overflow: hidden; }
+.tipp-btn.waking::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--gold-dark); transform-origin: left; animation: tippWake var(--wait, 10s) linear forwards; }
+@keyframes tippWake { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.ex-hint { padding: 8px 0; }
 </style>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#7a4bb0">
@@ -2483,6 +2491,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const minus = (a, b) => ({ a, b, op: "−", result: a - b });
   const mal = (a, b) => ({ a, b, op: "·", result: a * b });
   const anyOrder = (r, k) => (Math.random() < 0.5 ? mal(r, k) : mal(k, r));
+  // Zunftgrad einer Fähigkeit (0 = noch nichts, 2 = Gesellin): ab 1.17 werden Lücken und Zahlenfolgen gestuft, bis sie Gesellin ist
+  const gradeOf = (id) => ((state.stats || {})[id] || {}).g || 0;
 
   // Eine Fähigkeit ist eine Aufgabenart, über die die App Buch führt (z. B. "7er-Reihe" oder "Plus mit Zehnerübergang").
   // zunft: Handwerk für die Meistermarken; hard: zählt als Knobelaufgabe; min: kleinster nötiger Zahlenraum.
@@ -2514,10 +2524,22 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mk("l1", "luecke", "Plus mit Lücke bis 20", "8 + □ = 15", 20, false, "Schneider", () => { const a = rand(2, 11), b = rand(2, Math.min(9, 20 - a)); return gapT(a, "+", b, Math.random() < 0.7 ? "b" : "a"); }),
     mk("l2", "luecke", "Plus mit Lücke bis 100", "34 + □ = 50", 100, true, "Schuster", () => {
       const a = 10 * rand(1, 8) + rand(1, 9);
+      // ab 1.17 gestuft: bis sie hier Gesellin ist, meist nur bis zum nächsten vollen Zehner (34 + □ = 40) oder zu einem glatten Zehner
+      // (34 + □ = 60). Im Protokoll waren 15 % beim ersten Versuch richtig, zwei Sitzungen endeten an solchen Aufgaben.
+      if (gradeOf("l2") < 2) {
+        const v = Math.random(), next = 10 - (a % 10);
+        const b = v < 0.6 ? next : v < 0.9 ? next + 10 * rand(0, Math.max(0, Math.floor((99 - a - next) / 10))) : rand(3, Math.min(20, 99 - a));
+        return gapT(a, "+", Math.max(1, Math.min(b, 99 - a)), Math.random() < 0.85 ? "b" : "a");
+      }
       const b = Math.random() < 0.45 ? 10 * rand(1, Math.floor((99 - a) / 10) + 1) - (a % 10) : rand(3, 99 - a);   // oft bis zum vollen Zehner
       return gapT(a, "+", Math.max(1, Math.min(b, 99 - a)), Math.random() < 0.8 ? "b" : "a");
     }),
     mk("l3", "luecke", "Minus mit Lücke", "15 − □ = 8", 20, true, "Imker", (N) => {
+      // ab 1.17 gestuft: bis Gesellin selten große Zahlen, und dann nur „zurück bis zu einem glatten Zehner“ (47 − □ = 40 oder 47 − □ = 20)
+      if (N >= 100 && gradeOf("l3") < 2) {
+        if (Math.random() < 0.25) { const z = rand(2, 9), e = rand(1, 9), b = e + 10 * rand(0, z - 1); return gapT(10 * z + e, "−", b, Math.random() < 0.8 ? "b" : "a"); }
+        const a = rand(8, 20); return gapT(a, "−", rand(2, a - 1), Math.random() < 0.6 ? "b" : "a");
+      }
       const a = N >= 100 && Math.random() < 0.6 ? rand(21, 99) : rand(8, 20), b = rand(2, a - (a > 20 ? 6 : 1));
       return gapT(a, "−", b, Math.random() < 0.6 ? "b" : "a");
     }),
@@ -2582,7 +2604,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mk("r1", "dreieck", "Rechendreiecke bis 20", "mit Plättchen", 20, false, "Segelmacher", () => dreieckT(1, 9, 18)),
     mk("r2", "dreieck", "Rechendreiecke bis 100", "mit großen Zahlen", 100, true, "Landvermesser", () => dreieckT(5, 55, 100)),
     mk("f1", "folgen", "Zahlenfolgen", "4, 8, 12, 16, ?", 20, false, "Perlenmacher", (N) => {
-      const top = N >= 100 ? 100 : 20, st = pick((N >= 100 ? [2, 3, 4, 5, 10, 6, 7, 8] : [1, 2, 3, 4]).filter((x) => 5 * x <= top));
+      const top = N >= 100 ? 100 : 20;
+      // ab 1.17 gestuft: bis Gesellin nur aufwärts, die letzte Perle, Sprünge wie beim Einmaleins (2, 5, 10) ab einer Zahl der Reihe.
+      // Im Protokoll scheiterten rückwärts laufende Ketten und Lücken in der Mitte, und bei jeder Kette kam sofort der Tipp.
+      if (gradeOf("f1") < 2) { const st = pick(N >= 100 ? [2, 5, 10] : [1, 2, 5].filter((x) => 5 * x <= top)); return folgeT(arith(st * rand(0, Math.floor(top / st) - 6), st), `+${st}`, true); }
+      const st = pick((N >= 100 ? [2, 3, 4, 5, 10, 6, 7, 8] : [1, 2, 3, 4]).filter((x) => 5 * x <= top));
       if (Math.random() < 0.75) return folgeT(arith(rand(0, top - 5 * st), st), `+${st}`);
       return folgeT(arith(rand(5 * st, top), -st), `−${st}`);
     }),
@@ -2739,12 +2765,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mode: "auto", anteil: 40, sicher: "4in5", steigern: "mittel", erfolg: true, retry: true, uebTag: true,
     helpAfter: 2, detektiv: true, frustN: 3, hilfe: "auto", teilenStufen: "schritt", mitrechnen: true,
     fx: true, vol: "mittel", speech: true, speechMode: "lob", readTask: false, name: "", titel: "f", stimme: "warm",
-    rewardEvery: 5, goldEvery: 100, belohnung: "hof", tipp: true, ratebremse: true,
+    rewardEvery: 5, goldEvery: 100, belohnung: "hof", tipp: true, ratebremse: true, tippWait: 10,
   };
   const CFG_RULE = {
     mode: ["auto", "manual"], sicher: ["3in3", "4in5", "9in10"], steigern: ["langsam", "mittel", "schnell"],
     helpAfter: [1, 2, 3], frustN: [0, 2, 3, 4, 5], vol: ["leise", "mittel", "laut"], speechMode: ["lob", "mut"],
-    titel: ["f", "m"], hilfe: ["auto", "strahl", "punkte"], teilenStufen: ["schritt", "alle"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200], belohnung: ["hof", "bilder"], stimme: ["warm", "geraet"],
+    titel: ["f", "m"], hilfe: ["auto", "strahl", "punkte"], teilenStufen: ["schritt", "alle"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200], belohnung: ["hof", "bilder"], stimme: ["warm", "geraet"], tippWait: [0, 10, 20],
   };
   const DATA_GEN = 2;   // Spielstände ab Version 1.1; ältere beginnen einmalig bei null (Einstellungen bleiben)
   // Einmalige Anpassungen alter Spielstände. mig 1 (1.13): Rechendreiecke aus. Im Protokoll waren 1 von 32 beim ersten Versuch richtig,
@@ -3261,10 +3287,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     buendeln: { t: "Bündeln", x: "Sind es 10 Würfel oder mehr, wird gebündelt: Aus 10 Würfeln wird eine neue Stange.",
       say: "Sind es zehn Würfel oder mehr, wird gebündelt: Aus zehn Würfeln wird eine neue Stange." },
     vergleich: { t: "Die Waage", x: "Die größere Zahl ist schwerer, ihre Seite sinkt nach unten. Die Spitze des Zeichens zeigt immer zur kleineren Zahl." },
+    luecke: { t: "Die Lücke", x: "Bei einer Lücke fehlt eine Zahl. Denk andersherum: Bei 8 + □ = 15 zählst du von 8 bis 15 weiter. Die leeren Plätze sind die Lösung: 7.",
+      say: "Bei einer Lücke fehlt eine Zahl. Denk andersherum: Bei acht plus Lücke gleich fünfzehn zählst du von acht bis fünfzehn weiter. Die leeren Plätze sind die Lösung: sieben." },
   };
   // Welche Karte gehört zu einer Aufgabe? null = keine (Plus, Minus, Mal, Teilen, Lücken kennt sie aus der Schule)
   // Die Perlenketten-Karte sagt „springt immer gleich weit“: nur für solche Ketten (knifflige wie ·2 oder +5, −1 bekommen keine Karte)
-  const cardKey = (t) => (!t || !t.kind ? null : t.kind === "stelle" ? (t.how === "geld" ? "geld" : t.how === "buendeln" ? "buendeln" : "stelle")
+  const cardKey = (t) => (t && !t.kind && t.gap && t.op !== "·" ? "luecke" : !t || !t.kind ? null : t.kind === "stelle" ? (t.how === "geld" ? "geld" : t.how === "buendeln" ? "buendeln" : "stelle")
     : t.kind === "folge" ? (t.steps.every((x) => x === t.steps[0]) ? "folge" : null) : has(KARTEN, t.kind) ? t.kind : null);
 
   // Lob und Ermutigung
@@ -3401,15 +3429,16 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       // „(nach Pause weiter)“ ist dieselbe Aufgabe in einer neuen Sitzung: nicht doppelt zählen (bis 1.16.1 zählte sie zweimal)
       const resumed = e[1] === "A" && / \(nach Pause weiter\)$/.test(e[3] || "");
       if (resumed && cur && cur.skill === e[2]) return;
-      if (e[1] === "A") { cur = { skill: e[2], text: e[3], first: null, ms: null, help: false, tries: 0 }; (per[e[2]] = per[e[2]] || []).push(cur); }
-      else if (cur && e[1] === "R") { cur.tries += 1; if (cur.first === null) { cur.first = !!e[3]; cur.ms = e[4]; } if (!e[3]) { const h = (hard[cur.text] = hard[cur.text] || [0, 0]); h[0] += 1; } }
-      else if (cur && (e[1] === "H" || e[1] === "L")) cur.help = true;
+      // pre: Hilfe (meist der Tipp-Knopf) schon vor der ersten Antwort. Ab 1.17 zählt so eine Aufgabe nicht als „beim 1. Versuch richtig“
+      if (e[1] === "A") { cur = { skill: e[2], text: e[3], first: null, ms: null, help: false, pre: false, tries: 0, at: e[0] }; (per[e[2]] = per[e[2]] || []).push(cur); }
+      else if (cur && e[1] === "R") { cur.tries += 1; if (cur.first === null) { cur.first = !!e[3] && !cur.pre; cur.ms = e[4]; } if (!e[3]) { const h = (hard[cur.text] = hard[cur.text] || [0, 0]); h[0] += 1; } }
+      else if (cur && (e[1] === "H" || e[1] === "L")) { cur.help = true; if (cur.first === null) cur.pre = true; }
       if (e[1] === "A") { const h = (hard[e[3]] = hard[e[3]] || [0, 0]); h[1] += 1; }   // (eine fortgesetzte Aufgabe kam oben schon zurück)
     });
     const label = (id) => (typeof SKILL_BY_ID !== "undefined" && SKILL_BY_ID[id] ? SKILL_BY_ID[id].label : id);
     const rows = Object.entries(per).filter(([, a]) => a.some((x) => x.first !== null)).map(([id, a]) => {
       const done = a.filter((x) => x.first !== null), ok = done.filter((x) => x.first).length, ms = done.filter((x) => x.first && x.ms > 0 && x.ms < 120e3).map((x) => x.ms);
-      return `- ${label(id)} (${id}): ${done.length} ${done.length === 1 ? "Aufgabe" : "Aufgaben"}, beim 1. Versuch richtig ${pct(ok, done.length)}, mit Hilfe ${done.filter((x) => x.help).length}, Zeit bis zur richtigen 1. Antwort im Mittel ${ms.length ? sec(median(ms)) : "–"}`;
+      return `- ${label(id)} (${id}): ${done.length} ${done.length === 1 ? "Aufgabe" : "Aufgaben"}, beim 1. Versuch ohne Hilfe richtig ${pct(ok, done.length)}, mit Hilfe ${done.filter((x) => x.help).length} (davon ${done.filter((x) => x.pre).length} schon vor dem 1. Versuch), Zeit bis zur richtigen 1. Antwort im Mittel ${ms.length ? sec(median(ms)) : "–"}`;
     });
     if (rows.length) L.push("Je Aufgabenart:", ...rows);
     const worst = Object.entries(hard).filter(([, [f]]) => f > 0).sort((a, b) => b[1][0] - a[1][0] || b[1][1] - a[1][1]).slice(0, 10);
@@ -3443,7 +3472,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     });
     if (wrongs) L.push(`Fehlversuche: ${wrongs}, davon ${quick} weniger als 3 s nach dem vorigen (schnelles Raten) · ${rush}× bis zur gezeigten Lösung durchgeklickt · ${offOne}× beim Minus genau um eins daneben`);
     const brakes = ev.filter((e) => e[1] === "RT"), tipps = ev.filter((e) => e[1] === "H" && e[3] === "Tipp");
-    if (brakes.length || tipps.length) L.push(`Ratebremse: ${brakes.length}× angesprungen (eingegebene Zahlen: ${brakes.slice(0, 12).map((e) => e[2]).join(", ")}${brakes.length > 12 ? " …" : ""}) · Tipp-Knopf: ${tipps.length}× benutzt`);
+    // Tipp in den ersten 10 Sekunden einer Aufgabe (ab 1.17 hat der Knopf eine Nachdenkzeit, siehe Einstellung tippWait)
+    let lastA = 0;
+    const early = ev.filter((e) => { if (e[1] === "A") lastA = e[0]; return e[1] === "H" && e[3] === "Tipp" && e[0] - lastA < 10000; }).length;
+    if (brakes.length || tipps.length) L.push(`Ratebremse: ${brakes.length}× angesprungen (eingegebene Zahlen: ${brakes.slice(0, 12).map((e) => e[2]).join(", ")}${brakes.length > 12 ? " …" : ""}) · Tipp-Knopf: ${tipps.length}× benutzt, davon ${early}× in den ersten 10 s einer Aufgabe`);
     const steps = ev.filter((e) => e[1] === "RS");
     if (steps.length) L.push(`Rechenweg zum Mitrechnen: ${steps.length} Schritte, davon ${steps.filter((e) => e[4]).length} richtig`);
     const rzs = ev.filter((e) => e[1] === "RZ");
@@ -4059,7 +4091,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.16.2";
+  const VERSION = "1.17";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -4394,7 +4426,11 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (box.dataset.sig === sig) return;
     box.dataset.sig = sig;
     box.classList.toggle("cmp", task.kind === "vergleich");
-    box.innerHTML = task.choices.map((v) => `<button type="button" class="choice${tried.includes(v) ? " tried" : ""}${locked && v === task.result ? " right" : ""}" data-v="${v}" aria-label="${choiceSay(task, v)}"${tried.includes(v) || locked || thinking ? " disabled" : ""}>${choiceLabel(task, v)}</button>`).join("");
+    // Waage (ab 1.17): „>“ links, „<“ rechts. Das offene Maul zeigt so zur Seite des Knopfs. Im Protokoll drückte sie fast immer
+    // den Knopf auf der Seite der größeren Zahl (8 von 9 ersten Antworten): Mit dieser Reihenfolge führt genau das zum richtigen Zeichen.
+    const order = task.kind === "vergleich" ? [2, 1, 0] : task.choices;
+    box.innerHTML = order.map((v) => `<button type="button" class="choice${tried.includes(v) ? " tried" : ""}${locked && v === task.result ? " right" : ""}" data-v="${v}" aria-label="${choiceSay(task, v)}"${tried.includes(v) || locked || thinking ? " disabled" : ""}>${choiceLabel(task, v)}</button>`).join("")
+      + (task.kind === "vergleich" ? `<p class="cmp-note">Das offene Maul zeigt zur größeren Zahl.</p>` : "");
   }
   $("choices").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-v]");
@@ -5331,9 +5367,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     cardOpen = key; cardFirst = !!first; cardAt = performance.now();
     $("toast").hidden = true;
     $("exTitle").textContent = k.t;
-    $("exText").innerHTML = k.x.replace(/\d+ [+−·] \d+( = \d+)?/g, (m) => `<span class="nb">${m}</span>`);   // feste Texte aus KARTEN
+    $("exText").innerHTML = k.x.replace(/\d+ [+−·] (\d+|□)( = \d+)?/g, (m) => `<span class="nb">${m}</span>`);   // feste Texte aus KARTEN
     let pic = "";
-    try { pic = kindSVG(CARD_EX[key](), CARD_MODE[key] || "done"); } catch (e) { logEv("X", "Karte " + key + ": " + String((e && e.message) || "?").slice(0, 100)); }
+    // Die Lücken-Karte (ab 1.17) zeigt das Zwanzigerfeld mit leeren Plätzen wie die Hilfe: 8 sind da, 7 fehlen bis 15
+    try { pic = key === "luecke" ? `<div class="hint ex-hint">${dotRows(Array.from({ length: 15 }, (_, i) => (i < 8 ? "a" : "hole")), 10)}<p class="steps caption"><span class="nb">8 + □ = 15</span></p></div>` : kindSVG(CARD_EX[key](), CARD_MODE[key] || "done"); } catch (e) { logEv("X", "Karte " + key + ": " + String((e && e.message) || "?").slice(0, 100)); }
     $("exPic").innerHTML = pic;
     $("exClose").textContent = first ? "Verstanden!" : "Zurück zur Aufgabe";
     $("exAgain").hidden = !state.sound;
@@ -5552,6 +5589,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const canGuide = () => !!(state.cfg.mitrechnen && task && guideSteps(task));
   function giveTipp() {
     if (!task || locked || offerOpen || guide) return;
+    if (tippWaitLeft() > 0 && brakeHits < 3) return;   // noch Nachdenkzeit (die dritte Ratebremse gibt den Tipp trotzdem)
     if (thinking) endThink();   // wer um Hilfe bittet, rät nicht mehr: die Pause ist vorbei
     const shown = !hintEl.hidden;
     helped = true; tippPulse = false;
@@ -5566,15 +5604,27 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     renderTask("");
     focusAnswer();
   }
+  // Tipp nach Nachdenkzeit (ab 1.17): so viele Millisekunden muss sie noch warten. Nach einem Versuch, einer Ratebremse
+  // oder wenn schon eine Hilfe zu sehen ist, gibt es keine Wartezeit mehr. Gezählt wird aktive Zeit (Pausen im Hintergrund nicht).
+  let tippTimer = 0;
+  function tippWaitLeft() {
+    const w = (state.cfg.tippWait || 0) * 1000;
+    if (!w || !task || tries > 0 || tryN > 0 || brakeHits > 0 || guide || !hintEl.hidden) return 0;
+    return Math.max(0, w - activeMs());
+  }
   function renderTipp() {
     const b = $("tippBtn"), how = $("howBtn");
     if (how) how.hidden = !(task && !task.rz && cardKey(task) && !locked && !offerOpen);
     if (!b) return;
     const on = !!(state.cfg.tipp && task && !locked && !offerOpen);
     b.hidden = !on;
-    if (!on) return;
-    const more = hintEl.hidden || (canGuide() && !guide);
-    b.disabled = !more;
+    if (!on) { b.classList.remove("waking"); clearTimeout(tippTimer); return; }   // die nächste Aufgabe beginnt mit frischer Wartezeit
+    const more = hintEl.hidden || (canGuide() && !guide), left = tippWaitLeft();
+    b.disabled = !more || left > 0;
+    if (left > 0 && !b.classList.contains("waking")) { b.style.setProperty("--wait", left + "ms"); b.classList.add("waking"); }
+    if (left <= 0) b.classList.remove("waking");
+    clearTimeout(tippTimer);
+    if (left > 0) tippTimer = setTimeout(renderTipp, left + 60);   // wacht von selbst auf (bei Pausen später, weil aktive Zeit zählt)
     b.classList.toggle("pulse", tippPulse && more);
     b.textContent = hintEl.hidden ? "💡 Tipp" : "💡 Noch ein Tipp";
   }
@@ -5957,7 +6007,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 
   // ---------- Eltern-Menü ----------
   // Jede Einstellung hat einen Pfad im Zustand ("max", "ops.plus", "cfg.anteil" …). Bauen, Anzeigen und Speichern laufen darüber.
-  const NUM_PATHS = new Set(["max", "cfg.anteil", "cfg.helpAfter", "cfg.frustN", "cfg.rewardEvery", "cfg.goldEvery"]);
+  const NUM_PATHS = new Set(["max", "cfg.anteil", "cfg.helpAfter", "cfg.frustN", "cfg.rewardEvery", "cfg.goldEvery", "cfg.tippWait"]);
   const QUIET_PATHS = /^(pad|sound|cfg\.(fx|vol|speech|speechMode|readTask|stimme|tipp|ratebremse|name|titel|uebTag|rewardEvery|goldEvery|belohnung|detektiv|helpAfter|hilfe|mitrechnen))$/;
   const getP = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), state);
   function setP(path, v) {
@@ -5990,7 +6040,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const rows = SKILLS.filter((s) => s.group === "mal");
     const pm = SKILLS.filter((s) => s.group !== "mal");
     $("parentsBody").innerHTML = `
-      <p class="note p-new">Neu in Version 1.16: Erklär-Karten vor neuen Aufgabenarten, Zehnerbrücke und Lücken als Bild, Einmaleins-Tafel mit Stimme in den Werkstätten. In 1.16.1: auf dem iPhone nicht mehr seitlich verschiebbar, kein versehentliches Markieren.</p>
+      <p class="note p-new">Neu in Version 1.17: Waage-Knöpfe passend zur Seite (&gt; = &lt;), Tipp erst nach kurzer Nachdenkzeit (einstellbar unter „Hilfe und Fehler“), Lücken und Zahlenfolgen gestuft, Erklär-Karte „Die Lücke“, ehrlichere Auswertung im Protokoll.</p>
       <details class="pg" open><summary>Was wird geübt?</summary>
         <fieldset class="p-field"><legend>Rechenarten</legend><div class="seg">
           <label class="opt"><input type="checkbox" data-p="ops.plus" id="opPlus"><span>Plus</span></label>
@@ -6069,6 +6119,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
           "Automatisch: Zwanzigerfeld mit Zehnerbrücke bis 20, Punktefeld mit Kernaufgabe beim Einmaleins, darüber der Zahlenstrahl mit Sprüngen über den Zehner. Lücken bis 20 als Punktebild, darüber Ergänzen in Sprüngen auf dem Zahlenstrahl.")}
         ${tog("cfg.mitrechnen", "Rechenweg zum Mitrechnen", "Bei Plus und Minus mit Zehnern oder Übergang rechnet sie bei der Hilfe (siehe „Hilfe zeigen nach“) zwei kleine Schritte selbst (39 + 60: erst 30 + 60, dann 90 + 9), statt nur eine Hilfe zu lesen. Danach zählt die Aufgabe als „mit Hilfe“ gelöst.")}
         ${tog("cfg.tipp", "Tipp-Knopf", "Ein Knopf „💡 Tipp“ unter der Aufgabe: erst ein Bild oder Hinweis, beim zweiten Tippen der Rechenweg zum Mitrechnen. Die Aufgabe zählt dann als „mit Hilfe“ gelöst, bringt aber trotzdem den Stern. So kommt Hilfe auch ohne falsche Antworten.")}
+        ${seg("cfg.tippWait", "Tipp erst nach", [[0, "sofort"], [10, "10 Sekunden"], [20, "20 Sekunden"]],
+          "Ab 1.17: Der Tipp-Knopf wacht erst nach dieser Nachdenkzeit auf (nach einem Versuch oder einer Ratebremse sofort). Im Protokoll kam drei Viertel der Tipps in den ersten 10 Sekunden, oft nach 2 Sekunden, auch bei leichten Aufgaben. Solche Aufgaben zählen „mit Hilfe“, dann wachsen Werkstätten und Zunftgrade nicht.")}
         ${tog("cfg.ratebremse", "Ratebremse", "Eine falsche Antwort, die nur schnell getippt wurde (weniger als 1,5 Sekunden nach dem Erscheinen der Aufgabe oder 3,5 Sekunden nach der vorigen, oder 99, 66, 659; erkennt der Fehler-Detektiv einen typischen Fehler, ist es kein Raten), zählt nicht als Versuch. Es gibt eine kurze Denkpause (4 Sekunden, später 7) und die Stimme sagt: „Lass dir Zeit. Du musst nicht raten.“ Beim dritten Mal kommt der Tipp von selbst. Richtige Antworten werden nie gebremst.")}
         ${tog("cfg.detektiv", "Fehler-Detektiv", "Erkennt typische Flüchtigkeitsfehler (Rechenzeichen oder Ziffern vertauscht, Zehnerstelle, eine Reihe zu viel) und gibt einen gezielten Hinweis, ohne die Lösung zu verraten.")}
         ${seg("cfg.frustN", "Leichtere Aufgabe anbieten nach", [[0, "nie"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]],
