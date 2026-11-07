@@ -2238,7 +2238,9 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   })();
   // ---------- Hintergrund: Märchenszene wie mit Buntstift ins Rechenheft gemalt ----------
   // Die Szene wird für die echte Fenstergröße komponiert und füllt das ganze Blatt:
-  // oben Himmel mit Drache, Ballon und Wolken, in der Mitte Burg und Berge, unten Ritter, Zelt, Einhorn und Bach.
+  // oben Himmel mit Drache, Ballon und Wolken, in der Mitte Burg und Berge, unten Ritter, Zelt, Fuchs, Elfe und Bach mit Brücke.
+  // Ab 1.18.1: Fuchs statt grasendem Einhorn, Elfe statt Babydrache mit Höhle, Bogenbrücke statt flachem Brett
+  // (Rückmeldung: Einhorn sah aus wie ein Vogel mit Schnabel, der Drache wie eine Katze mit Flügeln, die Brücke schwebte).
   // Schraffur-Muster plus Papierkorn und leicht zittrige Konturen; das Karopapier scheint überall durch.
   function backdropSVG(w, h) {
     const C = {
@@ -2328,20 +2330,32 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       P("M0 -96L-16 -40V0H16V-40Z", "snow", 1.4) +
       P("M-46 -40H46l-6 10l-8 -6l-8 6l-8 -6l-8 6l-8 -6l-8 6l-8 -6l-8 6l-8 -6l-6 6Z", "r5", 1.4) +
       P("M-10 0v-22a10 10 0 0 1 20 0v22Z", "trunk", 1.4);
-    const unicorn =
-      L("M-24 -30L-26 0M-16 -30L-14 0M16 -30L14 0M24 -30L26 0", C.stone, 4.5) +
-      L("M-30 -42C-44 -40 -48 -26 -42 -14", C.r6, 4) + L("M-30 -40C-40 -32 -42 -22 -38 -12", C.r1, 3) +
-      E(0, -40, 30, 13, "snow") +
-      P("M18 -48L38 -18L48 -14L46 -6L32 -8L14 -34Z", "snow", 1.8) +
-      L("M20 -50C26 -42 30 -34 36 -26", C.r1, 3) + L("M16 -48C22 -40 26 -30 30 -24", C.r3, 3) + L("M14 -44C18 -38 22 -30 24 -26", C.r5, 3) +
-      P("M44 -12L60 -2L46 -6Z", "sun", 1.4) + `<circle cx="40" cy="-12" r="1.6" fill="#3b2f45"/>`;
-    const cave = P("M-60 0C-60 -40 -30 -66 4 -66C40 -66 66 -40 66 0Z", "stone", 2) + P("M-34 0C-34 -26 -18 -40 4 -40C26 -40 40 -26 40 0Z", "lav", 1.6, "#8f84a8");
-    const babyDragon =
-      L("M-14 -6C-30 -4 -36 -16 -30 -24", C.orange, 4) + P("M-32 -28l-6 -6l8 2Z", "orange", 1.2) +
-      E(0, -14, 15, 13, "orange") + E(2, -10, 8, 7, "sand", 0, 1.2) +
-      P("M-6 -24C-16 -40 -26 -40 -30 -32C-22 -32 -18 -26 -10 -20Z", "r6", 1.4) +
-      O(10, -32, 10, "orange", 1.8) + L("M6 -42l-2 -6M14 -42l2 -6", C.trunk, 1.8) + `<circle cx="14" cy="-33" r="1.6" fill="#3b2f45"/>` +
-      L("M-8 0v-4M8 0v-4", C.trunk, 3);
+    // Fuchs, sitzend, Blick nach rechts: buschiger Schwanz mit weißer Spitze, weiße Brust, Spitzohren, spitze Schnauze
+    const fox =
+      P("M-12 -4C-38 0 -54 -14 -50 -34C-48 -44 -38 -48 -30 -44C-36 -32 -30 -18 -10 -14Z", "orange", 1.8) +
+      P("M-50 -34C-48 -44 -38 -48 -30 -44C-34 -40 -36 -36 -36 -32C-40 -30 -46 -30 -50 -34Z", "snow", 1.4) +
+      P("M-16 0C-22 -18 -16 -40 0 -44C16 -42 20 -22 14 0Z", "orange", 1.8) +
+      P("M2 -40C12 -34 12 -14 6 -2C0 -10 -4 -28 2 -40Z", "snow", 1.4) +
+      L("M0 0V-12M8 0V-12", C.trunk, 3.2) +
+      P("M-8 -50C-8 -60 0 -66 8 -64C14 -62 22 -56 30 -52C24 -48 14 -44 6 -44C-2 -44 -8 -46 -8 -50Z", "orange", 1.8) +
+      P("M-6 -58L-10 -76L4 -64Z", "orange", 1.6) + P("M4 -64L8 -80L16 -62Z", "orange", 1.6) +
+      P("M-5 -60L-7 -70L1 -63Z", "snow", 1) + P("M6 -64L8 -73L13 -63Z", "snow", 1) +
+      P("M8 -48C14 -46 22 -48 30 -52C24 -46 14 -44 8 -46Z", "snow", 1.2) +
+      `<circle cx="30" cy="-52" r="2.6" fill="#3b2f45"/>` + L("M9 -56Q12 -58 15 -56", "#3b2f45", 1.8);
+    // Elfe (Kind) mit Flügeln, Blütenkleid, Spitzohren und Zauberstab; lächelt
+    const star = (x, y, r) => P(`M${x} ${y - r}L${f1(x + r * 0.3)} ${f1(y - r * 0.3)}L${x + r} ${y}L${f1(x + r * 0.3)} ${f1(y + r * 0.3)}L${x} ${y + r}L${f1(x - r * 0.3)} ${f1(y + r * 0.3)}L${x - r} ${y}L${f1(x - r * 0.3)} ${f1(y - r * 0.3)}Z`, "sun", 1.2);
+    const elf =
+      E(-16, -50, 11, 20, "r5", -35, 1.4) + E(16, -50, 11, 20, "r5", 35, 1.4) + E(-13, -32, 8, 12, "r6", -60, 1.2) + E(13, -32, 8, 12, "r6", 60, 1.2) +
+      L("M-5 -14V-2M5 -14V-2", C.sand, 3) + L("M-9 -1h6M3 -1h6", C.r6, 3) +
+      P("M-7 -50H7L20 -14Q0 -8 -20 -14Z", "rose", 1.8) + L("M-16 -20Q0 -15 16 -20", C.r6, 1.6) +
+      L("M-6 -46L-16 -30M6 -46L18 -58", C.sand, 3) +
+      L("M18 -58L26 -78", C.trunk, 1.8) + star(27, -81, 7) +
+      [[36, -88, 1.8], [40, -76, 1.4], [31, -94, 1.2]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${C.sun}"/>`).join("") +
+      P("M-8 -62L-16 -70L-7 -57Z", "sand", 1.2) + P("M8 -62L16 -70L7 -57Z", "sand", 1.2) +
+      O(0, -60, 9.5, "sand", 1.6) +
+      P("M-10 -60C-12 -76 12 -76 10 -60C6 -67 -6 -67 -10 -60Z", "r2", 1.4) + L("M-10 -60C-13 -50 -11 -44 -7 -42M10 -60C13 -50 11 -44 7 -42", C.r2, 3) +
+      O(-6, -71, 2.6, "r1", 1) + O(0, -73, 2.6, "r4", 1) + O(6, -71, 2.6, "r5", 1) +
+      `<circle cx="-3.5" cy="-60" r="1.5" fill="#3b2f45"/><circle cx="3.5" cy="-60" r="1.5" fill="#3b2f45"/>` + L("M-3 -55.5Q0 -53 3 -55.5", "#c0566e", 1.3);
     const tree = (s) => at(0, 0, s, `<path d="M-4 0l2 -34h4l2 34Z" fill="url(#h-trunk)" stroke="${C.trunk}" stroke-width="1.8"/>` + O(0, -50, 24, "green") + O(-14, -38, 15, "green") + O(15, -40, 16, "green"));
     const pine = (s) => at(0, 0, s, P("M0 -78L18 -44h-8L24 -16h-10L28 0H-28L-14 -16h-10L-10 -44h-8Z", "dark", 1.8));
     const mush = P("M-3 0v-10h6v10Z", "sand", 1.5) + P("M-13 -9q13 -20 26 0Z", "red", 1.6) + `<circle cx="-4" cy="-14" r="2" fill="#fff"/><circle cx="5" cy="-12" r="1.6" fill="#fff"/>`;
@@ -2371,9 +2385,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const path = P(`M${f1(cx - 14 * k)} ${f1(castleY)}C${f1(cx - 30 * k)} ${f1(Y(0.72))} ${f1(cx - 90 * k)} ${f1(Y(0.8))} ${f1(cx - 60 * k)} ${f1(Y(0.9))}C${f1(cx - 40 * k)} ${f1(Y(0.96))} ${f1(cx - 70 * k)} ${f1(h)} ${f1(cx - 90 * k)} ${f1(h + 10)}H${f1(cx + 30 * k)}C${f1(cx + 10 * k)} ${f1(Y(0.95))} ${f1(cx + 20 * k)} ${f1(Y(0.86))} ${f1(cx - 10 * k)} ${f1(Y(0.78))}C${f1(cx - 30 * k)} ${f1(Y(0.72))} ${f1(cx + 10 * k)} ${f1(Y(0.68))} ${f1(cx + 14 * k)} ${f1(castleY)}Z`, "sand", 1.8);
     const sx = X(0.82);
     const stream = P(`M${f1(sx)} ${f1(Y(0.66))}C${f1(sx + 40 * k)} ${f1(Y(0.74))} ${f1(sx - 30 * k)} ${f1(Y(0.82))} ${f1(sx + 20 * k)} ${f1(Y(0.9))}C${f1(sx + 50 * k)} ${f1(Y(0.95))} ${f1(sx + 30 * k)} ${f1(h)} ${f1(sx + 40 * k)} ${f1(h + 10)}H${f1(sx + 90 * k)}C${f1(sx + 80 * k)} ${f1(Y(0.94))} ${f1(sx + 60 * k)} ${f1(Y(0.88))} ${f1(sx + 30 * k)} ${f1(Y(0.82))}C${f1(sx + 10 * k)} ${f1(Y(0.76))} ${f1(sx + 30 * k)} ${f1(Y(0.7))} ${f1(sx + 12 * k)} ${f1(Y(0.66))}Z`, "water", 1.6);
-    const bridgeY = Y(0.82) + 6 * k, bx = sx + 26 * k;
-    const bridge = at(bx, bridgeY, k, P("M-44 -6H44V6H-44Z", "trunk", 1.8) + L("M-30 -6V6M-16 -6V6M-2 -6V6M12 -6V6M26 -6V6", C.trunk, 1.2) +
-      L("M-40 -6V-22M40 -6V-22M-40 -20H40", C.trunk, 2.2));
+    const bridgeY = Y(0.82) + 6 * k, bx = sx + 12 * k;   // mittig über dem Bach (bei +26·k stand die halbe Brücke auf der Wiese)
+    // Bogenbrücke aus Holz: Enden auf beiden Ufern, Geländer folgt dem Bogen
+    const bridge = at(bx, bridgeY, k, P("M-50 4Q0 -26 50 4L50 10Q0 -18 -50 10Z", "trunk", 1.8) +
+      L("M-34 -4V3M-18 -9V-2M0 -11V-4M18 -9V-2M34 -4V3", C.trunk, 1.2) +
+      L("M-46 2Q0 -40 46 2", C.trunk, 2.2) + L("M-46 2V-12M-24 -13V-25M0 -18V-29M24 -13V-25M46 2V-12", C.trunk, 2) +
+      L("M-46 -12Q0 -46 46 -12", C.trunk, 2.4));
     const fairy =
       E(-7, -16, 7, 11, "r5", -30, 1.2) + E(7, -16, 7, 11, "r5", 30, 1.2) + P("M0 -20L7 0H-7Z", "rose", 1.4) + O(0, -24, 4.5, "sand", 1.4) +
       L("M3 -14L14 -24", C.trunk, 1.4) + `<circle cx="15" cy="-25" r="2.4" fill="${C.sun}"/>` +
@@ -2399,13 +2416,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       P(wave(Y(0.64), 10 * k, 1), "sage"),
       at(cx, castleY, k, castle),
       at(X(0.15), Y(0.7), 0.8 * k, tent),
-      at(X(0.93), Y(0.7), 0.8 * k, cave), at(X(0.9), Y(0.7), 0.9 * k, babyDragon),
+      at(X(0.9), Y(0.71), 0.9 * k, elf),
       at(X(0.05), Y(0.7), k, pine(0.9)), at(X(0.3), Y(0.69), k, tree(0.9)), at(X(0.67), Y(0.69), k, pine(0.8)), at(X(0.75), Y(0.7), k, tree(0.8)),
       P(wave(Y(0.76), 12 * k, 3), "green"),
       path, stream, bridge,
       at(X(0.57), Y(0.7), 0.75 * k, knightStanding),
       at(X(0.28), Y(0.88), k, knightOnHorse),
-      at(X(0.68), Y(0.84), 0.9 * k, unicorn, true),
+      at(X(0.68), Y(0.85), 0.95 * k, fox),
       at(X(0.08), Y(0.85), k, tree(1)), at(X(0.97), Y(0.92), k, pine(1)),
       at(X(0.4), Y(0.94), k, mush), at(X(0.62), Y(0.97), k, mush), at(X(0.12), Y(0.97), k, mush),
       at(X(0.04), Y(0.98), k, flower("rose")), at(X(0.2), Y(0.95), k, flower("r6")), at(X(0.47), Y(0.99), k, flower("rose")), at(X(0.76), Y(0.97), k, flower("r5")), at(X(0.9), Y(0.99), k, flower("rose")),
@@ -2586,7 +2603,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mk("l2", "luecke", "Plus mit Lücke bis 100", "34 + □ = 50", 100, true, "Schuster", () => {
       const a = 10 * rand(1, 8) + rand(1, 9);
       // ab 1.17 gestuft: bis sie hier Gesellin ist, meist nur bis zum nächsten vollen Zehner (34 + □ = 40) oder zu einem glatten Zehner
-      // (34 + □ = 60). Im Protokoll waren 15 % beim ersten Versuch richtig, zwei Sitzungen endeten an solchen Aufgaben.
+      // (34 + □ = 60). Offene Lücken bis 100 waren am Anfang zu schwer.
       if (gradeOf("l2") < 2) {
         const v = Math.random(), next = 10 - (a % 10);
         const b = v < 0.6 ? next : v < 0.9 ? next + 10 * rand(0, Math.max(0, Math.floor((99 - a - next) / 10))) : rand(3, Math.min(20, 99 - a));
@@ -2667,7 +2684,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     mk("f1", "folgen", "Zahlenfolgen", "4, 8, 12, 16, ?", 20, false, "Perlenmacher", (N) => {
       const top = N >= 100 ? 100 : 20;
       // ab 1.17 gestuft: bis Gesellin nur aufwärts, die letzte Perle, Sprünge wie beim Einmaleins (2, 5, 10) ab einer Zahl der Reihe.
-      // Im Protokoll scheiterten rückwärts laufende Ketten und Lücken in der Mitte, und bei jeder Kette kam sofort der Tipp.
+      // Rückwärts laufende Ketten und Lücken in der Mitte waren am Anfang zu schwer.
       if (gradeOf("f1") < 2) { const st = pick(N >= 100 ? [2, 5, 10] : [1, 2, 5].filter((x) => 5 * x <= top)); return folgeT(arith(st * rand(0, Math.floor(top / st) - 6), st), `+${st}`, true); }
       const st = pick((N >= 100 ? [2, 3, 4, 5, 10, 6, 7, 8] : [1, 2, 3, 4]).filter((x) => 5 * x <= top));
       if (Math.random() < 0.75) return folgeT(arith(rand(0, top - 5 * st), st), `+${st}`);
@@ -2834,8 +2851,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     titel: ["f", "m"], hilfe: ["auto", "strahl", "punkte"], teilenStufen: ["schritt", "alle"], rewardEvery: [3, 5, 7, 10], goldEvery: [0, 50, 100, 200], belohnung: ["hof", "bilder"], stimme: ["warm", "geraet"], tippWait: [0, 10, 20],
   };
   const DATA_GEN = 2;   // Spielstände ab Version 1.1; ältere beginnen einmalig bei null (Einstellungen bleiben)
-  // Einmalige Anpassungen alter Spielstände. mig 1 (1.13): Rechendreiecke aus. Im Protokoll waren 1 von 32 beim ersten Versuch richtig,
-  // sie versteht das Prinzip noch nicht. Die Eltern können sie im Menü wieder einschalten (das gilt dann für immer).
+  // Einmalige Anpassungen alter Spielstände. mig 1 (1.13): Rechendreiecke aus, weil das Prinzip
+  // am Anfang noch zu schwer war. Die Eltern können sie im Menü wieder einschalten (das gilt dann für immer).
   const MIGRATION = 1;
   // Rechenarten ab 1.9: bleiben aus, bis die Eltern sie einschalten (auch bei alten Spielständen)
   const NEW_OPS = ["tricks", "mauer", "dreieck", "folgen", "schaetzen", "raetsel", "stelle", "vergleich"];
@@ -3215,7 +3232,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   }
 
   // Ratebremse (ab 1.13): Eine falsche Antwort, die so aussieht, als wäre sie nur getippt, um weiterzukommen, zählt nicht als Versuch.
-  // Im Protokoll waren 177 von 578 Fehlversuchen weniger als 3 s nach dem vorigen, viele davon „9“, „99“, „66“, „659“, und 45× wurde bis zur Lösung durchgeklickt.
+  // Typisch sind sehr schnelle Fehlversuche wie „9“, „99“ oder „66“, nur um bis zur Lösung durchzuklicken.
   // since: Millisekunden seit dem letzten gezählten Versuch (oder seit die Aufgabe erschien). first: noch kein Versuch bei dieser Aufgabe bzw. diesem Schritt.
   const GUESS_FIRST_MS = 1500, GUESS_GAP_MS = 3500;
   // known (ab 1.16.2): Der Fehler-Detektiv kennt diesen Fehler (z. B. 314 für 3 Stangen und 14 Würfel). Dann ist es ein echter Versuch,
@@ -4189,7 +4206,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.18";
+  const VERSION = "1.18.1";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -4200,7 +4217,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // Ratebremse und Tipp (ab 1.13)
   let tryAt = 0, tryN = 0, brakeHits = 0, thinking = false, thinkTimer = 0, helped = false, tippPulse = false;
   let rz = null;                    // laufendes Rätselwort: { word, table, items, i, found, story, animal, wait }
-  // Herzschlag: Hält das Gerät die Seite an, ohne dass „hidden“ gemeldet wird (am 31.10. dauerte eine Aufgabe laut Protokoll 1025 s),
+  // Herzschlag: Hält das Gerät die Seite an, ohne dass „hidden“ gemeldet wird (sonst zählen Stunden als Rechenzeit),
   // fehlt beim nächsten Schlag plötzlich Zeit. Die zählt dann als Pause. Im Hintergrund schlägt er nicht mit, das erledigt visibilitychange.
   let beatAt = Date.now();
   const beat = () => {
@@ -4524,8 +4541,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (box.dataset.sig === sig) return;
     box.dataset.sig = sig;
     box.classList.toggle("cmp", task.kind === "vergleich");
-    // Waage (ab 1.17): „>“ links, „<“ rechts. Das offene Maul zeigt so zur Seite des Knopfs. Im Protokoll drückte sie fast immer
-    // den Knopf auf der Seite der größeren Zahl (8 von 9 ersten Antworten): Mit dieser Reihenfolge führt genau das zum richtigen Zeichen.
+    // Waage (ab 1.17): „>“ links, „<“ rechts. Das offene Maul zeigt so zur Seite des Knopfs. Kinder drücken oft
+    // den Knopf auf der Seite der größeren Zahl: Mit dieser Reihenfolge führt genau das zum richtigen Zeichen.
     const order = task.kind === "vergleich" ? [2, 1, 0] : task.choices;
     box.innerHTML = order.map((v) => `<button type="button" class="choice${tried.includes(v) ? " tried" : ""}${locked && v === task.result ? " right" : ""}" data-v="${v}" aria-label="${choiceSay(task, v)}"${tried.includes(v) || locked || thinking ? " disabled" : ""}>${choiceLabel(task, v)}</button>`).join("")
       + (task.kind === "vergleich" ? `<p class="cmp-note">Das offene Maul zeigt zur größeren Zahl.</p>` : "");
@@ -5486,7 +5503,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     cardOpen = ""; cardFirst = false;
     stopSpeech();
     $("explain").hidden = true;
-    if (first) { shownAt = performance.now(); pausedMs = 0; firstMs = null; tryAt = 0; }
+    if (first) { shownAt = performance.now(); pausedMs = 0; firstMs = null; tryAt = 0; restartTipp(); }
     else pausedMs += performance.now() - cardAt;   // „So geht's“ mitten in der Aufgabe: Lesezeit ist keine Rechenzeit
     focusAnswer();
     if (first && state.cfg.readTask && task) speak(taskWords(task), false, taskParts(task));
@@ -5705,6 +5722,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // Tipp nach Nachdenkzeit (ab 1.17): so viele Millisekunden muss sie noch warten. Nach einem Versuch, einer Ratebremse
   // oder wenn schon eine Hilfe zu sehen ist, gibt es keine Wartezeit mehr. Gezählt wird aktive Zeit (Pausen im Hintergrund nicht).
   let tippTimer = 0;
+  // Nach der Erklär-Karte beginnt die Nachdenkzeit neu (ab 1.18.1): sonst wäre der Tipp nach langem Lesen schon wach
+  function restartTipp() { const b = $("tippBtn"); if (b) b.classList.remove("waking"); renderTipp(); }
   function tippWaitLeft() {
     const w = (state.cfg.tippWait || 0) * 1000;
     if (!w || !task || tries > 0 || tryN > 0 || brakeHits > 0 || guide || !hintEl.hidden) return 0;
@@ -6138,7 +6157,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const rows = SKILLS.filter((s) => s.group === "mal");
     const pm = SKILLS.filter((s) => s.group !== "mal");
     $("parentsBody").innerHTML = `
-      <p class="note p-new">Neu in Version 1.18: Hühnerhof mit allen 60 Tafeln aus dem Geflügel-Album, 8 neue Rassen und 14 Farbschläge, faire Reihenfolge der Eier, Hof nach Familien sortiert, jedes Tier mit eigener Eigenart und Lieblingsfutter.</p>
+      <p class="note p-new">Neu in Version 1.18.1: freundlicherer Hintergrund mit Fuchs, Elfe und Bogenbrücke, und der Tipp-Knopf wartet nach einer Erklär-Karte wieder die volle Nachdenkzeit.</p>
       <details class="pg" open><summary>Was wird geübt?</summary>
         <fieldset class="p-field"><legend>Rechenarten</legend><div class="seg">
           <label class="opt"><input type="checkbox" data-p="ops.plus" id="opPlus"><span>Plus</span></label>
@@ -6218,7 +6237,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         ${tog("cfg.mitrechnen", "Rechenweg zum Mitrechnen", "Bei Plus und Minus mit Zehnern oder Übergang rechnet sie bei der Hilfe (siehe „Hilfe zeigen nach“) zwei kleine Schritte selbst (39 + 60: erst 30 + 60, dann 90 + 9), statt nur eine Hilfe zu lesen. Danach zählt die Aufgabe als „mit Hilfe“ gelöst.")}
         ${tog("cfg.tipp", "Tipp-Knopf", "Ein Knopf „💡 Tipp“ unter der Aufgabe: erst ein Bild oder Hinweis, beim zweiten Tippen der Rechenweg zum Mitrechnen. Die Aufgabe zählt dann als „mit Hilfe“ gelöst, bringt aber trotzdem den Stern. So kommt Hilfe auch ohne falsche Antworten.")}
         ${seg("cfg.tippWait", "Tipp erst nach", [[0, "sofort"], [10, "10 Sekunden"], [20, "20 Sekunden"]],
-          "Ab 1.17: Der Tipp-Knopf wacht erst nach dieser Nachdenkzeit auf (nach einem Versuch oder einer Ratebremse sofort). Im Protokoll kam drei Viertel der Tipps in den ersten 10 Sekunden, oft nach 2 Sekunden, auch bei leichten Aufgaben. Solche Aufgaben zählen „mit Hilfe“, dann wachsen Werkstätten und Zunftgrade nicht.")}
+          "Ab 1.17: Der Tipp-Knopf wacht erst nach dieser Nachdenkzeit auf (nach einem Versuch oder einer Ratebremse sofort). Wer den Tipp sofort drückt, denkt oft gar nicht erst nach, auch bei leichten Aufgaben. Solche Aufgaben zählen „mit Hilfe“, dann wachsen Werkstätten und Zunftgrade nicht.")}
         ${tog("cfg.ratebremse", "Ratebremse", "Eine falsche Antwort, die nur schnell getippt wurde (weniger als 1,5 Sekunden nach dem Erscheinen der Aufgabe oder 3,5 Sekunden nach der vorigen, oder 99, 66, 659; erkennt der Fehler-Detektiv einen typischen Fehler, ist es kein Raten), zählt nicht als Versuch. Es gibt eine kurze Denkpause (4 Sekunden, später 7) und die Stimme sagt: „Lass dir Zeit. Du musst nicht raten.“ Beim dritten Mal kommt der Tipp von selbst. Richtige Antworten werden nie gebremst.")}
         ${tog("cfg.detektiv", "Fehler-Detektiv", "Erkennt typische Flüchtigkeitsfehler (Rechenzeichen oder Ziffern vertauscht, Zehnerstelle, eine Reihe zu viel) und gibt einen gezielten Hinweis, ohne die Lösung zu verraten.")}
         ${seg("cfg.frustN", "Leichtere Aufgabe anbieten nach", [[0, "nie"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]],
