@@ -602,7 +602,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 .band { justify-self: start; font-size: .75rem; font-weight: 700; color: #6b4a00; background: linear-gradient(#ffe9a8, #f4c94a); border-radius: 999px; padding: 1px 9px; }
 .band.big { background: linear-gradient(#ffd3e0, #f08aa8); color: #6b1030; }
 .fam-names { display: flex; flex-wrap: wrap; gap: 5px; }
-.hen-chip { font: inherit; font-size: .85rem; padding: 3px 9px; border-radius: 999px; border: 1.5px solid var(--line); background: #fbf6ec; color: var(--ink); cursor: pointer; }
+.hen-chip { max-width: 100%; overflow-wrap: anywhere; text-align: left; font: inherit; font-size: .85rem; padding: 3px 9px; border-radius: 999px; border: 1.5px solid var(--line); background: #fbf6ec; color: var(--ink); cursor: pointer; }
 .hen-char { font-weight: 600; }
 .plate-frame.new-color { box-shadow: 0 0 0 4px #e8d8b0, 0 0 0 7px #8fd3c0, 4px 6px 0 rgba(59, 47, 69, .18); }
 @media (max-width: 360px) { .fam { grid-template-columns: 88px 1fr; } }
@@ -741,8 +741,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
 /* ab 1.17: Waage – Merksatz unter den Knöpfen (die Knöpfe stehen jetzt > = <) */
 .choices .cmp-note { flex-basis: 100%; margin: 2px 0 0; text-align: center; font-size: .85rem; color: var(--muted); }
 /* ab 1.17: Tipp nach Nachdenkzeit – ein goldener Strich füllt sich, dann wacht der Knopf auf */
-.tipp-btn.waking { position: relative; overflow: hidden; }
-.tipp-btn.waking::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--gold-dark); transform-origin: left; animation: tippWake var(--wait, 10s) linear forwards; }
+.tipp-btn.waking { position: relative; overflow: hidden; opacity: .55; }
+.tipp-btn.waking::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--gold-dark); transform-origin: left; animation: tippWake var(--wait, 10s) linear var(--done, 0ms) forwards; }
 @keyframes tippWake { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .ex-hint { padding: 8px 0; }
 </style>
@@ -2480,7 +2480,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     { t: "23", n: "Minorka", ei: "weiss", k: "schwarz", f: "Von der Insel Menorca. Sie legt besonders große weiße Eier." },
     { t: "24", n: "Dominikaner", ei: "braun", k: "schwarz", f: "Eine der ältesten Hühnerrassen Amerikas, mit grau gestreiftem Gefieder." },
     { t: "25", n: "Dorking", ei: "weiss", k: "gelb", f: "Aus England. Sie hat an jedem Fuß fünf Zehen statt vier!" },
-    { t: "28", n: "Hamburger", ei: "weiss", k: "gelb", f: "Eine fleißige Legehenne mit hübsch getupftem Gefieder." },
+    { t: "28", n: "Hamburger", ei: "weiss", k: "gelb", f: "Eine fleißige Legehenne. Es gibt sie in vielen Farben und Mustern." },
     { t: "34", n: "Italiener", ei: "weiss", k: "gelb", f: "Aus Italien. Heute heißt sie meist Leghorn und legt sehr viele weiße Eier." },
     { t: "37", n: "Paduaner", ei: "weiss", k: "gelb", s: 1, f: "Aus Italien, mit einer riesigen Federhaube wie eine Pudelmütze." },
     { t: "39", n: "Holländer Haubenhuhn", ei: "weiss", k: "schwarz", f: "Aus Holland. Schwarzes Gefieder und eine schneeweiße Haube." },
@@ -2500,13 +2500,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     { t: "58", n: "Zwerg-Cochin", ei: "creme", k: "gelb", f: "Ein Federball auf zwei Beinen: klein, rund und dicht befiedert." },
     { t: "60", n: "Federfüßiges Zwerghuhn", ei: "creme", k: "gelb", f: "Ein kleines Zwerghuhn mit Federn an den Füßen." },
     // ab 1.18: die übrigen Tafeln aus dem Geflügel-Album
-    { t: "10", n: "Malaie", ei: "braun", k: "gelb", f: "Aus Asien. Eines der größten Hühner überhaupt: Der Hahn steht so hoch, dass er fast vom Tisch picken könnte." },
+    { t: "10", n: "Malaien", ei: "braun", k: "gelb", f: "Aus Asien. Eines der größten Hühner überhaupt: Der Hahn steht so hoch, dass er fast vom Tisch picken könnte." },
     { t: "11", n: "Altenglischer Kämpfer", ei: "creme", k: "grau", f: "Eine sehr alte Rasse aus England. Schlank, flink und stolz, mit glatten, glänzenden Federn." },
     { t: "12", n: "Belgischer Kämpfer", ei: "creme", k: "grau", f: "Aus Belgien. Groß und aufrecht, mit langen Beinen, als stünde es auf Zehenspitzen." },
-    { t: "13", n: "Aseel", ei: "creme", k: "gelb", f: "Aus Indien, eine der ältesten Hühnerrassen der Welt. Es steht kerzengerade, und seine Federn liegen ganz fest an." },
-    { t: "46", n: "Kaulhuhn", ei: "weiss", k: "grau", s: 1, f: "Es hat gar keinen Schwanz! Ihm fehlt hinten ein kleines Stück Rücken, deshalb sieht es hinten ganz rund aus." },
-    { t: "51", n: "Krüper", ei: "weiss", k: "gelb", f: "Hat ganz kurze Beine und watschelt beim Laufen ein bisschen wie ein Dackel." },
-    { t: "54", n: "Bantam", ei: "weiss", k: "schwarz", f: "Ein kleines, keckes Zwerghuhn mit flachem Rosenkamm. Bungartz hat es in Schwarz und in Weiß gemalt." },
+    { t: "13", n: "Asil", ei: "creme", k: "gelb", f: "Aus Indien, eine der ältesten Hühnerrassen der Welt. Es steht kerzengerade, und seine Federn liegen ganz fest an." },
+    { t: "46", n: "Kaulhuhn", ei: "weiss", k: "grau", s: 1, f: "Es hat gar keinen Schwanz! Ihm fehlen die letzten kleinen Knochen am Ende des Rückens, darum wachsen dort keine Schwanzfedern." },
+    { t: "51", n: "Krüper", ei: "weiss", k: "gelb", f: "Trippelt auf seinen ganz kurzen Beinen wie ein kleiner Dackel." },
+    { t: "54", n: "Bantam", ei: "weiss", k: "schwarz", f: "Ein kleines, keckes Zwerghuhn. Bungartz hat es in Schwarz und in Weiß gemalt." },
     { t: "59", n: "Zwerg-Kämpfer", ei: "creme", k: "gelb", f: "Ein kleines, flinkes Zwerghuhn mit langen Beinen, das sehr aufrecht steht." },
   ];
   // Farbschläge (ab 1.18): weitere Tafeln für Rassen, die es schon gibt
@@ -2538,9 +2538,12 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const FUTTER = ["Löwenzahn", "Regenwürmer", "Maiskörner", "Gurkenstückchen", "Haferflocken", "Kürbiskerne", "Salatblätter", "Mehlwürmer",
     "Weizenkörner", "Sonnenblumenkerne", "Wassermelone", "Erbsen", "Käfer", "Brombeeren"];
   function eigenart(x) {
-    let h = 7;
-    for (const c of `${x.n}|${x.r}`) h = (h * 31 + c.codePointAt(0)) >>> 0;
-    return { tut: EIGENARTEN[h % EIGENARTEN.length], futter: FUTTER[(h >>> 8) % FUTTER.length] };
+    // ab 1.18.2 gut durchmischt: Mit Faktor 31 hing h % 30 nur an der Summe der Buchstaben (Lena, Lane und Nela gleich),
+    // und benachbarte Rassen hatten fast immer dasselbe Futter
+    let h = 2166136261;
+    for (const c of `${x.n}|${x.r}`) h = Math.imul(h ^ c.codePointAt(0), 16777619) >>> 0;
+    h = (h ^ (h >>> 15)) >>> 0; h = Math.imul(h, 0x2c1b3c6d) >>> 0; h = (h ^ (h >>> 12)) >>> 0; h = Math.imul(h, 0x297a2d39) >>> 0; h = (h ^ (h >>> 15)) >>> 0;
+    return { tut: EIGENARTEN[h % EIGENARTEN.length], futter: FUTTER[(h >>> 16) % FUTTER.length] };
   }
   const EI_FARBE = { weiss: ["#fbf8f1", "#d9cfbd", "weiß"], creme: ["#f3e2c0", "#cdb48a", "cremefarben"], braun: ["#c98d5a", "#8f5a30", "braun"] };
   const HOF_SCHLUEPFEN = 10, HOF_WACHSEN = 25;   // richtige Aufgaben bis zum Schlüpfen, dann bis zur großen Henne
@@ -3377,8 +3380,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     buendeln: { t: "Bündeln", x: "Sind es 10 Würfel oder mehr, wird gebündelt: Aus 10 Würfeln wird eine neue Stange.",
       say: "Sind es zehn Würfel oder mehr, wird gebündelt: Aus zehn Würfeln wird eine neue Stange." },
     vergleich: { t: "Die Waage", x: "Die größere Zahl ist schwerer, ihre Seite sinkt nach unten. Die Spitze des Zeichens zeigt immer zur kleineren Zahl." },
-    luecke: { t: "Die Lücke", x: "Bei einer Lücke fehlt eine Zahl. Denk andersherum: Bei 8 + □ = 15 zählst du von 8 bis 15 weiter. Die leeren Plätze sind die Lösung: 7.",
-      say: "Bei einer Lücke fehlt eine Zahl. Denk andersherum: Bei acht plus Lücke gleich fünfzehn zählst du von acht bis fünfzehn weiter. Die leeren Plätze sind die Lösung: sieben." },
+    luecke: { t: "Die Lücke", x: "Bei einer Lücke fehlt eine Zahl. Bei 8 + □ = 15 zählst du von 8 aus weiter: 9, 10, 11 … bis 15. Das sind 7 Schritte, also fehlt die 7. Bei 15 − □ = 8 ist es genauso: Von 8 bis 15 sind es 7 Schritte.", say: "Bei einer Lücke fehlt eine Zahl. Bei acht plus Lücke gleich fünfzehn zählst du von acht aus weiter: neun, zehn, elf, bis fünfzehn. Das sind sieben Schritte, also fehlt die Sieben. Bei fünfzehn minus Lücke gleich acht ist es genauso: Von acht bis fünfzehn sind es sieben Schritte." },
   };
   // Welche Karte gehört zu einer Aufgabe? null = keine (Plus, Minus, Mal, Teilen, Lücken kennt sie aus der Schule)
   // Die Perlenketten-Karte sagt „springt immer gleich weit“: nur für solche Ketten (knifflige wie ·2 oder +5, −1 bekommen keine Karte)
@@ -3563,9 +3565,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     if (wrongs) L.push(`Fehlversuche: ${wrongs}, davon ${quick} weniger als 3 s nach dem vorigen (schnelles Raten) · ${rush}× bis zur gezeigten Lösung durchgeklickt · ${offOne}× beim Minus genau um eins daneben`);
     const brakes = ev.filter((e) => e[1] === "RT"), tipps = ev.filter((e) => e[1] === "H" && e[3] === "Tipp");
     // Tipp in den ersten 10 Sekunden einer Aufgabe (ab 1.17 hat der Knopf eine Nachdenkzeit, siehe Einstellung tippWait)
-    let lastA = 0;
-    const early = ev.filter((e) => { if (e[1] === "A") lastA = e[0]; return e[1] === "H" && e[3] === "Tipp" && e[0] - lastA < 10000; }).length;
-    if (brakes.length || tipps.length) L.push(`Ratebremse: ${brakes.length}× angesprungen (eingegebene Zahlen: ${brakes.slice(0, 12).map((e) => e[2]).join(", ")}${brakes.length > 12 ? " …" : ""}) · Tipp-Knopf: ${tipps.length}× benutzt, davon ${early}× in den ersten 10 s einer Aufgabe`);
+    // Aufgaben (nicht Drücke) mit Tipp in den ersten 10 s ab Erscheinen; eine nach einer Pause fortgesetzte Aufgabe startet die Uhr nicht neu
+    // (ab 1.18.2 genau wie tools/protokoll.py; vorher zählte die App Drücke und begann nach einer Pause von vorn)
+    let lastA = 0, counted = false;
+    const early = ev.filter((e) => {
+      if (e[1] === "A" && !String(e[3] || "").endsWith(" (nach Pause weiter)")) { lastA = e[0]; counted = false; }
+      if (e[1] === "H" && e[3] === "Tipp" && e[0] - lastA < 10000 && !counted) { counted = true; return true; }
+      return false;
+    }).length;
+    if (brakes.length || tipps.length) L.push(`Ratebremse: ${brakes.length}× angesprungen (eingegebene Zahlen: ${brakes.slice(0, 12).map((e) => e[2]).join(", ")}${brakes.length > 12 ? " …" : ""}) · Tipp-Knopf: ${tipps.length}× benutzt, bei ${early} ${early === 1 ? "Aufgabe" : "Aufgaben"} schon in den ersten 10 s`);
     const steps = ev.filter((e) => e[1] === "RS");
     if (steps.length) L.push(`Rechenweg zum Mitrechnen: ${steps.length} Schritte, davon ${steps.filter((e) => e[4]).length} richtig`);
     const rzs = ev.filter((e) => e[1] === "RZ");
@@ -4042,7 +4050,8 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // Die warme Stimme kennt die Rassen bis 1.17; für neuere sagt sie den Satz ohne den Rassenamen (der steht ja da)
   const rasseTeil = (r) => (clipReady(["Rasse " + r.n]) ? ["Rasse " + r.n] : []);
   const familie = (r) => state.hof.huehner.filter((x) => x.r === r);
-  const famName = (r) => `${RASSEN[r].n}-Familie`;
+  // „Familie Cochin“ statt „Cochin-Familie“ (ab 1.18.2): passt auch zu „Ostfriesische Möwe“ oder „Federfüßiges Zwerghuhn“
+  const famName = (r) => `Familie ${RASSEN[r].n}`;
 
   // ----- Belohnung: ein Ei -----
   function showEggReward(gold) {
@@ -4098,13 +4107,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       // ab 1.18: was ist neu? Eine neue Rasse, ein neuer Farbschlag, eine wachsende Familie
       const fam = familie(hen.r), fs = farbschlagVon(r, plateId(hen));
       const neueFarbe = fam.length > 1 && !fam.some((x) => x !== hen && plateId(x) === plateId(hen));
-      const news = fam.length === 1 ? "Eine neue Rasse in deinem Hof!" : neueFarbe ? `Ein neuer Farbschlag: ${fs}! In dieser Farbe gab es noch keine ${r.n} in deinem Hof.`
-        : fam.length === 3 ? `Jetzt ist es eine richtige ${famName(hen.r)}: drei Tiere!` : fam.length === 5 ? `Großfamilie! Schon fünf ${r.n} wohnen in deinem Hof.`
+      // ab 1.18.2: neue Farbe und Familien-Schritt können zusammen kommen; „Farbe“ statt des Fachworts „Farbschlag“
+      const farbe = neueFarbe ? `Eine neue Farbe: ${fs}! So hattest du die Rasse ${r.n} noch nicht.` : "";
+      const famTxt = fam.length === 3 ? `Jetzt ist es eine richtige Familie: drei Tiere der Rasse ${r.n}!` : fam.length === 5 ? `Großfamilie! Schon fünf Tiere der Rasse ${r.n} wohnen in deinem Hof.`
         : fam.length >= 6 ? `Die ${famName(hen.r)} wächst: ${fam.length} Tiere.` : "";
+      const news = fam.length === 1 ? "Eine neue Rasse in deinem Hof!" : [farbe, famTxt].filter(Boolean).join(" ");
       $("hofTitle").textContent = hen.m ? `${hen.n} ist ein stolzer Hahn geworden!` : `${hen.n} ist groß geworden!`;
       $("hofArt").innerHTML = `<div class="plate-frame${hen.g ? " rare" : ""}${neueFarbe ? " new-color" : ""}">${plateIMG(hen)}</div>`;
       $("hofName").textContent = `Rasse: ${r.n}${fs ? " · " + fs : ""}${hen.m ? " · Hahn" : ""}`;
-      $("hofText").textContent = (news ? news + " " : "") + (hen.m ? `${r.f} Einen Hahn erkennst du meist am größeren Kamm und an den prächtigeren Schwanzfedern. Seine Hennen legen ${EI_FARBE[r.ei][2]}e Eier.` : `${r.f} Sie legt ${EI_FARBE[r.ei][2]}e Eier.`);
+      $("hofText").textContent = (news ? news + " " : "") + (hen.m ? `${r.f} Einen Hahn erkennst du meist daran, dass er größer und prächtiger ist als die Hennen. Seine Hennen legen ${EI_FARBE[r.ei][2]}e Eier.` : `${r.f} Sie legt ${EI_FARBE[r.ei][2]}e Eier.`);
       $("hofNames").hidden = true; $("hofOwnForm").hidden = true;
       SFX.mark();
       speak(hen.m ? `Kikeriki! ${hen.n} ist ein stolzer Hahn geworden!` : `${hen.n} ist groß geworden! Rasse ${r.n}.`, false,
@@ -4163,13 +4174,13 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       hof.huehner.forEach((x, i) => { if (!fams.has(x.r)) fams.set(x.r, []); fams.get(x.r).push(i); });
       const order = [...fams.entries()].sort((a, b) => b[1][b[1].length - 1] - a[1][a[1].length - 1]);
       const colors = new Set(hof.huehner.filter((x) => rasse(x).v).map((x) => x.r + ":" + plateId(x))).size;
-      h += `<h3 class="hof-h">Hühner</h3>${ALLE_FARBSCHLAEGE ? `<p class="note">${colors} von ${ALLE_FARBSCHLAEGE} Farbschlägen entdeckt</p>` : ""}<div class="fam-list">`;
+      h += `<h3 class="hof-h">Hühner</h3>${ALLE_FARBSCHLAEGE ? `<p class="note">${colors} von ${ALLE_FARBSCHLAEGE} Farben entdeckt</p>` : ""}<div class="fam-list">`;
       for (const [r, idx] of order) {
         const R = RASSEN[r], last = hof.huehner[idx[idx.length - 1]], n = idx.length;
         const band = n >= 5 ? `<span class="band big">Großfamilie</span>` : n >= 3 ? `<span class="band">Familie</span>` : "";
         const fsHave = R.v ? new Set(idx.map((i) => plateId(hof.huehner[i]))).size : 0;
         h += `<div class="fam${idx.some((i) => hof.huehner[i].g) ? " rare" : ""}"><button type="button" class="fam-pic" data-hen="${idx[idx.length - 1]}" aria-label="${last.n} ansehen">${plateIMG(last, "thumb")}</button>` +
-          `<div class="fam-body"><b>${n > 1 ? famName(r) : R.n}</b>${band}${R.v ? `<small>Farbschläge ${fsHave} von ${tafelnVon(R).length}</small>` : ""}` +
+          `<div class="fam-body"><b>${n > 1 ? famName(r) : R.n}</b>${band}${R.v ? `<small>Farben ${fsHave} von ${tafelnVon(R).length}</small>` : ""}` +
           `<div class="fam-names">${idx.slice().reverse().map((i) => { const x = hof.huehner[i]; return `<button type="button" class="hen-chip" data-hen="${i}">${x.n}${x.m ? " 🐓" : ""}</button>`; }).join("")}</div></div></div>`;
       }
       h += `</div>`;
@@ -4185,7 +4196,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     $("henPlate").classList.toggle("rare", !!x.g);
     const eig = eigenart(x), fs = farbschlagVon(r, plateId(x)), fam = familie(x.r).length;
     $("henName").textContent = `${x.n} · ${r.n}${x.m ? " · Hahn" : ""}`;
-    $("henFacts").innerHTML = `<p class="hen-char">${x.n} ${eig.tut}. Lieblingsfutter: ${eig.futter}.</p>${fs ? `<p>Farbschlag: ${fs}</p>` : ""}${fam > 1 ? `<p>Zur ${famName(x.r)} gehören ${fam} Tiere.</p>` : ""}<p>${r.f}</p><p>${x.m ? "Seine Hennen legen" : "Eier:"} ${EI_FARBE[r.ei][2]}${x.m ? "e Eier" : ""}${r.s ? " · seltene Rasse" : ""}</p><p class="note">Gemalt 1885 von Jean Bungartz. Auf dem Bild sind ein Hahn und eine Henne dieser Rasse${x.m ? ". Den Hahn erkennst du meist am größeren Kamm" : ""}.</p>`;
+    $("henFacts").innerHTML = `<p class="hen-char">${x.n} ${eig.tut}. Lieblingsfutter: ${eig.futter}.</p>${fs ? `<p>Farbe: ${fs}</p>` : ""}${fam > 1 ? `<p>Zur ${famName(x.r)} gehören ${fam} Tiere.</p>` : ""}<p>${r.f}</p><p>${x.m ? "Seine Hennen legen" : "Eier:"} ${EI_FARBE[r.ei][2]}${x.m ? "e Eier" : ""}${r.s ? " · seltene Rasse" : ""}</p><p class="note">Gemalt 1885 von Jean Bungartz. Auf dem Bild sind Hähne und Hennen dieser Rasse${x.m ? ". Den Hahn erkennst du meist daran, dass er größer und prächtiger ist" : ""}.</p>`;
     logEv("O", "Henne " + x.n);
     $("henView").hidden = false;
     $("henView").scrollTop = 0;
@@ -4206,7 +4217,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   // ---------- Zustand und Speichern ----------
   // Gespeichert wird dreifach: sofort im Browser, im Claude-Viewer zusätzlich im Konto
   // und auf Wunsch als Spielstand-Code zum Sichern oder Mitnehmen auf ein anderes Gerät.
-  const VERSION = "1.18.1";
+  const VERSION = "1.18.2";
   const STORE_KEY = "zauber-rechnen-v2"; // Schlüssel bleiben trotz neuem Namen, damit der Fortschritt erhalten bleibt
   const OLD_STORE_KEY = "zauber-rechnen-v1";
   let task = null;   // { a, b, op, result, skill, group, hard, pool }
@@ -4308,6 +4319,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
       // neue Sitzung: die offene Aufgabe gehört jetzt dazu
       if (longGap && task && !locked) logEv("A", task.skill, logTask(task) + " (nach Pause weiter)");
       checkUpdate(gone > UPDATE_AWAY_MS);
+      renderTipp();   // im Hintergrund zählt die Nachdenkzeit nicht: Balken an die Restzeit anpassen
     }
   });
   // ---------- Neue Version (ab 1.13.1) ----------
@@ -5704,7 +5716,10 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
   const canGuide = () => !!(state.cfg.mitrechnen && task && guideSteps(task));
   function giveTipp() {
     if (!task || locked || offerOpen || guide) return;
-    if (tippWaitLeft() > 0 && brakeHits < 3) return;   // noch Nachdenkzeit (die dritte Ratebremse gibt den Tipp trotzdem)
+    if (tippWaitLeft() > 0 && brakeHits < 3) {   // noch Nachdenkzeit (die dritte Ratebremse gibt den Tipp trotzdem)
+      setFeedback("Überleg erst kurz selbst. Gleich hilft dir der Tipp.", "try");   // ab 1.18.2: eine Antwort statt Stille
+      return;
+    }
     if (thinking) endThink();   // wer um Hilfe bittet, rät nicht mehr: die Pause ist vorbei
     const shown = !hintEl.hidden;
     helped = true; tippPulse = false;
@@ -5719,14 +5734,15 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     renderTask("");
     focusAnswer();
   }
-  // Tipp nach Nachdenkzeit (ab 1.17): so viele Millisekunden muss sie noch warten. Nach einem Versuch, einer Ratebremse
+  // Tipp nach Nachdenkzeit (ab 1.17): so viele Millisekunden muss sie noch warten. Nach einem Versuch
   // oder wenn schon eine Hilfe zu sehen ist, gibt es keine Wartezeit mehr. Gezählt wird aktive Zeit (Pausen im Hintergrund nicht).
   let tippTimer = 0;
   // Nach der Erklär-Karte beginnt die Nachdenkzeit neu (ab 1.18.1): sonst wäre der Tipp nach langem Lesen schon wach
-  function restartTipp() { const b = $("tippBtn"); if (b) b.classList.remove("waking"); renderTipp(); }
+  function restartTipp() { renderTipp(); }
   function tippWaitLeft() {
     const w = (state.cfg.tippWait || 0) * 1000;
-    if (!w || !task || tries > 0 || tryN > 0 || brakeHits > 0 || guide || !hintEl.hidden) return 0;
+    // Eine Ratebremse weckt den Tipp nicht mehr (ab 1.18.2): Sonst war schnell Raten der schnellste Weg zum Tipp. Die dritte Bremse gibt ihn von selbst.
+    if (!w || !task || tries > 0 || tryN > 0 || guide || !hintEl.hidden) return 0;
     return Math.max(0, w - activeMs());
   }
   function renderTipp() {
@@ -5737,9 +5753,21 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     b.hidden = !on;
     if (!on) { b.classList.remove("waking"); clearTimeout(tippTimer); return; }   // die nächste Aufgabe beginnt mit frischer Wartezeit
     const more = hintEl.hidden || (canGuide() && !guide), left = tippWaitLeft();
-    b.disabled = !more || left > 0;
-    if (left > 0 && !b.classList.contains("waking")) { b.style.setProperty("--wait", left + "ms"); b.classList.add("waking"); }
-    if (left <= 0) b.classList.remove("waking");
+    // Während der Nachdenkzeit nur „aria-disabled“ (ab 1.18.2): Ein echtes disabled schluckt das Antippen, dann käme der freundliche Satz nie an
+    b.disabled = !more;
+    b.setAttribute("aria-disabled", String(left > 0));
+    // Der goldene Balken zeigt die echte Restzeit (ab 1.18.2): Weicht sein Ende um mehr als 0,4 s ab (neue Aufgabe, Karte, Pause),
+    // startet er neu, mit dem schon gefüllten Teil. Vorher lief er nach einem Aufgabenwechsel oder hinter einer Karte voraus
+    // und war voll, während der Knopf noch schlief.
+    if (left > 0) {
+      const w = (state.cfg.tippWait || 0) * 1000, end = performance.now() + left;
+      if (!b.classList.contains("waking") || Math.abs(end - (b._tippEnd || 0)) > 400) {
+        b.classList.remove("waking"); void b.offsetWidth;
+        b.style.setProperty("--wait", w + "ms"); b.style.setProperty("--done", -Math.max(0, w - left) + "ms");
+        b.classList.add("waking");
+      }
+      b._tippEnd = end;
+    } else { b.classList.remove("waking"); b._tippEnd = 0; }
     clearTimeout(tippTimer);
     if (left > 0) tippTimer = setTimeout(renderTipp, left + 60);   // wacht von selbst auf (bei Pausen später, weil aktive Zeit zählt)
     b.classList.toggle("pulse", tippPulse && more);
@@ -6157,7 +6185,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
     const rows = SKILLS.filter((s) => s.group === "mal");
     const pm = SKILLS.filter((s) => s.group !== "mal");
     $("parentsBody").innerHTML = `
-      <p class="note p-new">Neu in Version 1.18.1: freundlicherer Hintergrund mit Fuchs, Elfe und Bogenbrücke, und der Tipp-Knopf wartet nach einer Erklär-Karte wieder die volle Nachdenkzeit.</p>
+      <p class="note p-new">Neu in Version 1.18.2: Der goldene Balken am Tipp-Knopf zeigt jetzt immer die echte Restzeit, eine Ratebremse weckt den Tipp nicht mehr vorzeitig, klarere Lücken-Karte, Hühnerhof-Texte für alle Rassen richtig („Familie …“, „neue Farbe“), ehrlichere Tipp-Zahlen im Protokoll.</p>
       <details class="pg" open><summary>Was wird geübt?</summary>
         <fieldset class="p-field"><legend>Rechenarten</legend><div class="seg">
           <label class="opt"><input type="checkbox" data-p="ops.plus" id="opPlus"><span>Plus</span></label>
@@ -6237,7 +6265,7 @@ h1 span:nth-child(6n+6) { color: #7a4bb0; }
         ${tog("cfg.mitrechnen", "Rechenweg zum Mitrechnen", "Bei Plus und Minus mit Zehnern oder Übergang rechnet sie bei der Hilfe (siehe „Hilfe zeigen nach“) zwei kleine Schritte selbst (39 + 60: erst 30 + 60, dann 90 + 9), statt nur eine Hilfe zu lesen. Danach zählt die Aufgabe als „mit Hilfe“ gelöst.")}
         ${tog("cfg.tipp", "Tipp-Knopf", "Ein Knopf „💡 Tipp“ unter der Aufgabe: erst ein Bild oder Hinweis, beim zweiten Tippen der Rechenweg zum Mitrechnen. Die Aufgabe zählt dann als „mit Hilfe“ gelöst, bringt aber trotzdem den Stern. So kommt Hilfe auch ohne falsche Antworten.")}
         ${seg("cfg.tippWait", "Tipp erst nach", [[0, "sofort"], [10, "10 Sekunden"], [20, "20 Sekunden"]],
-          "Ab 1.17: Der Tipp-Knopf wacht erst nach dieser Nachdenkzeit auf (nach einem Versuch oder einer Ratebremse sofort). Wer den Tipp sofort drückt, denkt oft gar nicht erst nach, auch bei leichten Aufgaben. Solche Aufgaben zählen „mit Hilfe“, dann wachsen Werkstätten und Zunftgrade nicht.")}
+          "Ab 1.17: Der Tipp-Knopf wacht erst nach dieser Nachdenkzeit auf (nach einem echten Versuch sofort, nach der dritten Ratebremse kommt der Tipp von selbst). Wer den Tipp sofort drückt, denkt oft gar nicht erst nach, auch bei leichten Aufgaben. Solche Aufgaben zählen „mit Hilfe“, dann wachsen Werkstätten und Zunftgrade nicht.")}
         ${tog("cfg.ratebremse", "Ratebremse", "Eine falsche Antwort, die nur schnell getippt wurde (weniger als 1,5 Sekunden nach dem Erscheinen der Aufgabe oder 3,5 Sekunden nach der vorigen, oder 99, 66, 659; erkennt der Fehler-Detektiv einen typischen Fehler, ist es kein Raten), zählt nicht als Versuch. Es gibt eine kurze Denkpause (4 Sekunden, später 7) und die Stimme sagt: „Lass dir Zeit. Du musst nicht raten.“ Beim dritten Mal kommt der Tipp von selbst. Richtige Antworten werden nie gebremst.")}
         ${tog("cfg.detektiv", "Fehler-Detektiv", "Erkennt typische Flüchtigkeitsfehler (Rechenzeichen oder Ziffern vertauscht, Zehnerstelle, eine Reihe zu viel) und gibt einen gezielten Hinweis, ohne die Lösung zu verraten.")}
         ${seg("cfg.frustN", "Leichtere Aufgabe anbieten nach", [[0, "nie"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]],
