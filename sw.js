@@ -3,7 +3,7 @@
 // Ab 1.16.2: am Zwischenspeicher des Browsers vorbei fragen (GitHub Pages erlaubt sonst 10 Minuten alte Antworten),
 // nach 6 Sekunden ohne Antwort die gespeicherte Fassung zeigen, die Seite nur einmal speichern (vorher doppelt: „./“ und „index.html“),
 // und sw.js selbst nie aus dem Speicher liefern (die App liest daraus die neueste Versionsnummer).
-const CACHE = "rechenreise-1.18.2";
+const CACHE = "rechenreise-1.18.3";
 const CORE = ["./", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 const WAIT_MS = 6000;
 // Ab 1.18.1 nur eigene Zwischenspeicher löschen: Auf derselben Adresse (github.io) liegt auch die englische Fassung (mathjourney-…).
